@@ -32,14 +32,63 @@ document.addEventListener('DOMContentLoaded', function() {
     const filterInput = document.getElementById('filterInput');
     const copyButton = document.getElementById('copyButton');
     const fallbackFileInput = document.getElementById('fallbackFileInput');
+    const cartCommentInput = document.getElementById('cartComment');
+    const langEnButton = document.getElementById('langEn');
+    const langArButton = document.getElementById('langAr');
+
     const products = [];
-    let cartLineCounter = 1;
     let cartTotal = 0;
+    let currentLanguage = 'ar'; // 'ar' for Arabic, 'en' for English
+
+    // --- Language Switcher functionality ---
+    langEnButton.addEventListener('click', () => switchLanguage('en'));
+    langArButton.addEventListener('click', () => switchLanguage('ar'));
+
+    function switchLanguage(lang) {
+        currentLanguage = lang;
+        updateProductLanguage();
+        updateCartLanguage();
+    }
+
+    function getItemName(product) {
+        if (currentLanguage === 'en' && product['en_item_name']) {
+            return product['en_item_name'];
+        }
+        return product['item name'];
+    }
+
+    function updateProductLanguage() {
+        document.querySelectorAll('.productSquare').forEach(square => {
+            const productCode = square.dataset.productCode;
+            const product = products.find(p => p['item code'] == productCode);
+            if (product) {
+                square.querySelector('.card-content p:first-of-type').textContent = getItemName(product);
+                // Update dataset for filtering
+                square.dataset.productName = product['item name'];
+                square.dataset.productNameEn = product['en_item_name'] || '';
+            }
+        });
+        // Re-apply filter after language switch
+        filterInput.dispatchEvent(new Event('input'));
+    }
+
+    function updateCartLanguage() {
+        document.querySelectorAll('.cartItem').forEach(cartItem => {
+            const productCode = cartItem.dataset.productCode;
+            const product = products.find(p => p['item code'] == productCode);
+            if (product) {
+                cartItem.querySelector('.itemName').textContent = getItemName(product);
+            }
+        });
+    }
 
     function createProductSquare(product) {
         const square = document.createElement('div');
         square.className = 'productSquare';
+        square.dataset.productCode = product['item code']; // Use a unique identifier
         square.dataset.productName = product['item name'];
+        square.dataset.productNameEn = product['en_item_name'] || '';
+
 
         const image = document.createElement('img');
         image.src = product['image_ulr'] || 'https://via.placeholder.com/300x200.png?text=No+Image';
@@ -47,9 +96,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const contentDiv = document.createElement('div');
         contentDiv.className = 'card-content';
-        
+
         const name = document.createElement('p');
-        name.textContent = product['item name'];
+        name.textContent = getItemName(product); // Use function to get name
         contentDiv.appendChild(name);
 
         const price1 = document.createElement('p');
@@ -70,60 +119,78 @@ document.addEventListener('DOMContentLoaded', function() {
         const eaPriceWithTax = cartoonPriceWithTax / parseInt(product['ea in ca']);
         price4.textContent = `Bund + Tax = $${eaPriceWithTax.toFixed(2)}`;
         contentDiv.appendChild(price4);
-        
+
         square.appendChild(contentDiv);
 
         square.addEventListener('click', function() {
             const quantity = prompt('Enter the quantity:');
-            if (quantity && !isNaN(quantity)) {
+            if (quantity && !isNaN(quantity) && quantity > 0) {
+                const itemTotal = parseFloat(product[priceSelector.value]) * quantity;
+
                 const cartItem = document.createElement('div');
                 cartItem.className = 'cartItem';
+                cartItem.dataset.productCode = product['item code'];
+                cartItem.dataset.itemTotal = itemTotal; // Store item total for easy removal
+
                 cartItem.innerHTML = `
-                    <span>${cartLineCounter}. </span>
+                    <span class="cartLineNumber"></span>
                     <span>${product['item code']} | </span>
                     <span>${quantity}Ca | </span>
                     <span>${parseFloat(product[priceSelector.value]).toFixed(2)}SR | </span>
-                    <span>${product['item name']}</span>
+                    <span class="itemName">${getItemName(product)}</span>
+                    <button class="delete-btn">Delete</button>
                 `;
+
                 cartItemsContainer.appendChild(cartItem);
-                const itemTotal = parseFloat(product[priceSelector.value]) * quantity;
+
+                cartItem.querySelector('.delete-btn').addEventListener('click', function() {
+                    const itemTotalToRemove = parseFloat(cartItem.dataset.itemTotal);
+                    cartTotal -= itemTotalToRemove;
+                    cartItem.remove();
+                    updateCartTotal();
+                    renumberCartItems();
+                });
+
                 cartTotal += itemTotal;
                 updateCartTotal();
-                cartLineCounter++;
+                renumberCartItems();
             }
         });
 
         return square;
     }
-    
-    // --- THIS IS THE FIXED FUNCTION ---
-    function updatePrices() {
-      const selectedCategory = priceSelector.value;
-      const squares = Array.from(document.getElementsByClassName('productSquare'));
 
-      squares.forEach((square) => {
-        const productName = square.dataset.productName;
-        const product = products.find(p => p['item name'] === productName);
-        
-        if (product) {
-            const price = parseFloat(product[selectedCategory]);
-
-            if (!isNaN(price)) {
-                const eaInCa = parseInt(product['ea in ca']);
-                const priceWithTax = (price * 1.15).toFixed(2);
-                const eaPrice = (price / eaInCa).toFixed(2);
-                const eaWithTax = (price * 1.15 / eaInCa).toFixed(2);
-                
-                const contentDiv = square.querySelector('.card-content');
-                // These querySelectors now target the correct <p> tags inside the card-content div
-                contentDiv.querySelector('p:nth-of-type(2)').textContent = `Ca = ${price.toFixed(2)} SR`;
-                contentDiv.querySelector('p:nth-of-type(3)').textContent = `Ca + tax = ${priceWithTax} SR`;
-                contentDiv.querySelector('p:nth-of-type(4)').textContent = `Bund = ${eaPrice} SR`;
-                contentDiv.querySelector('p:nth-of-type(5)').textContent = `Bund + Tax = ${eaWithTax} SR`;
-            }
+    function renumberCartItems() {
+        const items = cartItemsContainer.getElementsByClassName('cartItem');
+        for (let i = 0; i < items.length; i++) {
+            items[i].querySelector('.cartLineNumber').textContent = `${i + 1}. `;
         }
-      });
     }
+
+    function updatePrices() {
+        const selectedCategory = priceSelector.value;
+        document.querySelectorAll('.productSquare').forEach(square => {
+            const productCode = square.dataset.productCode;
+            const product = products.find(p => p['item code'] == productCode);
+
+            if (product) {
+                const price = parseFloat(product[selectedCategory]);
+                if (!isNaN(price)) {
+                    const eaInCa = parseInt(product['ea in ca']);
+                    const priceWithTax = (price * 1.15).toFixed(2);
+                    const eaPrice = (price / eaInCa).toFixed(2);
+                    const eaWithTax = (price * 1.15 / eaInCa).toFixed(2);
+
+                    const contentDiv = square.querySelector('.card-content');
+                    contentDiv.querySelector('p:nth-of-type(2)').textContent = `Ca = ${price.toFixed(2)} SR`;
+                    contentDiv.querySelector('p:nth-of-type(3)').textContent = `Ca + tax = ${priceWithTax} SR`;
+                    contentDiv.querySelector('p:nth-of-type(4)').textContent = `Bund = ${eaPrice} SR`;
+                    contentDiv.querySelector('p:nth-of-type(5)').textContent = `Bund + Tax = ${eaWithTax} SR`;
+                }
+            }
+        });
+    }
+
 
     function updateCartTotal() {
         const cartTotalElement = document.getElementById('cartTotal');
@@ -133,34 +200,42 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function loadProductsFromExcel(jsonData) {
+        productGrid.innerHTML = ''; // Clear existing products
+        products.length = 0; // Clear the products array
+
         const headers = Object.keys(jsonData[0]);
         jsonData.forEach(product => {
+            // ---- MODIFICATION: Filter out rows where 'stock quantity' is 0 ----
+            if (product['stock quantity'] !== undefined && Number(product['stock quantity']) === 0) {
+                return; // Skip this product
+            }
+
             products.push(product);
             const square = createProductSquare(product);
             productGrid.appendChild(square);
         });
 
-        // Clear existing options before adding new ones
-        priceSelector.innerHTML = ''; 
+        priceSelector.innerHTML = '';
         for (let i = 1; i <= 8 && i < headers.length; i++) {
             const header = headers[i];
-            const option = document.createElement('option');
-            option.value = header;
-            option.textContent = header;
-            priceSelector.appendChild(option);
+            // Simple validation to check if it's a price column
+            if (typeof jsonData[0][header] === 'number') {
+                const option = document.createElement('option');
+                option.value = header;
+                option.textContent = header;
+                priceSelector.appendChild(option);
+            }
         }
-        
-        // --- THIS IS THE FIXED EVENT LISTENER ---
-        priceSelector.addEventListener('change', function () {
-            updatePrices(); // Call the function to change prices on the cards
-            this.style.display = 'none'; // Hide the selector after a choice is made
+
+        priceSelector.addEventListener('change', function() {
+            updatePrices();
+            this.style.display = 'none';
         });
 
         if (!document.getElementById('priceSelector')) {
             document.getElementById('cartContainer').insertBefore(priceSelector, document.getElementById('cartItems'));
         }
-        
-        // Initial price update based on the default selection
+
         updatePrices();
     }
 
@@ -170,7 +245,9 @@ document.addEventListener('DOMContentLoaded', function() {
             return response.arrayBuffer();
         })
         .then(data => {
-            const workbook = XLSX.read(data, { type: 'array' });
+            const workbook = XLSX.read(data, {
+                type: 'array'
+            });
             const sheet = workbook.Sheets[workbook.SheetNames[0]];
             const jsonData = XLSX.utils.sheet_to_json(sheet);
             loadProductsFromExcel(jsonData);
@@ -181,7 +258,9 @@ document.addEventListener('DOMContentLoaded', function() {
             fallbackFileInput.addEventListener('change', function(e) {
                 const reader = new FileReader();
                 reader.onload = function(ev) {
-                    const workbook = XLSX.read(ev.target.result, { type: 'array' });
+                    const workbook = XLSX.read(ev.target.result, {
+                        type: 'array'
+                    });
                     const sheet = workbook.Sheets[workbook.SheetNames[0]];
                     const jsonData = XLSX.utils.sheet_to_json(sheet);
                     loadProductsFromExcel(jsonData);
@@ -195,10 +274,19 @@ document.addEventListener('DOMContentLoaded', function() {
         const cartItems = document.getElementsByClassName('cartItem');
         let cartText = '';
         for (let i = 0; i < cartItems.length; i++) {
-            const spans = cartItems[i].querySelectorAll('span');
-            cartText += Array.from(spans).map(s => s.textContent).join('') + '\n';
+            // Clone the node to manipulate it without affecting the display
+            const tempItem = cartItems[i].cloneNode(true);
+            tempItem.querySelector('.delete-btn').remove(); // Remove delete button from copy text
+            cartText += tempItem.innerText.replace(/\s+/g, ' ').trim() + '\n';
         }
         cartText += '\n' + document.getElementById('cartTotal').textContent;
+
+        // ---- MODIFICATION: Add comment to copied text ----
+        const comment = cartCommentInput.value.trim();
+        if (comment) {
+            cartText += '\n\nComments:\n' + comment;
+        }
+
         navigator.clipboard.writeText(cartText).then(() => {
             alert("تم نسخ محتوى السلة.");
         });
@@ -207,9 +295,14 @@ document.addEventListener('DOMContentLoaded', function() {
     filterInput.addEventListener('input', function() {
         const val = filterInput.value.toLowerCase();
         document.querySelectorAll('.productSquare').forEach(el => {
-            el.style.display = el.dataset.productName.toLowerCase().includes(val) ? 'block' : 'none';
+            const name = el.dataset.productName.toLowerCase();
+            const nameEn = el.dataset.productNameEn.toLowerCase();
+            const code = el.dataset.productCode.toLowerCase();
+            
+            // Show if filter value matches Arabic name, English name, or item code
+            const isVisible = name.includes(val) || nameEn.includes(val) || code.includes(val);
+            el.style.display = isVisible ? 'block' : 'none';
         });
     });
 });
-
 // --- SCRIPT END ---
