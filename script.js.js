@@ -1,4 +1,10 @@
+(function() {
+    // --- Use a simple, hardcoded password ---
+    const correctPassword = "your_password_here"; // Choose your own password
 
+    // --- Prompt the user and check the password ---
+    const userInput = prompt("Please enter the password:");
+...
 
 document.addEventListener('DOMContentLoaded', function() {
     const productGrid = document.getElementById('productGrid');
