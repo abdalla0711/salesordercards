@@ -45,7 +45,6 @@ document.addEventListener('DOMContentLoaded', function() {
         image.src = product['image_ulr'] || 'https://via.placeholder.com/300x200.png?text=No+Image';
         square.appendChild(image);
 
-        // This div will hold all the text for better styling with the card layout
         const contentDiv = document.createElement('div');
         contentDiv.className = 'card-content';
         
@@ -96,10 +95,34 @@ document.addEventListener('DOMContentLoaded', function() {
 
         return square;
     }
-
+    
+    // --- THIS IS THE FIXED FUNCTION ---
     function updatePrices() {
-        // This function logic can be simplified as it's not needed for the card design
-        // but is kept for the cart functionality.
+      const selectedCategory = priceSelector.value;
+      const squares = Array.from(document.getElementsByClassName('productSquare'));
+
+      squares.forEach((square) => {
+        const productName = square.dataset.productName;
+        const product = products.find(p => p['item name'] === productName);
+        
+        if (product) {
+            const price = parseFloat(product[selectedCategory]);
+
+            if (!isNaN(price)) {
+                const eaInCa = parseInt(product['ea in ca']);
+                const priceWithTax = (price * 1.15).toFixed(2);
+                const eaPrice = (price / eaInCa).toFixed(2);
+                const eaWithTax = (price * 1.15 / eaInCa).toFixed(2);
+                
+                const contentDiv = square.querySelector('.card-content');
+                // These querySelectors now target the correct <p> tags inside the card-content div
+                contentDiv.querySelector('p:nth-of-type(2)').textContent = `Ca = ${price.toFixed(2)} SR`;
+                contentDiv.querySelector('p:nth-of-type(3)').textContent = `Ca + tax = ${priceWithTax} SR`;
+                contentDiv.querySelector('p:nth-of-type(4)').textContent = `Bund = ${eaPrice} SR`;
+                contentDiv.querySelector('p:nth-of-type(5)').textContent = `Bund + Tax = ${eaWithTax} SR`;
+            }
+        }
+      });
     }
 
     function updateCartTotal() {
@@ -117,19 +140,28 @@ document.addEventListener('DOMContentLoaded', function() {
             productGrid.appendChild(square);
         });
 
-        for (let i = 1; i <= 8; i++) {
+        // Clear existing options before adding new ones
+        priceSelector.innerHTML = ''; 
+        for (let i = 1; i <= 8 && i < headers.length; i++) {
             const header = headers[i];
             const option = document.createElement('option');
             option.value = header;
             option.textContent = header;
             priceSelector.appendChild(option);
         }
+        
+        // --- THIS IS THE FIXED EVENT LISTENER ---
+        priceSelector.addEventListener('change', function () {
+            updatePrices(); // Call the function to change prices on the cards
+            this.style.display = 'none'; // Hide the selector after a choice is made
+        });
 
-        // We hide the price selector by default with CSS now, so this logic can be simpler.
-        // It's still needed for cart calculations.
         if (!document.getElementById('priceSelector')) {
             document.getElementById('cartContainer').insertBefore(priceSelector, document.getElementById('cartItems'));
         }
+        
+        // Initial price update based on the default selection
+        updatePrices();
     }
 
     fetch('PRICES.xlsx')
