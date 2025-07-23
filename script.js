@@ -25,24 +25,30 @@
 
 // The rest of the script is wrapped in DOMContentLoaded to ensure the page is ready.
 document.addEventListener('DOMContentLoaded', function() {
+    // --- Element Selectors ---
     const productGrid = document.getElementById('productGrid');
     const cartItemsContainer = document.getElementById('cartItems');
-    const priceSelector = document.createElement('select');
-    priceSelector.id = 'priceSelector';
     const filterInput = document.getElementById('filterInput');
     const copyButton = document.getElementById('copyButton');
     const fallbackFileInput = document.getElementById('fallbackFileInput');
     const cartCommentInput = document.getElementById('cartComment');
     const langEnButton = document.getElementById('langEn');
     const langArButton = document.getElementById('langAr');
+    const priceSelector = document.createElement('select');
+    priceSelector.id = 'priceSelector';
 
+    // --- Global State ---
     const products = [];
     let cartTotal = 0;
-    let currentLanguage = 'ar'; // 'ar' for Arabic, 'en' for English
+    let currentLanguage = 'ar'; // Default language
 
-    // --- Language Switcher functionality ---
-    langEnButton.addEventListener('click', () => switchLanguage('en'));
-    langArButton.addEventListener('click', () => switchLanguage('ar'));
+    // --- NEW: Robust Event Listeners for Language Buttons ---
+    if (langEnButton && langArButton) {
+        langEnButton.addEventListener('click', () => switchLanguage('en'));
+        langArButton.addEventListener('click', () => switchLanguage('ar'));
+    } else {
+        console.error("Language switch buttons not found in HTML. Ensure buttons with id='langEn' and id='langAr' exist.");
+    }
 
     function switchLanguage(lang) {
         currentLanguage = lang;
@@ -51,6 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function getItemName(product) {
+        // NOTE: Your Excel column must be exactly 'en_item_name' for this to work.
         if (currentLanguage === 'en' && product['en_item_name']) {
             return product['en_item_name'];
         }
@@ -63,12 +70,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const product = products.find(p => p['item code'] == productCode);
             if (product) {
                 square.querySelector('.card-content p:first-of-type').textContent = getItemName(product);
-                // Update dataset for filtering
-                square.dataset.productName = product['item name'];
-                square.dataset.productNameEn = product['en_item_name'] || '';
             }
         });
-        // Re-apply filter after language switch
+        // Re-apply the current filter to match the new language's names
         filterInput.dispatchEvent(new Event('input'));
     }
 
@@ -85,10 +89,9 @@ document.addEventListener('DOMContentLoaded', function() {
     function createProductSquare(product) {
         const square = document.createElement('div');
         square.className = 'productSquare';
-        square.dataset.productCode = product['item code']; // Use a unique identifier
-        square.dataset.productName = product['item name'];
-        square.dataset.productNameEn = product['en_item_name'] || '';
-
+        square.dataset.productCode = product['item code'];
+        square.dataset.productName = product['item name'] || ''; // Arabic name
+        square.dataset.productNameEn = product['en_item_name'] || ''; // English name
 
         const image = document.createElement('img');
         image.src = product['image_ulr'] || 'https://via.placeholder.com/300x200.png?text=No+Image';
@@ -98,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function() {
         contentDiv.className = 'card-content';
 
         const name = document.createElement('p');
-        name.textContent = getItemName(product); // Use function to get name
+        name.textContent = getItemName(product);
         contentDiv.appendChild(name);
 
         const price1 = document.createElement('p');
@@ -130,7 +133,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const cartItem = document.createElement('div');
                 cartItem.className = 'cartItem';
                 cartItem.dataset.productCode = product['item code'];
-                cartItem.dataset.itemTotal = itemTotal; // Store item total for easy removal
+                cartItem.dataset.itemTotal = itemTotal;
 
                 cartItem.innerHTML = `
                     <span class="cartLineNumber"></span>
@@ -140,12 +143,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     <span class="itemName">${getItemName(product)}</span>
                     <button class="delete-btn">Delete</button>
                 `;
-
                 cartItemsContainer.appendChild(cartItem);
 
                 cartItem.querySelector('.delete-btn').addEventListener('click', function() {
-                    const itemTotalToRemove = parseFloat(cartItem.dataset.itemTotal);
-                    cartTotal -= itemTotalToRemove;
+                    cartTotal -= parseFloat(cartItem.dataset.itemTotal);
                     cartItem.remove();
                     updateCartTotal();
                     renumberCartItems();
@@ -191,7 +192,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-
     function updateCartTotal() {
         const cartTotalElement = document.getElementById('cartTotal');
         const cartTotalWithTax = cartTotal * 1.15;
@@ -200,16 +200,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function loadProductsFromExcel(jsonData) {
-        productGrid.innerHTML = ''; // Clear existing products
-        products.length = 0; // Clear the products array
+        productGrid.innerHTML = '';
+        products.length = 0;
 
         const headers = Object.keys(jsonData[0]);
         jsonData.forEach(product => {
-            // ---- MODIFICATION: Filter out rows where 'stock quantity' is 0 ----
             if (product['stock quantity'] !== undefined && Number(product['stock quantity']) === 0) {
-                return; // Skip this product
+                return; // Hide row if stock quantity is 0
             }
-
             products.push(product);
             const square = createProductSquare(product);
             productGrid.appendChild(square);
@@ -218,7 +216,6 @@ document.addEventListener('DOMContentLoaded', function() {
         priceSelector.innerHTML = '';
         for (let i = 1; i <= 8 && i < headers.length; i++) {
             const header = headers[i];
-            // Simple validation to check if it's a price column
             if (typeof jsonData[0][header] === 'number') {
                 const option = document.createElement('option');
                 option.value = header;
@@ -235,7 +232,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!document.getElementById('priceSelector')) {
             document.getElementById('cartContainer').insertBefore(priceSelector, document.getElementById('cartItems'));
         }
-
         updatePrices();
     }
 
@@ -245,9 +241,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return response.arrayBuffer();
         })
         .then(data => {
-            const workbook = XLSX.read(data, {
-                type: 'array'
-            });
+            const workbook = XLSX.read(data, { type: 'array' });
             const sheet = workbook.Sheets[workbook.SheetNames[0]];
             const jsonData = XLSX.utils.sheet_to_json(sheet);
             loadProductsFromExcel(jsonData);
@@ -258,9 +252,7 @@ document.addEventListener('DOMContentLoaded', function() {
             fallbackFileInput.addEventListener('change', function(e) {
                 const reader = new FileReader();
                 reader.onload = function(ev) {
-                    const workbook = XLSX.read(ev.target.result, {
-                        type: 'array'
-                    });
+                    const workbook = XLSX.read(ev.target.result, { type: 'array' });
                     const sheet = workbook.Sheets[workbook.SheetNames[0]];
                     const jsonData = XLSX.utils.sheet_to_json(sheet);
                     loadProductsFromExcel(jsonData);
@@ -271,17 +263,15 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
     copyButton.addEventListener('click', function() {
-        const cartItems = document.getElementsByClassName('cartItem');
         let cartText = '';
-        for (let i = 0; i < cartItems.length; i++) {
-            // Clone the node to manipulate it without affecting the display
-            const tempItem = cartItems[i].cloneNode(true);
-            tempItem.querySelector('.delete-btn').remove(); // Remove delete button from copy text
+        document.querySelectorAll('.cartItem').forEach(item => {
+            const tempItem = item.cloneNode(true);
+            tempItem.querySelector('.delete-btn').remove();
             cartText += tempItem.innerText.replace(/\s+/g, ' ').trim() + '\n';
-        }
+        });
+
         cartText += '\n' + document.getElementById('cartTotal').textContent;
 
-        // ---- MODIFICATION: Add comment to copied text ----
         const comment = cartCommentInput.value.trim();
         if (comment) {
             cartText += '\n\nComments:\n' + comment;
@@ -299,7 +289,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const nameEn = el.dataset.productNameEn.toLowerCase();
             const code = el.dataset.productCode.toLowerCase();
             
-            // Show if filter value matches Arabic name, English name, or item code
+            // Search will work across Arabic name, English name, and item code
             const isVisible = name.includes(val) || nameEn.includes(val) || code.includes(val);
             el.style.display = isVisible ? 'block' : 'none';
         });
