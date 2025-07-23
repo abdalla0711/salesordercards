@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Catalog</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body style="visibility: hidden;">
+
+    <div class="frame-container">
+        <div id="fixedArea">
+            <b>Sales Order</b><br>
+            <input type="text" id="filterInput" placeholder="Filter by item name">
+            <div id="cartContainer">
+                <div id="cartCustomer"></div>
+                <div id="cartItems"></div>
+                <p id="cartTotal"></p>
+                <button id="copyButton">Copy Cart</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="productGrid"></div>
+    <input type="file" id="fallbackFileInput" accept=".xlsx">
+
+    <script src="script.js"></script>
+</body>
+</html>
