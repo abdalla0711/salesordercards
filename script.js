@@ -22,6 +22,8 @@
 
 // The rest of the script is wrapped in DOMContentLoaded to ensure the page is ready.
 document.addEventListener('DOMContentLoaded', function() {
+    console.log("DOM fully loaded. Initializing script."); // DEBUG
+
     // --- Element Selectors ---
     const productGrid = document.getElementById('productGrid');
     const cartItemsContainer = document.getElementById('cartItems');
@@ -39,44 +41,63 @@ document.addEventListener('DOMContentLoaded', function() {
     let cartTotal = 0;
     let currentLanguage = 'ar'; // Default language
 
+    // --- DEBUG: Check if buttons are found ---
+    if (!langEnButton) {
+        console.error("English language button with id='langEn' was NOT found!");
+    }
+    if (!langArButton) {
+        console.error("Arabic language button with id='langAr' was NOT found!");
+    }
+
     // --- Language Switch Listeners ---
-    langArButton.addEventListener('click', () => switchLanguage('ar'));
-    langEnButton.addEventListener('click', () => switchLanguage('en'));
+    langArButton.addEventListener('click', () => {
+        console.log("Arabic button clicked."); // DEBUG
+        switchLanguage('ar');
+    });
+    langEnButton.addEventListener('click', () => {
+        console.log("English button clicked."); // DEBUG
+        switchLanguage('en');
+    });
 
     function switchLanguage(lang) {
+        console.log(`Attempting to switch language to: ${lang}`); // DEBUG
         currentLanguage = lang;
         updateProductLanguage();
         updateCartLanguage();
+        console.log(`Language switch to '${lang}' complete.`); // DEBUG
     }
 
     function getItemName(product) {
-        // This function decides which name to show based on the currentLanguage.
-        // It requires a column named 'en_item_name' in your Excel file.
-        if (currentLanguage === 'en' && product['en_item_name']) {
-            return product['en_item_name'];
+        if (currentLanguage === 'en') {
+            const enName = product['en_item_name'];
+            if (enName) {
+                // console.log(`Found English name: '${enName}' for product code ${product['item code']}`); // Optional detailed debug
+                return enName;
+            } else {
+                // console.warn(`English name not found for product code ${product['item code']}. Using Arabic name.`); // Optional detailed debug
+            }
         }
         return product['item name'];
     }
 
     function updateProductLanguage() {
+        console.log("Updating product grid language..."); // DEBUG
         document.querySelectorAll('.productSquare').forEach(square => {
             const productCode = square.dataset.productCode;
             const product = products.find(p => p['item code'] == productCode);
             if (product) {
-                // Update the visible name on the product card
                 square.querySelector('.card-content p:first-of-type').textContent = getItemName(product);
             }
         });
-        // Trigger the input event to re-filter the list with the new language names
         filterInput.dispatchEvent(new Event('input'));
     }
 
     function updateCartLanguage() {
+        console.log("Updating cart language..."); // DEBUG
         document.querySelectorAll('.cartItem').forEach(cartItem => {
             const productCode = cartItem.dataset.productCode;
             const product = products.find(p => p['item code'] == productCode);
             if (product) {
-                // Update the visible name in the cart
                 cartItem.querySelector('.itemName').textContent = getItemName(product);
             }
         });
@@ -85,23 +106,19 @@ document.addEventListener('DOMContentLoaded', function() {
     function createProductSquare(product) {
         const square = document.createElement('div');
         square.className = 'productSquare';
-        // Store all necessary data on the element for easy access
         square.dataset.productCode = product['item code'];
-        square.dataset.productNameAr = product['item name'] || ''; // Arabic name
-        square.dataset.productNameEn = product['en_item_name'] || ''; // English name
+        square.dataset.productNameAr = product['item name'] || '';
+        square.dataset.productNameEn = product['en_item_name'] || '';
 
+        // ... (rest of the function is identical, no changes needed here) ...
         const image = document.createElement('img');
         image.src = product['image_ulr'] || 'https://via.placeholder.com/300x200.png?text=No+Image';
         square.appendChild(image);
-
         const contentDiv = document.createElement('div');
         contentDiv.className = 'card-content';
-
         const name = document.createElement('p');
         name.textContent = getItemName(product);
         contentDiv.appendChild(name);
-
-        // ... (rest of the price paragraphs are unchanged)
         const price1 = document.createElement('p');
         price1.textContent = `Ca = $${product['retail price Q']}`;
         contentDiv.appendChild(price1);
@@ -123,12 +140,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const quantity = prompt('Enter the quantity:');
             if (quantity && !isNaN(quantity) && quantity > 0) {
                 const itemTotal = parseFloat(product[priceSelector.value]) * quantity;
-
                 const cartItem = document.createElement('div');
                 cartItem.className = 'cartItem';
                 cartItem.dataset.productCode = product['item code'];
                 cartItem.dataset.itemTotal = itemTotal;
-
                 cartItem.innerHTML = `
                     <span class="cartLineNumber"></span>
                     <span>${product['item code']} | </span>
@@ -138,14 +153,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     <button class="delete-btn">X</button>
                 `;
                 cartItemsContainer.appendChild(cartItem);
-
                 cartItem.querySelector('.delete-btn').addEventListener('click', function() {
                     cartTotal -= parseFloat(cartItem.dataset.itemTotal);
                     cartItem.remove();
                     updateCartTotal();
                     renumberCartItems();
                 });
-
                 cartTotal += itemTotal;
                 updateCartTotal();
                 renumberCartItems();
@@ -192,20 +205,25 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function loadProductsFromExcel(jsonData) {
+        console.log("Loading products from Excel data..."); // DEBUG
         productGrid.innerHTML = '';
         products.length = 0;
-
-        // Ensure we have data and headers
         if (!jsonData || jsonData.length === 0) {
-            console.error("Excel data is empty or could not be read.");
+            console.error("Excel data is empty or invalid.");
             return;
         }
+
+        // DEBUG: Log the headers to verify 'en_item_name' exists
         const headers = Object.keys(jsonData[0]);
+        console.log("Excel Headers Found:", headers);
+        if (!headers.includes('en_item_name')) {
+            console.warn("WARNING: The column 'en_item_name' was not found in the Excel file. English translation will not work.");
+        }
+
 
         jsonData.forEach(product => {
-            // Filter out rows where 'stock quantity' is 0
             if (product['stock quantity'] !== undefined && Number(product['stock quantity']) === 0) {
-                return; // Skip this product
+                return;
             }
             products.push(product);
             const square = createProductSquare(product);
@@ -237,6 +255,7 @@ document.addEventListener('DOMContentLoaded', function() {
     fetch('PRICES.xlsx')
         .then(response => {
             if (!response.ok) throw new Error('File not found');
+            console.log("PRICES.xlsx fetched successfully."); // DEBUG
             return response.arrayBuffer();
         })
         .then(data => {
@@ -246,6 +265,7 @@ document.addEventListener('DOMContentLoaded', function() {
             loadProductsFromExcel(jsonData);
         })
         .catch(err => {
+            console.error("Error fetching or processing Excel file:", err); // DEBUG
             alert("لم يتم العثور على ملف الأسعار، اختره يدويًا.");
             fallbackFileInput.style.display = 'block';
             fallbackFileInput.addEventListener('change', function(e) {
@@ -268,14 +288,11 @@ document.addEventListener('DOMContentLoaded', function() {
             tempItem.querySelector('.delete-btn').remove();
             cartText += tempItem.innerText.replace(/\s+/g, ' ').trim() + '\n';
         });
-
         cartText += '\n' + document.getElementById('cartTotal').textContent;
-
         const comment = cartCommentInput.value.trim();
         if (comment) {
             cartText += '\n\nComments:\n' + comment;
         }
-
         navigator.clipboard.writeText(cartText).then(() => {
             alert("تم نسخ محتوى السلة.");
         });
@@ -284,12 +301,9 @@ document.addEventListener('DOMContentLoaded', function() {
     filterInput.addEventListener('input', function() {
         const val = this.value.toLowerCase();
         document.querySelectorAll('.productSquare').forEach(el => {
-            // Get both language names from the data attributes
             const nameAr = el.dataset.productNameAr.toLowerCase();
             const nameEn = el.dataset.productNameEn.toLowerCase();
             const code = el.dataset.productCode.toLowerCase();
-            
-            // Show if filter value matches Arabic name, English name, or item code
             const isVisible = nameAr.includes(val) || nameEn.includes(val) || code.includes(val);
             el.style.display = isVisible ? 'block' : 'none';
         });
