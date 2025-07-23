@@ -3,7 +3,7 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     margin: 0;
     padding: 20px;
-    padding-top: 220px; /* Increased padding to prevent content from being hidden by the taller fixed header */
+    padding-top: 220px; /* Increased padding for fixed header */
     background-color: #f4f4f9; /* Light gray background to make cards pop */
 }
 
@@ -16,12 +16,12 @@ body {
     background-color: #ffffff;
     padding: 20px;
     z-index: 100;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     border: none;
 }
 
 #filterInput {
-    width: calc(100% - 40px); /* Adjust width to account for padding */
+    width: calc(100% - 40px);
     padding: 12px 15px;
     font-size: 16px;
     border-radius: 8px;
@@ -38,7 +38,7 @@ body {
 /* --- Product Grid --- */
 #productGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); /* Slightly smaller min-width for more responsive cards */
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     grid-gap: 25px;
     margin-top: 20px;
 }
@@ -46,9 +46,9 @@ body {
 /* --- The Product Card --- */
 .productSquare {
     background-color: #ffffff;
-    border-radius: 12px; /* Rounded corners */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08); /* Card shadow */
-    overflow: hidden; /* Ensures image respects the border-radius */
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
     text-align: left;
     position: relative;
     border: none;
@@ -58,63 +58,51 @@ body {
 }
 
 .productSquare:hover {
-    transform: translateY(-5px); /* Lifts the card on hover */
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12); /* Enhanced shadow on hover */
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
 }
 
 /* --- Card Image --- */
 .productSquare img {
     max-width: 100%;
-    height: 200px; /* Fixed height for uniform card size */
-    object-fit: cover; /* Prevents image distortion */
+    height: 200px;
+    object-fit: cover;
     border-bottom: 1px solid #eee;
+}
+
+/* This is a new container for the text inside the card */
+.card-content {
+    padding: 15px;
 }
 
 /* --- Card Content --- */
 .productSquare p {
     margin: 0;
-    padding: 4px 15px; /* Spacing for each line item */
+    padding: 4px 0; /* Vertical padding only */
     background-color: transparent !important; /* Override inline styles from JS */
     font-weight: normal !important; /* Override inline styles from JS */
     color: #333;
 }
 
 /* Item Name */
-.productSquare p:nth-of-type(1) {
+.card-content p:nth-of-type(1) {
     font-size: 1.1rem;
     font-weight: bold !important;
     color: #000 !important;
-    padding-top: 15px;
     padding-bottom: 10px;
 }
 
-/* Primary Price (Ca) */
-.productSquare p:nth-of-type(2) {
-    font-size: 1rem;
-    font-weight: bold !important;
-    color: #0056b3;
-}
-
-/* Price with Tax */
-.productSquare p:nth-of-type(3) {
-    font-size: 0.9rem;
+/* Other text lines */
+.card-content p:nth-of-type(n+2) {
+    font-size: 0.95rem;
     color: #555;
 }
 
-/* Secondary Price (Bund) */
-.productSquare p:nth-of-type(4) {
-    font-size: 1rem;
+/* Highlight the main prices */
+.card-content p:nth-of-type(2), .card-content p:nth-of-type(4) {
     font-weight: bold !important;
     color: #0056b3;
 }
-
-/* Secondary Price with Tax */
-.productSquare p:nth-of-type(5) {
-    font-size: 0.9rem;
-    color: #555;
-    padding-bottom: 15px;
-}
-
 
 /* --- Shopping Cart Items --- */
 .cartItem {
@@ -151,21 +139,10 @@ body {
     background-color: #218838;
 }
 
-#fallbackFileInput {
-    display: none; /* Controlled by JS */
-    font-size: 18px;
-    margin: 20px auto;
-    display: block;
-}
-
+#fallbackFileInput { display: none; }
 #priceSelector {
     display: block;
-    color: white;
-    background-color: #007bff;
-    border-color: white;
-    cursor: pointer;
     font-size: 1rem;
     padding: 10px;
-    border-radius: 5px;
     margin-bottom: 15px;
 }
