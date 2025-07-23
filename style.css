@@ -86,7 +86,7 @@ body {
 
 /* Item Name */
 .card-content p:nth-of-type(1) {
-    font-size: 1.1rem;
+    font-size: .9rem;
     font-weight: bold !important;
     color: #000 !important;
     padding-bottom: 10px;
