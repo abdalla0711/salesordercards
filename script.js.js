@@ -1,25 +1,4 @@
-(function() {
-    // --- Create the dynamic password ---
-    const now = new Date();
-    const day = String(now.getDate()).padStart(2, '0');
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const hour = String(now.getHours()).padStart(2, '0');
-    const dateString = day + month + hour;
-    const correctPassword = dateString.split('').reverse().join('');
 
-    // --- Prompt the user and check the password ---
-    const userInput = prompt("Please enter the password:");
-
-    if (userInput === correctPassword) {
-        // If correct, make the page visible.
-        document.body.style.visibility = 'visible';
-    } else {
-        // If incorrect, show an alert.
-        alert("Incorrect password.");
-        // You could also redirect them away.
-        // window.location.href = "about:blank";
-    }
-})();
 
 document.addEventListener('DOMContentLoaded', function() {
     const productGrid = document.getElementById('productGrid');
