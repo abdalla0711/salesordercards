@@ -8,22 +8,21 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body style="visibility: hidden;">
-    <!-- Add these buttons for language switching -->
+<!-- Place these buttons where you want them, e.g., near the filter input -->
 <button id="langAr">العربية</button>
 <button id="langEn">English</button>
 
-<!-- Add this input field for comments inside your cart container -->
+<!-- Your existing product grid -->
+<div id="productGrid"></div>
+
+<!-- Your existing cart container with the comment input -->
 <div id="cartContainer">
-    <!-- ... your existing cart elements ... -->
+    <h2>Cart</h2>
     <div id="cartItems"></div>
     <p id="cartTotal"></p>
-    
-    <!-- ADD THIS INPUT FIELD -->
     <input type="text" id="cartComment" placeholder="Add comments here...">
-    
     <button id="copyButton" style="display:none;">Copy Cart</button>
 </div>
-
     <div class="frame-container">
         <div id="fixedArea">
             <b>Sales Order</b><br>
