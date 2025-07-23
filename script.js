@@ -14,14 +14,11 @@
     const userInput = prompt("Please enter the password:");
 
     if (userInput === correctPassword) {
-        // If correct, make the page visible.
         document.body.style.visibility = 'visible';
     } else {
-        // If incorrect, show an alert and do nothing else. The page remains hidden.
         alert("Incorrect password.");
     }
-})(); // The () at the end makes this function run automatically.
-
+})();
 
 // The rest of the script is wrapped in DOMContentLoaded to ensure the page is ready.
 document.addEventListener('DOMContentLoaded', function() {
@@ -42,13 +39,9 @@ document.addEventListener('DOMContentLoaded', function() {
     let cartTotal = 0;
     let currentLanguage = 'ar'; // Default language
 
-    // --- NEW: Robust Event Listeners for Language Buttons ---
-    if (langEnButton && langArButton) {
-        langEnButton.addEventListener('click', () => switchLanguage('en'));
-        langArButton.addEventListener('click', () => switchLanguage('ar'));
-    } else {
-        console.error("Language switch buttons not found in HTML. Ensure buttons with id='langEn' and id='langAr' exist.");
-    }
+    // --- Language Switch Listeners ---
+    langArButton.addEventListener('click', () => switchLanguage('ar'));
+    langEnButton.addEventListener('click', () => switchLanguage('en'));
 
     function switchLanguage(lang) {
         currentLanguage = lang;
@@ -57,7 +50,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function getItemName(product) {
-        // NOTE: Your Excel column must be exactly 'en_item_name' for this to work.
+        // This function decides which name to show based on the currentLanguage.
+        // It requires a column named 'en_item_name' in your Excel file.
         if (currentLanguage === 'en' && product['en_item_name']) {
             return product['en_item_name'];
         }
@@ -69,10 +63,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const productCode = square.dataset.productCode;
             const product = products.find(p => p['item code'] == productCode);
             if (product) {
+                // Update the visible name on the product card
                 square.querySelector('.card-content p:first-of-type').textContent = getItemName(product);
             }
         });
-        // Re-apply the current filter to match the new language's names
+        // Trigger the input event to re-filter the list with the new language names
         filterInput.dispatchEvent(new Event('input'));
     }
 
@@ -81,6 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const productCode = cartItem.dataset.productCode;
             const product = products.find(p => p['item code'] == productCode);
             if (product) {
+                // Update the visible name in the cart
                 cartItem.querySelector('.itemName').textContent = getItemName(product);
             }
         });
@@ -89,8 +85,9 @@ document.addEventListener('DOMContentLoaded', function() {
     function createProductSquare(product) {
         const square = document.createElement('div');
         square.className = 'productSquare';
+        // Store all necessary data on the element for easy access
         square.dataset.productCode = product['item code'];
-        square.dataset.productName = product['item name'] || ''; // Arabic name
+        square.dataset.productNameAr = product['item name'] || ''; // Arabic name
         square.dataset.productNameEn = product['en_item_name'] || ''; // English name
 
         const image = document.createElement('img');
@@ -104,25 +101,22 @@ document.addEventListener('DOMContentLoaded', function() {
         name.textContent = getItemName(product);
         contentDiv.appendChild(name);
 
+        // ... (rest of the price paragraphs are unchanged)
         const price1 = document.createElement('p');
         price1.textContent = `Ca = $${product['retail price Q']}`;
         contentDiv.appendChild(price1);
-
         const price2 = document.createElement('p');
         const cartoonPriceWithTax = parseFloat(product['retail price Q']) * 1.15;
         price2.textContent = `Ca + tax = $${cartoonPriceWithTax.toFixed(2)}`;
         contentDiv.appendChild(price2);
-
         const price3 = document.createElement('p');
         const eaPrice = parseFloat(product['retail price Q']) / parseInt(product['ea in ca']);
         price3.textContent = `Bund = $${eaPrice.toFixed(2)}`;
         contentDiv.appendChild(price3);
-
         const price4 = document.createElement('p');
         const eaPriceWithTax = cartoonPriceWithTax / parseInt(product['ea in ca']);
         price4.textContent = `Bund + Tax = $${eaPriceWithTax.toFixed(2)}`;
         contentDiv.appendChild(price4);
-
         square.appendChild(contentDiv);
 
         square.addEventListener('click', function() {
@@ -141,7 +135,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <span>${quantity}Ca | </span>
                     <span>${parseFloat(product[priceSelector.value]).toFixed(2)}SR | </span>
                     <span class="itemName">${getItemName(product)}</span>
-                    <button class="delete-btn">Delete</button>
+                    <button class="delete-btn">X</button>
                 `;
                 cartItemsContainer.appendChild(cartItem);
 
@@ -157,7 +151,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 renumberCartItems();
             }
         });
-
         return square;
     }
 
@@ -173,7 +166,6 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.productSquare').forEach(square => {
             const productCode = square.dataset.productCode;
             const product = products.find(p => p['item code'] == productCode);
-
             if (product) {
                 const price = parseFloat(product[selectedCategory]);
                 if (!isNaN(price)) {
@@ -203,10 +195,17 @@ document.addEventListener('DOMContentLoaded', function() {
         productGrid.innerHTML = '';
         products.length = 0;
 
+        // Ensure we have data and headers
+        if (!jsonData || jsonData.length === 0) {
+            console.error("Excel data is empty or could not be read.");
+            return;
+        }
         const headers = Object.keys(jsonData[0]);
+
         jsonData.forEach(product => {
+            // Filter out rows where 'stock quantity' is 0
             if (product['stock quantity'] !== undefined && Number(product['stock quantity']) === 0) {
-                return; // Hide row if stock quantity is 0
+                return; // Skip this product
             }
             products.push(product);
             const square = createProductSquare(product);
@@ -283,14 +282,15 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     filterInput.addEventListener('input', function() {
-        const val = filterInput.value.toLowerCase();
+        const val = this.value.toLowerCase();
         document.querySelectorAll('.productSquare').forEach(el => {
-            const name = el.dataset.productName.toLowerCase();
+            // Get both language names from the data attributes
+            const nameAr = el.dataset.productNameAr.toLowerCase();
             const nameEn = el.dataset.productNameEn.toLowerCase();
             const code = el.dataset.productCode.toLowerCase();
             
-            // Search will work across Arabic name, English name, and item code
-            const isVisible = name.includes(val) || nameEn.includes(val) || code.includes(val);
+            // Show if filter value matches Arabic name, English name, or item code
+            const isVisible = nameAr.includes(val) || nameEn.includes(val) || code.includes(val);
             el.style.display = isVisible ? 'block' : 'none';
         });
     });
