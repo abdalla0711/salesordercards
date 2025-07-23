@@ -49,7 +49,7 @@ body {
     border-radius: 12px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
     overflow: hidden;
-    text-align: left;
+    text-align: center;
     position: relative;
     border: none;
     padding: 0;
@@ -72,13 +72,13 @@ body {
 
 /* This is a new container for the text inside the card */
 .card-content {
-    padding: 15px;
+    padding: 5px;
 }
 
 /* --- Card Content --- */
 .productSquare p {
     margin: 0;
-    padding: 4px 0; /* Vertical padding only */
+    padding: 2px 0; /* Vertical padding only */
     background-color: transparent !important; /* Override inline styles from JS */
     font-weight: normal !important; /* Override inline styles from JS */
     color: #333;
@@ -86,10 +86,10 @@ body {
 
 /* Item Name */
 .card-content p:nth-of-type(1) {
-    font-size: .9rem;
+    font-size: .5rem;
     font-weight: bold !important;
     color: #000 !important;
-    padding-bottom: 10px;
+    padding-bottom: 5px;
 }
 
 /* Other text lines */
