@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const langArButton = document.getElementById('langAr');
     const priceSelector = document.createElement('select');
     priceSelector.id = 'priceSelector';
-    priceSelector.style.display = 'none'; // Droplist is hidden by default
+    priceSelector.style.display = 'none';
 
     // --- Create and Add Price Adjustment Controls ---
     const controlsContainer = filterInput.parentElement;
@@ -33,29 +33,27 @@ document.addEventListener('DOMContentLoaded', function() {
     decreaseButton.id = 'decreasePrice';
     decreaseButton.title = "Decrease prices by 1%";
 
-    // NEW: The display for the current percentage
     const percentageDisplay = document.createElement('span');
     percentageDisplay.id = 'percentageDisplay';
     percentageDisplay.style.margin = '0 10px';
     percentageDisplay.style.fontWeight = 'bold';
 
-
     controlsContainer.appendChild(decreaseButton);
-    controlsContainer.appendChild(percentageDisplay); // Add display between buttons
+    controlsContainer.appendChild(percentageDisplay);
     controlsContainer.appendChild(increaseButton);
-
 
     // --- Global State ---
     const products = [];
     let cartTotal = 0;
     let currentLanguage = 'ar';
     let englishButtonClickCount = 0;
-    let priceMultiplier = 1.10; // Start with the 10% increase
+    let priceMultiplier = 1.10; // For calculation, starts at +10%
+    let displayPercentage = 0; // NEW: For display only, starts at 0
 
     // --- Update the Percentage Display ---
     function updatePercentageDisplay() {
-        const percentage = (priceMultiplier - 1) * 100;
-        percentageDisplay.textContent = `Adjustment: ${percentage.toFixed(1)}%`;
+        let prefix = displayPercentage > 0 ? '+' : '';
+        percentageDisplay.textContent = `${prefix}${displayPercentage.toFixed(0)}%`;
     }
 
     // --- Language Switch Listeners ---
@@ -66,11 +64,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const password = prompt("Please enter the password to show original prices:");
             if (password === "20202030") {
                 priceSelector.style.display = 'block';
-                // Disable +/- buttons and hide display when original prices are shown
                 increaseButton.disabled = true;
                 decreaseButton.disabled = true;
                 percentageDisplay.style.display = 'none';
-                updateOriginalPrices(); // Immediately update to show original prices
+                updateOriginalPrices();
                 alert("Original prices unlocked!");
             } else {
                 alert("Incorrect password.");
@@ -82,24 +79,27 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- Price Multiplier Button Listeners ---
     increaseButton.addEventListener('click', () => {
-        if (priceMultiplier >= 2.0) { // Safety limit: max 100% increase
+        if (priceMultiplier >= 2.0) {
             alert("Maximum price increase limit reached.");
             return;
         }
         priceMultiplier += 0.01;
+        displayPercentage += 1; // Update display variable
         updateMultiplierPrices();
         updatePercentageDisplay();
     });
 
     decreaseButton.addEventListener('click', () => {
-        if (priceMultiplier <= 0.5) { // Safety limit: max 50% decrease
+        if (priceMultiplier <= 0.5) {
             alert("Minimum price limit reached.");
             return;
         }
-        priceMultiplier -= 0.01; // CORRECT LOGIC: just subtract 0.01
+        priceMultiplier -= 0.01;
+        displayPercentage -= 1; // Update display variable
         updateMultiplierPrices();
         updatePercentageDisplay();
     });
+
 
     function switchLanguage(lang) {
         currentLanguage = lang;
@@ -169,7 +169,6 @@ document.addEventListener('DOMContentLoaded', function() {
         name.textContent = getItemName(product);
         contentDiv.appendChild(name);
 
-        // Create price paragraphs
         for (let i = 0; i < 4; i++) {
             contentDiv.appendChild(document.createElement('p'));
         }
@@ -227,7 +226,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const priceWithTax = (caPrice * 1.15).toFixed(2);
         const eaPrice = (caPrice / eaInCaNum).toFixed(2);
         const eaWithTax = (caPrice * 1.15 / eaInCaNum).toFixed(2);
-
         const contentDiv = squareElement.querySelector('.card-content');
         contentDiv.querySelector('p:nth-of-type(2)').textContent = `Ca = ${caPrice.toFixed(2)} SR`;
         contentDiv.querySelector('p:nth-of-type(3)').textContent = `Ca + tax = ${priceWithTax} SR`;
@@ -286,8 +284,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!document.getElementById('priceSelector')) {
             document.getElementById('cartContainer').insertBefore(priceSelector, document.getElementById('cartItems'));
         }
-        // Set the initial percentage display when the page loads
-        updatePercentageDisplay();
+        updatePercentageDisplay(); // Set the initial "0%" text
     }
 
     fetch('PRICES.xlsx')
