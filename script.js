@@ -1,7 +1,10 @@
 // --- SCRIPT START ---
 
-// The rest of the script is wrapped in DOMContentLoaded to ensure the page is ready.
+// The script is wrapped in DOMContentLoaded to ensure the page is ready.
 document.addEventListener('DOMContentLoaded', function() {
+    // --- FIX: Make the page visible on load ---
+    document.body.style.visibility = 'visible';
+
     console.log("DOM fully loaded. Initializing script."); // DEBUG
 
     // --- Element Selectors ---
@@ -17,33 +20,39 @@ document.addEventListener('DOMContentLoaded', function() {
     priceSelector.id = 'priceSelector';
     priceSelector.style.display = 'none'; // Droplist is hidden by default
 
+    // --- Create and Add Price Adjustment Buttons ---
+    const controlsContainer = filterInput.parentElement; // Assuming filter is in a controls div
+    const increaseButton = document.createElement('button');
+    increaseButton.textContent = '+ 1%';
+    increaseButton.id = 'increasePrice';
+    increaseButton.style.marginLeft = '10px';
+
+    const decreaseButton = document.createElement('button');
+    decreaseButton.textContent = '- 1%';
+    decreaseButton.id = 'decreasePrice';
+
+    controlsContainer.appendChild(decreaseButton);
+    controlsContainer.appendChild(increaseButton);
+
+
     // --- Global State ---
     const products = [];
     let cartTotal = 0;
     let currentLanguage = 'ar'; // Default language
     let englishButtonClickCount = 0; // Counter for English button clicks
-
-    // --- DEBUG: Check if buttons are found ---
-    if (!langEnButton) {
-        console.error("English language button with id='langEn' was NOT found!");
-    }
-    if (!langArButton) {
-        console.error("Arabic language button with id='langAr' was NOT found!");
-    }
+    let priceMultiplier = 1.10; // Start with the 10% increase
 
     // --- Language Switch Listeners ---
-    langArButton.addEventListener('click', () => {
-        console.log("Arabic button clicked."); // DEBUG
-        switchLanguage('ar');
-    });
-
+    langArButton.addEventListener('click', () => switchLanguage('ar'));
     langEnButton.addEventListener('click', () => {
-        console.log("English button clicked."); // DEBUG
         englishButtonClickCount++;
-        if (englishButtonClickCount === 5) {
+        if (englishButtonClickCount >= 5) {
             const password = prompt("Please enter the password to show original prices:");
             if (password === "20202030") {
                 priceSelector.style.display = 'block';
+                // Disable +/- buttons when original prices are shown
+                increaseButton.disabled = true;
+                decreaseButton.disabled = true;
                 alert("Original prices unlocked!");
             } else {
                 alert("Incorrect password.");
@@ -53,27 +62,33 @@ document.addEventListener('DOMContentLoaded', function() {
         switchLanguage('en');
     });
 
+    // --- Price Multiplier Button Listeners ---
+    increaseButton.addEventListener('click', () => {
+        priceMultiplier += 0.01;
+        updateMultiplierPrices();
+    });
+
+    decreaseButton.addEventListener('click', () => {
+        // As requested, divide the current price by 1.01
+        priceMultiplier = priceMultiplier / 1.01;
+        updateMultiplierPrices();
+    });
+
 
     function switchLanguage(lang) {
-        console.log(`Attempting to switch language to: ${lang}`); // DEBUG
         currentLanguage = lang;
         updateProductLanguage();
         updateCartLanguage();
-        console.log(`Language switch to '${lang}' complete.`); // DEBUG
     }
 
     function getItemName(product) {
-        if (currentLanguage === 'en') {
-            const enName = product['en_item_name'];
-            if (enName) {
-                return enName;
-            }
+        if (currentLanguage === 'en' && product['en_item_name']) {
+            return product['en_item_name'];
         }
         return product['item name'];
     }
 
     function updateProductLanguage() {
-        console.log("Updating product grid language..."); // DEBUG
         document.querySelectorAll('.productSquare').forEach(square => {
             const productCode = square.dataset.productCode;
             const product = products.find(p => p['item code'] == productCode);
@@ -85,7 +100,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateCartLanguage() {
-        console.log("Updating cart language..."); // DEBUG
         document.querySelectorAll('.cartItem').forEach(cartItem => {
             const productCode = cartItem.dataset.productCode;
             const product = products.find(p => p['item code'] == productCode);
@@ -95,8 +109,37 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // --- This function updates prices based on the +/- multiplier ---
+    function updateMultiplierPrices() {
+        // This function should NOT run if the original prices are visible
+        if (priceSelector.style.display !== 'none') return;
+
+        document.querySelectorAll('.productSquare').forEach(square => {
+            const productCode = square.dataset.productCode;
+            const product = products.find(p => p['item code'] == productCode);
+            if (product) {
+                const basePrice = parseFloat(product['retail price Q']);
+                const newPrice = basePrice * priceMultiplier; // Use the global multiplier
+
+                if (!isNaN(newPrice)) {
+                    const eaInCa = parseInt(product['ea in ca']);
+                    const priceWithTax = (newPrice * 1.15).toFixed(2);
+                    const eaPrice = (newPrice / eaInCa).toFixed(2);
+                    const eaWithTax = (newPrice * 1.15 / eaInCa).toFixed(2);
+
+                    const contentDiv = square.querySelector('.card-content');
+                    contentDiv.querySelector('p:nth-of-type(2)').textContent = `Ca = ${newPrice.toFixed(2)} SR`;
+                    contentDiv.querySelector('p:nth-of-type(3)').textContent = `Ca + tax = ${priceWithTax} SR`;
+                    contentDiv.querySelector('p:nth-of-type(4)').textContent = `Bund = ${eaPrice} SR`;
+                    contentDiv.querySelector('p:nth-of-type(5)').textContent = `Bund + Tax = ${eaWithTax} SR`;
+                }
+            }
+        });
+    }
+
     function createProductSquare(product) {
         const square = document.createElement('div');
+        // ... (setting up square properties)
         square.className = 'productSquare';
         square.dataset.productCode = product['item code'];
         square.dataset.productNameAr = product['item name'] || '';
@@ -108,44 +151,40 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const contentDiv = document.createElement('div');
         contentDiv.className = 'card-content';
+        square.appendChild(contentDiv);
 
         const name = document.createElement('p');
         name.textContent = getItemName(product);
         contentDiv.appendChild(name);
 
+        // Initial price calculation uses the multiplier
         const basePrice = parseFloat(product['retail price Q']);
-        const initialPrice = basePrice * 1.10; // Add 10% to the initial price
+        const initialPrice = basePrice * priceMultiplier;
         const initialPriceWithTax = initialPrice * 1.15;
         const eaInCa = parseInt(product['ea in ca']);
         const initialEaPrice = initialPrice / eaInCa;
         const initialEaPriceWithTax = initialPriceWithTax / eaInCa;
 
-
         const price1 = document.createElement('p');
-        price1.textContent = `Ca = $${initialPrice.toFixed(2)}`;
+        price1.textContent = `Ca = ${initialPrice.toFixed(2)} SR`;
         contentDiv.appendChild(price1);
-
         const price2 = document.createElement('p');
-        price2.textContent = `Ca + tax = $${initialPriceWithTax.toFixed(2)}`;
+        price2.textContent = `Ca + tax = ${initialPriceWithTax.toFixed(2)} SR`;
         contentDiv.appendChild(price2);
-
         const price3 = document.createElement('p');
-        price3.textContent = `Bund = $${initialEaPrice.toFixed(2)}`;
+        price3.textContent = `Bund = ${initialEaPrice.toFixed(2)} SR`;
         contentDiv.appendChild(price3);
-
         const price4 = document.createElement('p');
-        price4.textContent = `Bund + Tax = $${initialEaPriceWithTax.toFixed(2)}`;
+        price4.textContent = `Bund + Tax = ${initialEaPriceWithTax.toFixed(2)} SR`;
         contentDiv.appendChild(price4);
-
-        square.appendChild(contentDiv);
 
         square.addEventListener('click', function() {
             const quantity = prompt('Enter the quantity:');
             if (quantity && !isNaN(quantity) && quantity > 0) {
-                // Determine the price to use: initial 10% markup or selected from droplist
                 let priceToUse;
-                if (priceSelector.style.display === 'none') {
-                    priceToUse = parseFloat(product['retail price Q']) * 1.10;
+                // Use multiplier price ONLY if original price droplist is hidden
+                if (priceSelector.style.display === 'none' || !priceSelector.value) {
+                    priceToUse = parseFloat(product['retail price Q']) * priceMultiplier;
                 } else {
                     priceToUse = parseFloat(product[priceSelector.value]);
                 }
@@ -185,8 +224,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function updatePrices() {
+    // --- This function updates prices based on the ORIGINAL Excel values ---
+    function updateOriginalPrices() {
         const selectedCategory = priceSelector.value;
+        if (!selectedCategory) return;
+
         document.querySelectorAll('.productSquare').forEach(square => {
             const productCode = square.dataset.productCode;
             const product = products.find(p => p['item code'] == productCode);
@@ -216,7 +258,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function loadProductsFromExcel(jsonData) {
-        console.log("Loading products from Excel data..."); // DEBUG
         productGrid.innerHTML = '';
         products.length = 0;
         if (!jsonData || jsonData.length === 0) {
@@ -225,11 +266,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         const headers = Object.keys(jsonData[0]);
-        console.log("Excel Headers Found:", headers);
-        if (!headers.includes('en_item_name')) {
-            console.warn("WARNING: The column 'en_item_name' was not found in the Excel file. English translation will not work.");
-        }
-
         jsonData.forEach(product => {
             if (product['stock quantity'] !== undefined && Number(product['stock quantity']) === 0) {
                 return;
@@ -240,46 +276,41 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         priceSelector.innerHTML = '';
-        for (let i = 1; i < headers.length; i++) {
-            const header = headers[i];
-             // Simple check if the header name suggests it's a price column
-            if (header.toLowerCase().includes('price')) {
+        headers.forEach(header => {
+            if (typeof jsonData[0][header] === 'number' && header !== 'item code' && header !== 'stock quantity' && header !== 'ea in ca') {
                 const option = document.createElement('option');
                 option.value = header;
                 option.textContent = header;
                 priceSelector.appendChild(option);
             }
-        }
+        });
 
-        priceSelector.addEventListener('change', updatePrices);
-
+        priceSelector.addEventListener('change', updateOriginalPrices);
 
         if (!document.getElementById('priceSelector')) {
             document.getElementById('cartContainer').insertBefore(priceSelector, document.getElementById('cartItems'));
         }
-        // No initial call to updatePrices(), so the 10% markup remains
     }
 
     fetch('PRICES.xlsx')
         .then(response => {
             if (!response.ok) throw new Error('File not found');
-            console.log("PRICES.xlsx fetched successfully."); // DEBUG
             return response.arrayBuffer();
         })
         .then(data => {
-            const workbook = XLSX.read(data, { type: 'array' });
+            const workbook = XLSX.read(data, {type: 'array'});
             const sheet = workbook.Sheets[workbook.SheetNames[0]];
             const jsonData = XLSX.utils.sheet_to_json(sheet);
             loadProductsFromExcel(jsonData);
         })
         .catch(err => {
-            console.error("Error fetching or processing Excel file:", err); // DEBUG
+            console.error("Error fetching or processing Excel file:", err);
             alert("لم يتم العثور على ملف الأسعار، اختره يدويًا.");
             fallbackFileInput.style.display = 'block';
             fallbackFileInput.addEventListener('change', function(e) {
                 const reader = new FileReader();
                 reader.onload = function(ev) {
-                    const workbook = XLSX.read(ev.target.result, { type: 'array' });
+                    const workbook = XLSX.read(ev.target.result, {type: 'array'});
                     const sheet = workbook.Sheets[workbook.SheetNames[0]];
                     const jsonData = XLSX.utils.sheet_to_json(sheet);
                     loadProductsFromExcel(jsonData);
@@ -302,18 +333,15 @@ document.addEventListener('DOMContentLoaded', function() {
             cartText += '\n\nComments:\n' + comment;
         }
 
-        // Copy to clipboard
         navigator.clipboard.writeText(cartText).then(() => {
             alert("تم نسخ محتوى السلة. سيتم الآن فتح واتساب.");
-
-            // Open WhatsApp
             const phoneNumber = "966550245871";
             const encodedCartText = encodeURIComponent(cartText);
             const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedCartText}`;
             window.open(whatsappUrl, '_blank');
         }).catch(err => {
-            console.error('Failed to copy cart: ', err);
-            alert("حدث خطأ أثناء نسخ السلة.");
+            console.error('Failed to copy or open WhatsApp: ', err);
+            alert("حدث خطأ أثناء النسخ.");
         });
     });
 
