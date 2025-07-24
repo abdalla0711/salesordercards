@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- FIX: Make the page visible on load ---
     document.body.style.visibility = 'visible';
 
-    console.log("DOM fully loaded. Initializing script."); // DEBUG
+    console.log("DOM fully loaded. Initializing script.");
 
     // --- Element Selectors ---
     const productGrid = document.getElementById('productGrid');
@@ -26,12 +26,12 @@ document.addEventListener('DOMContentLoaded', function() {
     increaseButton.textContent = '+';
     increaseButton.id = 'increasePrice';
     increaseButton.style.marginLeft = '10px';
-    increaseButton.title = "Increase prices by 1%";
+    increaseButton.title = "Increase prices by 5%"; // Updated title
 
     const decreaseButton = document.createElement('button');
     decreaseButton.textContent = '-';
     decreaseButton.id = 'decreasePrice';
-    decreaseButton.title = "Decrease prices by 1%";
+    decreaseButton.title = "Decrease prices by 5%"; // Updated title
 
     const percentageDisplay = document.createElement('span');
     percentageDisplay.id = 'percentageDisplay';
@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentLanguage = 'ar';
     let englishButtonClickCount = 0;
     let priceMultiplier = 1.10; // For calculation, starts at +10%
-    let displayPercentage = 0; // NEW: For display only, starts at 0
+    let displayPercentage = 0;   // For display only, starts at 0
 
     // --- Update the Percentage Display ---
     function updatePercentageDisplay() {
@@ -79,23 +79,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- Price Multiplier Button Listeners ---
     increaseButton.addEventListener('click', () => {
-        if (priceMultiplier >= 2.0) {
+        if (priceMultiplier >= 2.0) { // Safety limit: max 100% increase
             alert("Maximum price increase limit reached.");
             return;
         }
-        priceMultiplier += 0.01;
-        displayPercentage += 1; // Update display variable
+        priceMultiplier += 0.05;  // CHANGE: Adjust by 5%
+        displayPercentage += 5;   // CHANGE: Adjust display by 5
         updateMultiplierPrices();
         updatePercentageDisplay();
     });
 
     decreaseButton.addEventListener('click', () => {
-        if (priceMultiplier <= 0.5) {
+        if (priceMultiplier <= 0.5) { // Safety limit: max 50% decrease
             alert("Minimum price limit reached.");
             return;
         }
-        priceMultiplier -= 0.01;
-        displayPercentage -= 1; // Update display variable
+        priceMultiplier -= 0.05;  // CHANGE: Adjust by 5%
+        displayPercentage -= 5;   // CHANGE: Adjust display by 5
         updateMultiplierPrices();
         updatePercentageDisplay();
     });
@@ -293,7 +293,9 @@ document.addEventListener('DOMContentLoaded', function() {
             return response.arrayBuffer();
         })
         .then(data => {
-            const workbook = XLSX.read(data, {type: 'array'});
+            const workbook = XLSX.read(data, {
+                type: 'array'
+            });
             const sheet = workbook.Sheets[workbook.SheetNames[0]];
             const jsonData = XLSX.utils.sheet_to_json(sheet);
             loadProductsFromExcel(jsonData);
@@ -305,7 +307,9 @@ document.addEventListener('DOMContentLoaded', function() {
             fallbackFileInput.addEventListener('change', function(e) {
                 const reader = new FileReader();
                 reader.onload = function(ev) {
-                    const workbook = XLSX.read(ev.target.result, {type: 'array'});
+                    const workbook = XLSX.read(ev.target.result, {
+                        type: 'array'
+                    });
                     const sheet = workbook.Sheets[workbook.SheetNames[0]];
                     const jsonData = XLSX.utils.sheet_to_json(sheet);
                     loadProductsFromExcel(jsonData);
