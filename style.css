@@ -182,3 +182,28 @@ body {
     /* Removes any space inside the element's border */
     padding: 0; 
 }
+/* ============================================== */
+/*    FORCE RESPONSIVE PLACEHOLDER FONT SIZE      */
+/* ============================================== */
+
+/* This targets screens 480px or smaller (like phones) */
+@media (max-width: 480px) {
+
+    /* 
+      This is a more robust way to target the placeholder.
+      It uses multiple browser prefixes to ensure compatibility.
+      The !important flag forces the style to be applied over others.
+    */
+    #filterInput::-webkit-input-placeholder { /* For Chrome, Safari, Opera */
+       font-size: 12px !important;
+    }
+    #filterInput::-moz-placeholder { /* For Firefox */
+       font-size: 12px !important;
+    }
+    #filterInput:-ms-input-placeholder { /* For Internet Explorer */
+       font-size: 12px !important;
+    }
+    #filterInput:-moz-placeholder { /* For older Firefox */
+       font-size: 12px !important;
+    }
+}
