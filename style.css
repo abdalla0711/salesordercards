@@ -38,7 +38,8 @@ body {
 /* --- Product Grid --- */
 #productGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    /* --- EDIT: Changed minmax to 160px to ensure at least two columns on mobile --- */
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     grid-gap: 25px;
     margin-top: 20px;
 }
@@ -90,6 +91,10 @@ body {
     font-weight: bold !important;
     color: #000 !important;
     padding-bottom: 5px;
+    /* --- EDIT: Added styles to make the item name fit correctly --- */
+    word-wrap: break-word;      /* Allows long words to break and wrap */
+    overflow-wrap: break-word;  /* Another property for word wrapping */
+    min-height: 2.5em;          /* Reserves space to prevent card size shifts */
 }
 
 /* Other text lines */
@@ -145,4 +150,19 @@ body {
     font-size: 1rem;
     padding: 10px;
     margin-bottom: 15px;
+}
+
+/* --- EDIT: Added new styles for original and edited prices --- */
+/* Style for the original price (strikethrough) */
+.original-price {
+    text-decoration: line-through;
+    color: #dc3545; /* A reddish color */
+    margin-right: 8px;
+    font-weight: normal !important; /* Override parent bolding */
+}
+
+/* Style for the new/current price */
+.new-price {
+    color: #28a745; /* A greenish color */
+    font-weight: bold !important; /* Ensure it's bold */
 }
