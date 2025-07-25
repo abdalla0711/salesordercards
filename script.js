@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const translations = {
         en: {
             mainTitle: "Eagle Store",
-            filterPlaceholder: "Search by name or code...",
+            filterPlaceholder: "You can register the item by clicking on it, entering the quantity, and repeating this until you finish. The items will be below. By clicking on the green button at the end of the page, the order will be sent to the company.",
             priceCa: "Ca",
             priceCaTax: "Ca + tax",
             priceBund: "Bund",
@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         ar: {
             mainTitle: "متجر ايجل",
-            filterPlaceholder: "البحث بالاسم أو الكود...",
+            filterPlaceholder: "يمكنك تسجيل الصنف بالضغط عليه وادخال الكميه وتكرار ذالك حتى تنتهي ، ستكون الاصناف بالاسفل ، بالضغط على الزر الاخضر في نهاية الصفحه سيتم ارسال الطلبيه للشركه",
             priceCa: "الكرتون",
             priceCaTax: "الكرتون+الضريبة",
             priceBund: "الشد",
