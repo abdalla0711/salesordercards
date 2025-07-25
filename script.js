@@ -22,7 +22,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const increaseButton = document.createElement('button');
     increaseButton.textContent = '+';
     increaseButton.id = 'increasePrice';
-    increaseButton.style.marginLeft = '10px';
 
     const decreaseButton = document.createElement('button');
     decreaseButton.textContent = '-';
@@ -33,9 +32,17 @@ document.addEventListener('DOMContentLoaded', function() {
     percentageDisplay.style.margin = '0 10px';
     percentageDisplay.style.fontWeight = 'bold';
 
+    const markupDots = document.createElement('span');
+    markupDots.id = 'markupDots';
+    markupDots.style.marginLeft = '4px';
+    markupDots.style.color = '#0056b3';
+    markupDots.style.fontSize = '1.2rem';
+    markupDots.style.verticalAlign = 'middle';
+
     controlsContainer.appendChild(decreaseButton);
     controlsContainer.appendChild(percentageDisplay);
     controlsContainer.appendChild(increaseButton);
+    controlsContainer.appendChild(markupDots);
 
     // --- Global State ---
     const products = [];
@@ -44,55 +51,16 @@ document.addEventListener('DOMContentLoaded', function() {
     let englishButtonClickCount = 0;
     let priceMultiplier = 1.10;
     let displayPercentage = 0;
-    // --- CUSTOMER MODE: New variables to track the special mode ---
+
+    // --- FINAL TRICK: State variables for the new logic ---
     let isCustomerMode = false;
-    let customerMarkupClicks = 0;
+    let isDiscounting = false;      // Are we actively applying a discount?
+    let discountBaseMultiplier = 1.0; // The price level when '-' was first clicked
+    let customerMarkupClicks = 0;   // How many times '+' was clicked in customer mode
 
     const translations = {
-        en: {
-            mainTitle: "Eagle Store",
-            filterPlaceholder: "You can register the item by clicking on it, entering the quantity, and repeating this until you finish. The items will be below. By clicking on the green button at the end of the page, the order will be sent to the company.",
-            priceCa: "Ca",
-            priceCaTax: "Ca + tax",
-            priceBund: "Bund",
-            priceBundTax: "Bund + Tax",
-            increaseTitle: "Increase prices by 5%",
-            decreaseTitle: "Decrease prices by 5%",
-            unlockPasswordPrompt: "Please enter the password to show original prices:",
-            unlockedAlert: "Original prices unlocked!",
-            incorrectPasswordAlert: "Incorrect password.",
-            maxLimitAlert: "Maximum price increase limit reached.",
-            minLimitAlert: "Minimum price limit reached.",
-            quantityPrompt: "Enter the quantity:",
-            cartTotalText: "Total with tax",
-            copyButtonText: "Copy Order & Open WhatsApp",
-            copySuccessAlert: "Cart content copied. WhatsApp will now open.",
-            copyErrorAlert: "An error occurred while copying.",
-            fileNotFoundAlert: "Price file not found, please select it manually.",
-            commentsLabel: "Comments:"
-        },
-        ar: {
-            mainTitle: "متجر ايجل",
-            filterPlaceholder: "يمكنك تسجيل الصنف بالضغط عليه وادخال الكميه وتكرار ذالك حتى تنتهي ، ستكون الاصناف بالاسفل ، بالضغط على الزر الاخضر في نهاية الصفحه سيتم ارسال الطلبيه للشركه",
-            priceCa: "الكرتون",
-            priceCaTax: "الكرتون+الضريبة",
-            priceBund: "الشد",
-            priceBundTax: "الشد+الضريبة",
-            increaseTitle: "زيادة الأسعار بنسبة 5%",
-            decreaseTitle: "تخفيض الأسعار بنسبة 5%",
-            unlockPasswordPrompt: "الرجاء إدخال كلمة المرور لعرض الأسعار الأصلية:",
-            unlockedAlert: "تم عرض الأسعار الأصلية!",
-            incorrectPasswordAlert: "كلمة مرور غير صحيحة.",
-            maxLimitAlert: "تم الوصول إلى الحد الأقصى لزيادة السعر.",
-            minLimitAlert: "تم الوصول إلى الحد الأدنى لتخفيض السعر.",
-            quantityPrompt: "أدخل الكمية:",
-            cartTotalText: "الإجمالي مع الضريبة",
-            copyButtonText: "نسخ الطلب وفتح واتساب",
-            copySuccessAlert: "تم نسخ محتوى السلة. سيتم الآن فتح واتساب.",
-            copyErrorAlert: "حدث خطأ أثناء النسخ.",
-            fileNotFoundAlert: "لم يتم العثور على ملف الأسعار، اختره يدويًا.",
-            commentsLabel: "ملاحظات:"
-        }
+        en: { mainTitle: "Eagle Store", filterPlaceholder: "You can register the item by clicking on it...", priceCa: "Ca", priceCaTax: "Ca + tax", priceBund: "Bund", priceBundTax: "Bund + Tax", increaseTitle: "Increase prices by 5%", decreaseTitle: "Decrease prices by 5%", unlockPasswordPrompt: "Please enter the password...", unlockedAlert: "Original prices unlocked!", incorrectPasswordAlert: "Incorrect password.", maxLimitAlert: "Max price limit reached.", minLimitAlert: "Min price limit reached.", quantityPrompt: "Enter the quantity:", cartTotalText: "Total with tax", copyButtonText: "Copy & Open WhatsApp", copySuccessAlert: "Cart copied. WhatsApp opening...", copyErrorAlert: "Copy error.", fileNotFoundAlert: "Price file not found.", commentsLabel: "Comments:" },
+        ar: { mainTitle: "متجر ايجل", filterPlaceholder: "يمكنك تسجيل الصنف بالضغط عليه وادخال الكميه...", priceCa: "الكرتون", priceCaTax: "الكرتون+الضريبة", priceBund: "الشد", priceBundTax: "الشد+الضريبة", increaseTitle: "زيادة الأسعار 5%", decreaseTitle: "تخفيض الأسعار 5%", unlockPasswordPrompt: "الرجاء إدخال كلمة المرور:", unlockedAlert: "تم عرض الأسعار الأصلية!", incorrectPasswordAlert: "كلمة مرور غير صحيحة.", maxLimitAlert: "تم الوصول للحد الأعلى للسعر.", minLimitAlert: "تم الوصول للحد الأدنى للسعر.", quantityPrompt: "أدخل الكمية:", cartTotalText: "الإجمالي مع الضريبة", copyButtonText: "نسخ الطلب وفتح واتساب", copySuccessAlert: "تم نسخ السلة. سيتم فتح واتساب.", copyErrorAlert: "حدث خطأ.", fileNotFoundAlert: "ملف الأسعار غير موجود.", commentsLabel: "ملاحظات:" }
     };
 
     function updateUIText() {
@@ -104,16 +72,20 @@ document.addEventListener('DOMContentLoaded', function() {
         copyButton.textContent = lang.copyButtonText;
     }
 
-    // --- CUSTOMER MODE: This function now shows dots when needed ---
     function updatePercentageDisplay() {
-        // If in customer mode AND we have clicked +, show dots instead of percentage
-        if (isCustomerMode && customerMarkupClicks > 0) {
-            percentageDisplay.textContent = '•'.repeat(customerMarkupClicks);
-        } else {
-            // Otherwise, show the normal percentage
-            let prefix = displayPercentage >= 0 ? '+' : '';
-            percentageDisplay.textContent = `${prefix}${displayPercentage.toFixed(0)}%`;
-        }
+        // This function now ONLY shows the percentage. It does not handle dots.
+        let prefix = displayPercentage >= 0 ? '+' : '';
+        percentageDisplay.textContent = `${prefix}${displayPercentage.toFixed(0)}%`;
+    }
+
+    function resetAllPricingStates() {
+        isCustomerMode = false;
+        isDiscounting = false;
+        customerMarkupClicks = 0;
+        markupDots.textContent = '';
+        priceMultiplier = 1.10;
+        displayPercentage = 0;
+        updatePercentageDisplay();
     }
 
     langArButton.addEventListener('click', () => switchLanguage('ar'));
@@ -122,14 +94,14 @@ document.addEventListener('DOMContentLoaded', function() {
         if (englishButtonClickCount >= 5) {
             const password = prompt(translations[currentLanguage].unlockPasswordPrompt);
             if (password === "20202030") {
-                // --- CUSTOMER MODE: Activate the special mode ---
                 isCustomerMode = true;
-                customerMarkupClicks = 0; // Reset dot counter
-
                 priceSelector.style.display = 'block';
                 increaseButton.disabled = false;
                 decreaseButton.disabled = false;
-                percentageDisplay.style.display = 'inline-block';
+                // Reset to a clean slate for the customer
+                isDiscounting = false;
+                customerMarkupClicks = 0;
+                markupDots.textContent = '';
                 priceMultiplier = 1.0;
                 displayPercentage = 0;
                 updatePercentageDisplay();
@@ -143,39 +115,42 @@ document.addEventListener('DOMContentLoaded', function() {
         switchLanguage('en');
     });
 
-    // --- CUSTOMER MODE: The '+' button has special logic now ---
+    // --- FINAL TRICK: Updated '+' button logic ---
     increaseButton.addEventListener('click', () => {
-        if (priceMultiplier >= 2.0) {
-            alert(translations[currentLanguage].maxLimitAlert);
-            return;
-        }
+        if (priceMultiplier >= 2.0) { alert(translations[currentLanguage].maxLimitAlert); return; }
         
-        priceMultiplier += 0.05;
-
-        if (isCustomerMode) {
-            // In customer mode, we only count clicks for the dots
-            customerMarkupClicks++;
-        } else {
-            // In normal mode, we change the percentage
-            displayPercentage += 5;
+        // If we were discounting, clicking '+' resets everything back to markup mode.
+        if (isDiscounting) {
+            isDiscounting = false;
+            displayPercentage = 0; // Reset percentage to +0%
+            updatePercentageDisplay();
         }
 
+        priceMultiplier += 0.05;
+        if (isCustomerMode) {
+            customerMarkupClicks++;
+            markupDots.textContent = '•'.repeat(customerMarkupClicks);
+        } else {
+            displayPercentage += 5;
+            updatePercentageDisplay();
+        }
         updateMultiplierPrices();
-        updatePercentageDisplay();
     });
 
-    // --- CUSTOMER MODE: The '-' button resets the special '+' clicks ---
+    // --- FINAL TRICK: Updated '-' button logic ---
     decreaseButton.addEventListener('click', () => {
-        if (priceMultiplier <= 0.55) {
-            alert(translations[currentLanguage].minLimitAlert);
-            return;
+        if (priceMultiplier <= 0.55) { alert(translations[currentLanguage].minLimitAlert); return; }
+        
+        // If this is the FIRST time clicking '-', lock in the current price as the new base.
+        if (isCustomerMode && !isDiscounting) {
+            isDiscounting = true;
+            discountBaseMultiplier = priceMultiplier; // Lock the current multiplier
         }
         
-        // If we are applying a discount, it overrides any hidden markup
-        if(isCustomerMode) {
-            customerMarkupClicks = 0;
-        }
-
+        // If we were adding markup, clicking '-' clears the dots.
+        customerMarkupClicks = 0;
+        markupDots.textContent = '';
+        
         priceMultiplier -= 0.05;
         displayPercentage -= 5;
         updateMultiplierPrices();
@@ -191,9 +166,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function getItemName(product) {
-        if (currentLanguage === 'en' && product['en_item_name']) {
-            return product['en_item_name'];
-        }
+        if (currentLanguage === 'en' && product['en_item_name']) return product['en_item_name'];
         return product['item name'];
     }
 
@@ -201,9 +174,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.productSquare').forEach(square => {
             const productCode = square.dataset.productCode;
             const product = products.find(p => p['item code'] == productCode);
-            if (product) {
-                square.querySelector('.card-content p:first-of-type').textContent = getItemName(product);
-            }
+            if (product) square.querySelector('.card-content p:first-of-type').textContent = getItemName(product);
         });
         filterInput.dispatchEvent(new Event('input'));
     }
@@ -212,9 +183,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.cartItem').forEach(cartItem => {
             const productCode = cartItem.dataset.productCode;
             const product = products.find(p => p['item code'] == productCode);
-            if (product) {
-                cartItem.querySelector('.itemName').textContent = getItemName(product);
-            }
+            if (product) cartItem.querySelector('.itemName').textContent = getItemName(product);
         });
     }
 
@@ -229,7 +198,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     basePrice = parseFloat(product['retail price Q']);
                 }
-
                 if (!isNaN(basePrice)) {
                     const newPrice = basePrice * priceMultiplier;
                     updateProductCardPrices(square, newPrice, product['ea in ca']);
@@ -244,51 +212,32 @@ document.addEventListener('DOMContentLoaded', function() {
         square.dataset.productCode = product['item code'];
         square.dataset.productNameAr = product['item name'] || '';
         square.dataset.productNameEn = product['en_item_name'] || '';
-
         const image = document.createElement('img');
         image.src = product['image_ulr'] || 'https://via.placeholder.com/300x200.png?text=No+Image';
         square.appendChild(image);
-
         const contentDiv = document.createElement('div');
         contentDiv.className = 'card-content';
         square.appendChild(contentDiv);
-
         const name = document.createElement('p');
         name.textContent = getItemName(product);
         contentDiv.appendChild(name);
-
-        for (let i = 0; i < 4; i++) {
-            contentDiv.appendChild(document.createElement('p'));
-        }
-
+        for (let i = 0; i < 4; i++) contentDiv.appendChild(document.createElement('p'));
         const basePrice = parseFloat(product['retail price Q']);
         const initialPrice = basePrice * priceMultiplier;
         updateProductCardPrices(square, initialPrice, product['ea in ca']);
-
         square.addEventListener('click', function() {
             const quantity = prompt(translations[currentLanguage].quantityPrompt);
             if (quantity && !isNaN(quantity) && quantity > 0) {
                 let basePrice;
-                if (priceSelector.style.display !== 'none' && priceSelector.value) {
-                    basePrice = parseFloat(product[priceSelector.value]);
-                } else {
-                    basePrice = parseFloat(product['retail price Q']);
-                }
+                if (priceSelector.style.display !== 'none' && priceSelector.value) basePrice = parseFloat(product[priceSelector.value]);
+                else basePrice = parseFloat(product['retail price Q']);
                 const priceToUse = basePrice * priceMultiplier;
-
                 const itemTotal = priceToUse * quantity;
                 const cartItem = document.createElement('div');
                 cartItem.className = 'cartItem';
                 cartItem.dataset.productCode = product['item code'];
                 cartItem.dataset.itemTotal = itemTotal;
-                cartItem.innerHTML = `
-                    <span class="cartLineNumber"></span>
-                    <span>${product['item code']} | </span>
-                    <span>${quantity}Ca | </span>
-                    <span>${priceToUse.toFixed(2)}SR | </span>
-                    <span class="itemName">${getItemName(product)}</span>
-                    <button class="delete-btn">X</button>
-                `;
+                cartItem.innerHTML = `<span class="cartLineNumber"></span><span>${product['item code']} | </span><span>${quantity}Ca | </span><span>${priceToUse.toFixed(2)}SR | </span><span class="itemName">${getItemName(product)}</span><button class="delete-btn">X</button>`;
                 cartItemsContainer.appendChild(cartItem);
                 cartItem.querySelector('.delete-btn').addEventListener('click', function() {
                     cartTotal -= parseFloat(cartItem.dataset.itemTotal);
@@ -306,33 +255,36 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function renumberCartItems() {
         const items = cartItemsContainer.getElementsByClassName('cartItem');
-        for (let i = 0; i < items.length; i++) {
-            items[i].querySelector('.cartLineNumber').textContent = `${i + 1}. `;
-        }
+        for (let i = 0; i < items.length; i++) items[i].querySelector('.cartLineNumber').textContent = `${i + 1}. `;
     }
     
-    // --- CUSTOMER MODE: Logic to show/hide the red price is updated here ---
+    // --- FINAL TRICK: The core logic for displaying prices is all here ---
     function updateProductCardPrices(squareElement, newCaPrice, eaInCa) {
         const productCode = squareElement.dataset.productCode;
         const product = products.find(p => p['item code'] == productCode);
         if (!product) return;
 
-        let basePriceForComparison;
-        if (priceSelector.style.display !== 'none' && priceSelector.value) {
-            basePriceForComparison = parseFloat(product[priceSelector.value]);
-        } else {
-            basePriceForComparison = parseFloat(product['retail price Q']) * 1.10;
-        }
-
+        const trueBasePrice = parseFloat(product[priceSelector.style.display !== 'none' && priceSelector.value ? priceSelector.value : 'retail price Q']);
         const eaInCaNum = parseInt(eaInCa);
-        const baseEaPriceForComparison = basePriceForComparison / eaInCaNum;
         const newEaPrice = newCaPrice / eaInCaNum;
 
-        const generatePriceHTML = (basePrice, currentPrice) => {
-            // The condition to show the original price is now more specific:
-            // Show it if we are applying a discount (negative percentage), OR if we are NOT in customer mode and there's any change.
-            const showOriginal = displayPercentage < 0 || (!isCustomerMode && displayPercentage !== 0);
+        let basePriceForComparison;
+        let showOriginal = false;
 
+        if (isCustomerMode && isDiscounting) {
+            // If discounting, the red price is the "locked" price.
+            basePriceForComparison = trueBasePrice * discountBaseMultiplier;
+            showOriginal = true;
+        } else if (!isCustomerMode && displayPercentage !== 0) {
+            // In public view, the red price is the initial marked-up price.
+            basePriceForComparison = trueBasePrice * 1.10;
+            showOriginal = true;
+        }
+        // In all other cases (like adding markup in customer mode), showOriginal remains false.
+
+        const baseEaPriceForComparison = basePriceForComparison / eaInCaNum;
+
+        const generatePriceHTML = (basePrice, currentPrice) => {
             if (showOriginal) {
                 return `<span class="original-price">${basePrice.toFixed(2)}</span> <span class="new-price">${currentPrice.toFixed(2)} SR</span>`;
             } else {
@@ -376,7 +328,6 @@ document.addEventListener('DOMContentLoaded', function() {
         productGrid.innerHTML = '';
         products.length = 0;
         if (!jsonData || jsonData.length === 0) return;
-        
         const headers = Object.keys(jsonData[0]);
         jsonData.forEach(product => {
             if (product['stock quantity'] !== undefined && Number(product['stock quantity']) === 0) return;
@@ -384,7 +335,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const square = createProductSquare(product);
             productGrid.appendChild(square);
         });
-
         priceSelector.innerHTML = '';
         headers.forEach(header => {
             if (typeof jsonData[0][header] === 'number' && header.toLowerCase().includes('price')) {
@@ -394,32 +344,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 priceSelector.appendChild(option);
             }
         });
-        if (priceSelector.querySelector('[value="retail price Q"]')) {
-            priceSelector.value = 'retail price Q';
-        }
-
+        if (priceSelector.querySelector('[value="retail price Q"]')) priceSelector.value = 'retail price Q';
         priceSelector.addEventListener('change', () => {
-            // --- CUSTOMER MODE: Reset dot counter when changing price list ---
+            isDiscounting = false;
             customerMarkupClicks = 0;
+            markupDots.textContent = '';
             priceMultiplier = 1.0;
             displayPercentage = 0;
             updatePercentageDisplay();
             updateOriginalPrices();
         });
-
-        if (!document.getElementById('priceSelector')) {
-            document.getElementById('cartContainer').insertBefore(priceSelector, document.getElementById('cartItems'));
-        }
-
+        if (!document.getElementById('priceSelector')) document.getElementById('cartContainer').insertBefore(priceSelector, document.getElementById('cartItems'));
         switchLanguage(currentLanguage);
         updatePercentageDisplay();
     }
 
     fetch('PRICES.xlsx')
-        .then(response => {
-            if (!response.ok) throw new Error('File not found');
-            return response.arrayBuffer();
-        })
+        .then(response => { if (!response.ok) throw new Error('File not found'); return response.arrayBuffer(); })
         .then(data => {
             const workbook = XLSX.read(data, { type: 'array' });
             const sheet = workbook.Sheets[workbook.SheetNames[0]];
@@ -446,15 +387,12 @@ document.addEventListener('DOMContentLoaded', function() {
     copyButton.addEventListener('click', function() {
         let cartText = '';
         document.querySelectorAll('.cartItem').forEach(item => {
-            const tempItem = item.cloneNode(true);
-            tempItem.querySelector('.delete-btn').remove();
+            const tempItem = item.cloneNode(true); tempItem.querySelector('.delete-btn').remove();
             cartText += tempItem.innerText.replace(/\s+/g, ' ').trim() + '\n';
         });
         cartText += '\n' + document.getElementById('cartTotal').textContent;
         const comment = cartCommentInput.value.trim();
-        if (comment) {
-            cartText += `\n\n${translations[currentLanguage].commentsLabel}\n` + comment;
-        }
+        if (comment) cartText += `\n\n${translations[currentLanguage].commentsLabel}\n` + comment;
         navigator.clipboard.writeText(cartText).then(() => {
             alert(translations[currentLanguage].copySuccessAlert);
             const phoneNumber = "966550245871";
