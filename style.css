@@ -172,3 +172,10 @@ body {
 .hidden {
     display: none !important;
 }
+#mainTitle {
+    /* Removes the default space outside the element (most important) */
+    margin: 0;
+
+    /* Removes any space inside the element's border */
+    padding: 0; 
+}
