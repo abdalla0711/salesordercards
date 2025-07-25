@@ -26,12 +26,12 @@ document.addEventListener('DOMContentLoaded', function() {
     increaseButton.textContent = '+';
     increaseButton.id = 'increasePrice';
     increaseButton.style.marginLeft = '10px';
-    increaseButton.title = "Increase prices by 5%"; // Updated title
+    increaseButton.title = "Increase prices by 5%";
 
     const decreaseButton = document.createElement('button');
     decreaseButton.textContent = '-';
     decreaseButton.id = 'decreasePrice';
-    decreaseButton.title = "Decrease prices by 5%"; // Updated title
+    decreaseButton.title = "Decrease prices by 5%";
 
     const percentageDisplay = document.createElement('span');
     percentageDisplay.id = 'percentageDisplay';
@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentLanguage = 'ar';
     let englishButtonClickCount = 0;
     let priceMultiplier = 1.10; // For calculation, starts at +10%
-    let displayPercentage = 0;   // For display only, starts at 0
+    let displayPercentage = 10;   // For display, starts at +10% to match multiplier
 
     // --- Update the Percentage Display ---
     function updatePercentageDisplay() {
@@ -83,8 +83,8 @@ document.addEventListener('DOMContentLoaded', function() {
             alert("Maximum price increase limit reached.");
             return;
         }
-        priceMultiplier += 0.05;  // CHANGE: Adjust by 5%
-        displayPercentage += 5;   // CHANGE: Adjust display by 5
+        priceMultiplier += 0.05;
+        displayPercentage += 5;
         updateMultiplierPrices();
         updatePercentageDisplay();
     });
@@ -94,12 +94,11 @@ document.addEventListener('DOMContentLoaded', function() {
             alert("Minimum price limit reached.");
             return;
         }
-        priceMultiplier -= 0.05;  // CHANGE: Adjust by 5%
-        displayPercentage -= 5;   // CHANGE: Adjust display by 5
+        priceMultiplier -= 0.05;
+        displayPercentage -= 5;
         updateMultiplierPrices();
         updatePercentageDisplay();
     });
-
 
     function switchLanguage(lang) {
         currentLanguage = lang;
@@ -221,17 +220,41 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function updateProductCardPrices(squareElement, caPrice, eaInCa) {
+    /**
+     * --- MODIFIED FUNCTION ---
+     * This function now displays both the original and the new price when
+     * they are different, using the CSS classes .original-price and .new-price.
+     */
+    function updateProductCardPrices(squareElement, newCaPrice, eaInCa) {
+        // Find the original product from the global list
+        const productCode = squareElement.dataset.productCode;
+        const product = products.find(p => p['item code'] == productCode);
+        if (!product) return; // Safety check
+
+        // Get original prices
+        const originalCaPrice = parseFloat(product['retail price Q']);
         const eaInCaNum = parseInt(eaInCa);
-        const priceWithTax = (caPrice * 1.15).toFixed(2);
-        const eaPrice = (caPrice / eaInCaNum).toFixed(2);
-        const eaWithTax = (caPrice * 1.15 / eaInCaNum).toFixed(2);
+        const originalEaPrice = originalCaPrice / eaInCaNum;
+
+        // A helper function to generate the price HTML
+        const generatePriceHTML = (originalPrice, newPrice) => {
+            // Only show both prices if they are different
+            if (originalPrice.toFixed(2) !== newPrice.toFixed(2)) {
+                return `<span class="original-price">${originalPrice.toFixed(2)}</span> <span class="new-price">${newPrice.toFixed(2)} SR</span>`;
+            } else {
+                return `<span class="new-price">${newPrice.toFixed(2)} SR</span>`;
+            }
+        };
+
         const contentDiv = squareElement.querySelector('.card-content');
-        contentDiv.querySelector('p:nth-of-type(2)').textContent = `Ca = ${caPrice.toFixed(2)} SR`;
-        contentDiv.querySelector('p:nth-of-type(3)').textContent = `Ca + tax = ${priceWithTax} SR`;
-        contentDiv.querySelector('p:nth-of-type(4)').textContent = `Bund = ${eaPrice} SR`;
-        contentDiv.querySelector('p:nth-of-type(5)').textContent = `Bund + Tax = ${eaWithTax} SR`;
+        
+        // Update card with new HTML content
+        contentDiv.querySelector('p:nth-of-type(2)').innerHTML = `Ca = ${generatePriceHTML(originalCaPrice, newCaPrice)}`;
+        contentDiv.querySelector('p:nth-of-type(3)').innerHTML = `Ca + tax = ${generatePriceHTML(originalCaPrice * 1.15, newCaPrice * 1.15)}`;
+        contentDiv.querySelector('p:nth-of-type(4)').innerHTML = `Bund = ${generatePriceHTML(originalEaPrice, newCaPrice / eaInCaNum)}`;
+        contentDiv.querySelector('p:nth-of-type(5)').innerHTML = `Bund + Tax = ${generatePriceHTML(originalEaPrice * 1.15, (newCaPrice / eaInCaNum) * 1.15)}`;
     }
+
 
     function updateOriginalPrices() {
         const selectedCategory = priceSelector.value;
@@ -284,7 +307,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!document.getElementById('priceSelector')) {
             document.getElementById('cartContainer').insertBefore(priceSelector, document.getElementById('cartItems'));
         }
-        updatePercentageDisplay(); // Set the initial "0%" text
+        updatePercentageDisplay(); // Set the initial percentage display
     }
 
     fetch('PRICES.xlsx')
