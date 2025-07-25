@@ -338,12 +338,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function updateCartTotal() {
-        const cartTotalElement = document.getElementById('cartTotal');
-        const cartTotalWithTax = cartTotal * 1.15;
-        cartTotalElement.textContent = `${translations[currentLanguage].cartTotalText}: ${cartTotalWithTax.toFixed(2)} SR`;
-    }
+// REPLACE THE OLD FUNCTION WITH THIS NEW ONE
+function updateCartTotal() {
+    const cartTotalElement = document.getElementById('cartTotal');
+    const cartTotalWithTax = cartTotal * 1.15;
+    cartTotalElement.textContent = `${translations[currentLanguage].cartTotalText}: ${cartTotalWithTax.toFixed(2)} SR`;
 
+    // This is the new, more reliable line that shows and hides the button.
+    copyButton.classList.toggle('hidden', cartTotal <= 0);
+}
+    
     function loadProductsFromExcel(jsonData) {
         productGrid.innerHTML = '';
         products.length = 0;
