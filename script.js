@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentLanguage = 'ar';
     let englishButtonClickCount = 0;
     let priceMultiplier = 1.10; // For calculation, starts at +10%
-    let displayPercentage = 10;   // For display, starts at +10% to match multiplier
+    let displayPercentage = 10; // For display, starts at +10%
 
     // --- Update the Percentage Display ---
     function updatePercentageDisplay() {
@@ -64,10 +64,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const password = prompt("Please enter the password to show original prices:");
             if (password === "20202030") {
                 priceSelector.style.display = 'block';
-                increaseButton.disabled = true;
-                decreaseButton.disabled = true;
-                percentageDisplay.style.display = 'none';
-                updateOriginalPrices();
+                // --- EDIT: Enable the +/- buttons and percentage display ---
+                increaseButton.disabled = false;
+                decreaseButton.disabled = false;
+                percentageDisplay.style.display = 'inline-block'; // Show percentage
+                updateOriginalPrices(); // Update prices immediately based on the current multiplier
                 alert("Original prices unlocked!");
             } else {
                 alert("Incorrect password.");
@@ -134,15 +135,26 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    /**
+     * --- MODIFIED FUNCTION ---
+     * This function now updates prices based on the selected price category
+     * if the original prices are unlocked.
+     */
     function updateMultiplierPrices() {
-        if (priceSelector.style.display !== 'none') return;
         document.querySelectorAll('.productSquare').forEach(square => {
             const productCode = square.dataset.productCode;
             const product = products.find(p => p['item code'] == productCode);
             if (product) {
-                const basePrice = parseFloat(product['retail price Q']);
-                const newPrice = basePrice * priceMultiplier;
-                if (!isNaN(newPrice)) {
+                let basePrice;
+                // Check if the price selector is visible and has a value
+                if (priceSelector.style.display !== 'none' && priceSelector.value) {
+                    basePrice = parseFloat(product[priceSelector.value]);
+                } else {
+                    basePrice = parseFloat(product['retail price Q']);
+                }
+
+                if (!isNaN(basePrice)) {
+                    const newPrice = basePrice * priceMultiplier;
                     updateProductCardPrices(square, newPrice, product['ea in ca']);
                 }
             }
@@ -180,11 +192,16 @@ document.addEventListener('DOMContentLoaded', function() {
             const quantity = prompt('Enter the quantity:');
             if (quantity && !isNaN(quantity) && quantity > 0) {
                 let priceToUse;
-                if (priceSelector.style.display === 'none' || !priceSelector.value) {
-                    priceToUse = parseFloat(product['retail price Q']) * priceMultiplier;
+                // Determine the base price from the correct source
+                let basePrice;
+                if (priceSelector.style.display !== 'none' && priceSelector.value) {
+                    basePrice = parseFloat(product[priceSelector.value]);
                 } else {
-                    priceToUse = parseFloat(product[priceSelector.value]);
+                    basePrice = parseFloat(product['retail price Q']);
                 }
+                // Apply the multiplier to the selected base price
+                priceToUse = basePrice * priceMultiplier;
+
                 const itemTotal = priceToUse * quantity;
                 const cartItem = document.createElement('div');
                 cartItem.className = 'cartItem';
@@ -222,24 +239,27 @@ document.addEventListener('DOMContentLoaded', function() {
 
     /**
      * --- MODIFIED FUNCTION ---
-     * This function now displays both the original and the new price when
-     * they are different, using the CSS classes .original-price and .new-price.
+     * This function now displays both the original and the new price when they are different.
      */
     function updateProductCardPrices(squareElement, newCaPrice, eaInCa) {
-        // Find the original product from the global list
         const productCode = squareElement.dataset.productCode;
         const product = products.find(p => p['item code'] == productCode);
-        if (!product) return; // Safety check
+        if (!product) return;
 
-        // Get original prices
-        const originalCaPrice = parseFloat(product['retail price Q']);
+        // Determine the original base price depending on whether the selector is active
+        let originalCaPrice;
+        if (priceSelector.style.display !== 'none' && priceSelector.value) {
+            originalCaPrice = parseFloat(product[priceSelector.value]);
+        } else {
+            originalCaPrice = parseFloat(product['retail price Q']);
+        }
+
         const eaInCaNum = parseInt(eaInCa);
         const originalEaPrice = originalCaPrice / eaInCaNum;
 
-        // A helper function to generate the price HTML
+        // Helper to generate HTML for prices. Shows original only if it differs from the new price.
         const generatePriceHTML = (originalPrice, newPrice) => {
-            // Only show both prices if they are different
-            if (originalPrice.toFixed(2) !== newPrice.toFixed(2)) {
+            if (Math.abs(originalPrice - newPrice) > 0.001) { // Compare floats carefully
                 return `<span class="original-price">${originalPrice.toFixed(2)}</span> <span class="new-price">${newPrice.toFixed(2)} SR</span>`;
             } else {
                 return `<span class="new-price">${newPrice.toFixed(2)} SR</span>`;
@@ -248,7 +268,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const contentDiv = squareElement.querySelector('.card-content');
         
-        // Update card with new HTML content
         contentDiv.querySelector('p:nth-of-type(2)').innerHTML = `Ca = ${generatePriceHTML(originalCaPrice, newCaPrice)}`;
         contentDiv.querySelector('p:nth-of-type(3)').innerHTML = `Ca + tax = ${generatePriceHTML(originalCaPrice * 1.15, newCaPrice * 1.15)}`;
         contentDiv.querySelector('p:nth-of-type(4)').innerHTML = `Bund = ${generatePriceHTML(originalEaPrice, newCaPrice / eaInCaNum)}`;
@@ -256,6 +275,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
 
+    /**
+     * --- MODIFIED FUNCTION ---
+     * Now applies the current priceMultiplier to the selected price category.
+     */
     function updateOriginalPrices() {
         const selectedCategory = priceSelector.value;
         if (!selectedCategory) return;
@@ -263,9 +286,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const productCode = square.dataset.productCode;
             const product = products.find(p => p['item code'] == productCode);
             if (product) {
-                const price = parseFloat(product[selectedCategory]);
-                if (!isNaN(price)) {
-                    updateProductCardPrices(square, price, product['ea in ca']);
+                const basePrice = parseFloat(product[selectedCategory]);
+                if (!isNaN(basePrice)) {
+                    // Apply the current multiplier to the newly selected base price
+                    const newPrice = basePrice * priceMultiplier;
+                    updateProductCardPrices(square, newPrice, product['ea in ca']);
                 }
             }
         });
@@ -303,7 +328,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 priceSelector.appendChild(option);
             }
         });
+        // Set 'retail price Q' as the default selection if it exists
+        if (priceSelector.querySelector('[value="retail price Q"]')) {
+            priceSelector.value = 'retail price Q';
+        }
+
         priceSelector.addEventListener('change', updateOriginalPrices);
+
         if (!document.getElementById('priceSelector')) {
             document.getElementById('cartContainer').insertBefore(priceSelector, document.getElementById('cartItems'));
         }
