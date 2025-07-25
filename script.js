@@ -1,8 +1,6 @@
 // --- SCRIPT START ---
 
-// The script is wrapped in DOMContentLoaded to ensure the page is ready.
 document.addEventListener('DOMContentLoaded', function() {
-    // --- FIX: Make the page visible on load ---
     document.body.style.visibility = 'visible';
 
     console.log("DOM fully loaded. Initializing script.");
@@ -47,12 +45,16 @@ document.addEventListener('DOMContentLoaded', function() {
     let cartTotal = 0;
     let currentLanguage = 'ar';
     let englishButtonClickCount = 0;
-    let priceMultiplier = 1.10; // For calculation, starts at +10%
-    let displayPercentage = 10; // For display, starts at +10%
+    // --- EDIT: The REAL multiplier starts at 1.10 (for the hidden 10% markup) ---
+    let priceMultiplier = 1.10;
+    // --- EDIT: The DISPLAYED percentage starts at 0 for the user ---
+    let displayPercentage = 0;
 
     // --- Update the Percentage Display ---
     function updatePercentageDisplay() {
         let prefix = displayPercentage > 0 ? '+' : '';
+        // Show "+0%" instead of just "0%"
+        if (displayPercentage === 0) prefix = '+';
         percentageDisplay.textContent = `${prefix}${displayPercentage.toFixed(0)}%`;
     }
 
@@ -64,11 +66,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const password = prompt("Please enter the password to show original prices:");
             if (password === "20202030") {
                 priceSelector.style.display = 'block';
-                // --- EDIT: Enable the +/- buttons and percentage display ---
                 increaseButton.disabled = false;
                 decreaseButton.disabled = false;
-                percentageDisplay.style.display = 'inline-block'; // Show percentage
-                updateOriginalPrices(); // Update prices immediately based on the current multiplier
+                percentageDisplay.style.display = 'inline-block';
+                updateOriginalPrices();
                 alert("Original prices unlocked!");
             } else {
                 alert("Incorrect password.");
@@ -80,10 +81,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- Price Multiplier Button Listeners ---
     increaseButton.addEventListener('click', () => {
-        if (priceMultiplier >= 2.0) { // Safety limit: max 100% increase
+        if (priceMultiplier >= 2.0) {
             alert("Maximum price increase limit reached.");
             return;
         }
+        // --- EDIT: Logic adjusted for separate internal and display values ---
         priceMultiplier += 0.05;
         displayPercentage += 5;
         updateMultiplierPrices();
@@ -91,15 +93,17 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     decreaseButton.addEventListener('click', () => {
-        if (priceMultiplier <= 0.5) { // Safety limit: max 50% decrease
+        if (priceMultiplier <= 0.5) {
             alert("Minimum price limit reached.");
             return;
         }
+        // --- EDIT: Logic adjusted for separate internal and display values ---
         priceMultiplier -= 0.05;
         displayPercentage -= 5;
         updateMultiplierPrices();
         updatePercentageDisplay();
     });
+
 
     function switchLanguage(lang) {
         currentLanguage = lang;
@@ -135,18 +139,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    /**
-     * --- MODIFIED FUNCTION ---
-     * This function now updates prices based on the selected price category
-     * if the original prices are unlocked.
-     */
     function updateMultiplierPrices() {
         document.querySelectorAll('.productSquare').forEach(square => {
             const productCode = square.dataset.productCode;
             const product = products.find(p => p['item code'] == productCode);
             if (product) {
                 let basePrice;
-                // Check if the price selector is visible and has a value
                 if (priceSelector.style.display !== 'none' && priceSelector.value) {
                     basePrice = parseFloat(product[priceSelector.value]);
                 } else {
@@ -185,22 +183,20 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         const basePrice = parseFloat(product['retail price Q']);
+        // The initial price correctly uses the 1.10 multiplier
         const initialPrice = basePrice * priceMultiplier;
         updateProductCardPrices(square, initialPrice, product['ea in ca']);
 
         square.addEventListener('click', function() {
             const quantity = prompt('Enter the quantity:');
             if (quantity && !isNaN(quantity) && quantity > 0) {
-                let priceToUse;
-                // Determine the base price from the correct source
                 let basePrice;
                 if (priceSelector.style.display !== 'none' && priceSelector.value) {
                     basePrice = parseFloat(product[priceSelector.value]);
                 } else {
                     basePrice = parseFloat(product['retail price Q']);
                 }
-                // Apply the multiplier to the selected base price
-                priceToUse = basePrice * priceMultiplier;
+                const priceToUse = basePrice * priceMultiplier;
 
                 const itemTotal = priceToUse * quantity;
                 const cartItem = document.createElement('div');
@@ -239,46 +235,50 @@ document.addEventListener('DOMContentLoaded', function() {
 
     /**
      * --- MODIFIED FUNCTION ---
-     * This function now displays both the original and the new price when they are different.
+     * This function now shows the strikethrough price ONLY when the user makes a manual adjustment.
      */
     function updateProductCardPrices(squareElement, newCaPrice, eaInCa) {
         const productCode = squareElement.dataset.productCode;
         const product = products.find(p => p['item code'] == productCode);
         if (!product) return;
 
-        // Determine the original base price depending on whether the selector is active
-        let originalCaPrice;
+        // 1. Determine the true base price from the Excel sheet
+        let trueBasePrice;
         if (priceSelector.style.display !== 'none' && priceSelector.value) {
-            originalCaPrice = parseFloat(product[priceSelector.value]);
+            trueBasePrice = parseFloat(product[priceSelector.value]);
         } else {
-            originalCaPrice = parseFloat(product['retail price Q']);
+            trueBasePrice = parseFloat(product['retail price Q']);
         }
 
         const eaInCaNum = parseInt(eaInCa);
-        const originalEaPrice = originalCaPrice / eaInCaNum;
+        
+        // 2. Calculate the "default" display price (the one with the hidden 10% markup)
+        const defaultDisplayPriceCa = trueBasePrice * 1.10;
+        const defaultDisplayPriceEa = defaultDisplayPriceCa / eaInCaNum;
 
-        // Helper to generate HTML for prices. Shows original only if it differs from the new price.
-        const generatePriceHTML = (originalPrice, newPrice) => {
-            if (Math.abs(originalPrice - newPrice) > 0.001) { // Compare floats carefully
-                return `<span class="original-price">${originalPrice.toFixed(2)}</span> <span class="new-price">${newPrice.toFixed(2)} SR</span>`;
+        // 3. The `newCaPrice` is the final price with all adjustments
+        const newEaPrice = newCaPrice / eaInCaNum;
+
+        // 4. Helper function to generate price HTML conditionally
+        const generatePriceHTML = (defaultPrice, currentPrice) => {
+            // Only show strikethrough if a manual adjustment has been made
+            if (displayPercentage !== 0) {
+                return `<span class="original-price">${defaultPrice.toFixed(2)}</span> <span class="new-price">${currentPrice.toFixed(2)} SR</span>`;
             } else {
-                return `<span class="new-price">${newPrice.toFixed(2)} SR</span>`;
+                return `<span class="new-price">${currentPrice.toFixed(2)} SR</span>`;
             }
         };
 
         const contentDiv = squareElement.querySelector('.card-content');
         
-        contentDiv.querySelector('p:nth-of-type(2)').innerHTML = `Ca = ${generatePriceHTML(originalCaPrice, newCaPrice)}`;
-        contentDiv.querySelector('p:nth-of-type(3)').innerHTML = `Ca + tax = ${generatePriceHTML(originalCaPrice * 1.15, newCaPrice * 1.15)}`;
-        contentDiv.querySelector('p:nth-of-type(4)').innerHTML = `Bund = ${generatePriceHTML(originalEaPrice, newCaPrice / eaInCaNum)}`;
-        contentDiv.querySelector('p:nth-of-type(5)').innerHTML = `Bund + Tax = ${generatePriceHTML(originalEaPrice * 1.15, (newCaPrice / eaInCaNum) * 1.15)}`;
+        // 5. Call the helper with the correct prices
+        contentDiv.querySelector('p:nth-of-type(2)').innerHTML = `Ca = ${generatePriceHTML(defaultDisplayPriceCa, newCaPrice)}`;
+        contentDiv.querySelector('p:nth-of-type(3)').innerHTML = `Ca + tax = ${generatePriceHTML(defaultDisplayPriceCa * 1.15, newCaPrice * 1.15)}`;
+        contentDiv.querySelector('p:nth-of-type(4)').innerHTML = `Bund = ${generatePriceHTML(defaultDisplayPriceEa, newEaPrice)}`;
+        contentDiv.querySelector('p:nth-of-type(5)').innerHTML = `Bund + Tax = ${generatePriceHTML(defaultDisplayPriceEa * 1.15, newEaPrice * 1.15)}`;
     }
 
 
-    /**
-     * --- MODIFIED FUNCTION ---
-     * Now applies the current priceMultiplier to the selected price category.
-     */
     function updateOriginalPrices() {
         const selectedCategory = priceSelector.value;
         if (!selectedCategory) return;
@@ -288,7 +288,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (product) {
                 const basePrice = parseFloat(product[selectedCategory]);
                 if (!isNaN(basePrice)) {
-                    // Apply the current multiplier to the newly selected base price
                     const newPrice = basePrice * priceMultiplier;
                     updateProductCardPrices(square, newPrice, product['ea in ca']);
                 }
@@ -328,7 +327,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 priceSelector.appendChild(option);
             }
         });
-        // Set 'retail price Q' as the default selection if it exists
         if (priceSelector.querySelector('[value="retail price Q"]')) {
             priceSelector.value = 'retail price Q';
         }
@@ -338,7 +336,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!document.getElementById('priceSelector')) {
             document.getElementById('cartContainer').insertBefore(priceSelector, document.getElementById('cartItems'));
         }
-        updatePercentageDisplay(); // Set the initial percentage display
+        // Set the initial "0%" text on load
+        updatePercentageDisplay();
     }
 
     fetch('PRICES.xlsx')
