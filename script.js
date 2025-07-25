@@ -35,9 +35,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const markupDots = document.createElement('span');
     markupDots.id = 'markupDots';
     markupDots.style.marginLeft = '4px';
-    markupDots.style.color = '#0056b3';
-    markupDots.style.fontSize = '1.2rem';
+    markupDots.style.color = '#cccccc';
+    markupDots.style.fontSize = '1rem';
     markupDots.style.verticalAlign = 'middle';
+    markupDots.style.fontWeight = 'normal'; // Ensures the dots are not bold
+
 
     controlsContainer.appendChild(decreaseButton);
     controlsContainer.appendChild(percentageDisplay);
