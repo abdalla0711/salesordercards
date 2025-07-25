@@ -12,39 +12,32 @@
 </head>
 <body>
 
-    <!-- 
-      This is the fixed header area that will stay at the top of the screen.
-      It contains the title, language buttons, filter, and the entire cart.
-    -->
+    <!-- This is the fixed header with controls only -->
     <div id="fixedArea">
         <h1 id="mainTitle"></h1>
-
         <div>
             <button id="langEn">English</button>
             <button id="langAr">العربية</button>
         </div>
-
         <input type="file" id="fallbackFileInput" style="display:none;">
         <input type="text" id="filterInput">
-
-        <div id="cartContainer">
-            <div id="cartItems"></div>
-            <div id="cartTotal"></div>
-            
-            <!-- The button and comment box now live here -->
-            <button id="copyButton"></button>
-            <textarea id="cartComment" placeholder="ملاحظات..."></textarea>
-        </div>
     </div>
 
-    <!-- 
-      This is the main product grid. It will appear below the fixed header
-      and will be scrollable.
-    -->
+    <!-- This is the main product grid that will scroll -->
     <div id="productGrid"></div>
 
+    <!-- 
+      This is the cart container, at the BOTTOM of the page.
+      The copyButton now starts with a class="hidden".
+    -->
+    <div id="cartContainer">
+        <div id="cartItems"></div>
+        <div id="cartTotal"></div>
+        <textarea id="cartComment" placeholder="ملاحظات..."></textarea>
+        <button id="copyButton" class="hidden"></button>
+    </div>
 
-    <!-- Your script file should always be at the very end of the body -->
+    <!-- Your script file at the very end -->
     <script src="script.js"></script>
 
 </body>
