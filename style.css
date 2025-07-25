@@ -27,10 +27,7 @@ body {
     border-radius: 8px;
     border: 1px solid #ddd;
     margin-bottom: 5px;
-       white-space: nowrap;      /* Prevents the text from wrapping to a new line */
-    overflow: hidden;         /* Hides any text that overflows the input's width */
-    text-overflow: ellipsis;
-}
+
 
 #cartContainer {
     background-color: #ffffff;
@@ -91,7 +88,7 @@ body {
     font-size: 0.8rem; /* Made font size bigger */
     font-weight: bold !important;
     color: #063970 !important; /* White text for high contrast */
-    background-color: ##eab676; /* Blue background */
+    background-color: #eab676; /* Corrected */
     padding: 4px 6px; /* Padding around the text */
     border-radius: 4px; /* Slightly rounded corners */
     display: inline; /* Makes the background wrap only the text */
