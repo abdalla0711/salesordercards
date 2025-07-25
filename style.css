@@ -133,7 +133,6 @@ body {
 
 /* --- Buttons and Other Elements --- */
 #copyButton {
-    display: none;
     font-size: 1rem;
     background-color: #28a745;
     color: white;
@@ -169,4 +168,7 @@ body {
 .new-price {
     color: #28a745;
     font-weight: bold !important;
+}
+.hidden {
+    display: none !important;
 }
