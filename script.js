@@ -35,11 +35,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const markupDots = document.createElement('span');
     markupDots.id = 'markupDots';
     markupDots.style.marginLeft = '4px';
-    markupDots.style.color = '#cccccc';
-    markupDots.style.fontSize = '1rem';
+    markupDots.style.color = '#cccccc'; // Light gray color
+    markupDots.style.fontSize = '1.2rem';
     markupDots.style.verticalAlign = 'middle';
-    markupDots.style.fontWeight = 'lighter'; // Ensures the dots are not bold
-
+    markupDots.style.fontWeight = 'normal'; // Not bold
 
     controlsContainer.appendChild(decreaseButton);
     controlsContainer.appendChild(percentageDisplay);
@@ -54,15 +53,15 @@ document.addEventListener('DOMContentLoaded', function() {
     let priceMultiplier = 1.10;
     let displayPercentage = 0;
 
-    // --- FINAL TRICK: State variables for the new logic ---
+    // --- State variables for the new trick ---
     let isCustomerMode = false;
-    let isDiscounting = false;      // Are we actively applying a discount?
-    let discountBaseMultiplier = 1.0; // The price level when '-' was first clicked
-    let customerMarkupClicks = 0;   // How many times '+' was clicked in customer mode
+    let isDiscounting = false;
+    let discountBaseMultiplier = 1.0;
+    let customerMarkupClicks = 0;
 
     const translations = {
-        en: { mainTitle: "Eagle Store", filterPlaceholder: "You can register the item by clicking on it then green botton..", priceCa: "Ca", priceCaTax: "Ca + tax", priceBund: "Bund", priceBundTax: "Bund + Tax", increaseTitle: "Increase prices by 5%", decreaseTitle: "Decrease prices by 5%", unlockPasswordPrompt: "Please enter the password...", unlockedAlert: "Original prices unlocked!", incorrectPasswordAlert: "Incorrect password.", maxLimitAlert: "Max price limit reached.", minLimitAlert: "Min price limit reached.", quantityPrompt: "Enter the quantity:", cartTotalText: "Total with tax", copyButtonText: "Copy & Open WhatsApp", copySuccessAlert: "Cart copied. WhatsApp opening...", copyErrorAlert: "Copy error.", fileNotFoundAlert: "Price file not found.", commentsLabel: "Comments:" },
-        ar: { mainTitle: "متجر ايجل", filterPlaceholder: " يمكنك تسجيل الصنف بالضغط عليه وادخال الكميه وضغط الزر الاخضر..", priceCa: "الكرتون", priceCaTax: "الكرتون+الضريبة", priceBund: "الشد", priceBundTax: "الشد+الضريبة", increaseTitle: "زيادة الأسعار 5%", decreaseTitle: "تخفيض الأسعار 5%", unlockPasswordPrompt: "الرجاء إدخال كلمة المرور:", unlockedAlert: "تم عرض الأسعار الأصلية!", incorrectPasswordAlert: "كلمة مرور غير صحيحة.", maxLimitAlert: "تم الوصول للحد الأعلى للسعر.", minLimitAlert: "تم الوصول للحد الأدنى للسعر.", quantityPrompt: "أدخل الكمية:", cartTotalText: "الإجمالي مع الضريبة", copyButtonText: "نسخ الطلب وفتح واتساب", copySuccessAlert: "تم نسخ السلة. سيتم فتح واتساب.", copyErrorAlert: "حدث خطأ.", fileNotFoundAlert: "ملف الأسعار غير موجود.", commentsLabel: "ملاحظات:" }
+        en: { mainTitle: "Eagle Store", filterPlaceholder: "You can register the item by clicking on it...", priceCa: "Ca", priceCaTax: "Ca + tax", priceBund: "Bund", priceBundTax: "Bund + Tax", increaseTitle: "Increase prices by 5%", decreaseTitle: "Decrease prices by 5%", unlockPasswordPrompt: "Please enter the password...", unlockedAlert: "Original prices unlocked!", incorrectPasswordAlert: "Incorrect password.", maxLimitAlert: "Max price limit reached.", minLimitAlert: "Min price limit reached.", quantityPrompt: "Enter the quantity:", cartTotalText: "Total with tax", copyButtonText: "Copy & Open WhatsApp", copySuccessAlert: "Cart copied. WhatsApp opening...", copyErrorAlert: "Copy error.", fileNotFoundAlert: "Price file not found.", commentsLabel: "Comments:" },
+        ar: { mainTitle: "متجر ايجل", filterPlaceholder: "يمكنك تسجيل الصنف بالضغط عليه وادخال الكميه...", priceCa: "الكرتون", priceCaTax: "الكرتون+الضريبة", priceBund: "الشد", priceBundTax: "الشد+الضريبة", increaseTitle: "زيادة الأسعار 5%", decreaseTitle: "تخفيض الأسعار 5%", unlockPasswordPrompt: "الرجاء إدخال كلمة المرور:", unlockedAlert: "تم عرض الأسعار الأصلية!", incorrectPasswordAlert: "كلمة مرور غير صحيحة.", maxLimitAlert: "تم الوصول للحد الأعلى للسعر.", minLimitAlert: "تم الوصول للحد الأدنى للسعر.", quantityPrompt: "أدخل الكمية:", cartTotalText: "الإجمالي مع الضريبة", copyButtonText: "نسخ الطلب وفتح واتساب", copySuccessAlert: "تم نسخ السلة. سيتم فتح واتساب.", copyErrorAlert: "حدث خطأ.", fileNotFoundAlert: "ملف الأسعار غير موجود.", commentsLabel: "ملاحظات:" }
     };
 
     function updateUIText() {
@@ -75,19 +74,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updatePercentageDisplay() {
-        // This function now ONLY shows the percentage. It does not handle dots.
         let prefix = displayPercentage >= 0 ? '+' : '';
         percentageDisplay.textContent = `${prefix}${displayPercentage.toFixed(0)}%`;
-    }
-
-    function resetAllPricingStates() {
-        isCustomerMode = false;
-        isDiscounting = false;
-        customerMarkupClicks = 0;
-        markupDots.textContent = '';
-        priceMultiplier = 1.10;
-        displayPercentage = 0;
-        updatePercentageDisplay();
     }
 
     langArButton.addEventListener('click', () => switchLanguage('ar'));
@@ -100,7 +88,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 priceSelector.style.display = 'block';
                 increaseButton.disabled = false;
                 decreaseButton.disabled = false;
-                // Reset to a clean slate for the customer
                 isDiscounting = false;
                 customerMarkupClicks = 0;
                 markupDots.textContent = '';
@@ -117,39 +104,42 @@ document.addEventListener('DOMContentLoaded', function() {
         switchLanguage('en');
     });
 
-    // --- FINAL TRICK: Updated '+' button logic ---
+    // --- FINAL TRICK: The '+' button logic ---
     increaseButton.addEventListener('click', () => {
         if (priceMultiplier >= 2.0) { alert(translations[currentLanguage].maxLimitAlert); return; }
-        
-        // If we were discounting, clicking '+' resets everything back to markup mode.
-        if (isDiscounting) {
-            isDiscounting = false;
-            displayPercentage = 0; // Reset percentage to +0%
-            updatePercentageDisplay();
-        }
 
         priceMultiplier += 0.05;
-        if (isCustomerMode) {
+
+        // If we are in discount mode, clicking '+' brings the percentage back towards 0.
+        if (isDiscounting) {
+            displayPercentage += 5;
+            updatePercentageDisplay();
+        } 
+        // Otherwise (if we are in markup mode), we add dots and the percentage stays at 0.
+        else if (isCustomerMode) {
             customerMarkupClicks++;
             markupDots.textContent = '•'.repeat(customerMarkupClicks);
-        } else {
+        }
+        // For the public view
+        else {
             displayPercentage += 5;
             updatePercentageDisplay();
         }
+        
         updateMultiplierPrices();
     });
 
-    // --- FINAL TRICK: Updated '-' button logic ---
+    // --- FINAL TRICK: The '-' button logic ---
     decreaseButton.addEventListener('click', () => {
         if (priceMultiplier <= 0.55) { alert(translations[currentLanguage].minLimitAlert); return; }
         
-        // If this is the FIRST time clicking '-', lock in the current price as the new base.
+        // If this is the FIRST time we click '-' in customer mode, lock the price.
         if (isCustomerMode && !isDiscounting) {
             isDiscounting = true;
-            discountBaseMultiplier = priceMultiplier; // Lock the current multiplier
+            discountBaseMultiplier = priceMultiplier; // This locks the current marked-up price.
         }
         
-        // If we were adding markup, clicking '-' clears the dots.
+        // Clicking '-' always clears the markup dots.
         customerMarkupClicks = 0;
         markupDots.textContent = '';
         
@@ -274,7 +264,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let showOriginal = false;
 
         if (isCustomerMode && isDiscounting) {
-            // If discounting, the red price is the "locked" price.
+            // When discounting, the red price is the "locked" price.
             basePriceForComparison = trueBasePrice * discountBaseMultiplier;
             showOriginal = true;
         } else if (!isCustomerMode && displayPercentage !== 0) {
@@ -348,6 +338,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         if (priceSelector.querySelector('[value="retail price Q"]')) priceSelector.value = 'retail price Q';
         priceSelector.addEventListener('change', () => {
+            // When the price list is changed, reset all customer mode states
             isDiscounting = false;
             customerMarkupClicks = 0;
             markupDots.textContent = '';
