@@ -45,15 +45,12 @@ document.addEventListener('DOMContentLoaded', function() {
     let cartTotal = 0;
     let currentLanguage = 'ar';
     let englishButtonClickCount = 0;
-    // --- EDIT: The REAL multiplier starts at 1.10 (for the hidden 10% markup) ---
-    let priceMultiplier = 1.10;
-    // --- EDIT: The DISPLAYED percentage starts at 0 for the user ---
-    let displayPercentage = 0;
+    let priceMultiplier = 1.10; // Start with the hidden 10% markup
+    let displayPercentage = 0;   // But display 0% to the user
 
     // --- Update the Percentage Display ---
     function updatePercentageDisplay() {
         let prefix = displayPercentage > 0 ? '+' : '';
-        // Show "+0%" instead of just "0%"
         if (displayPercentage === 0) prefix = '+';
         percentageDisplay.textContent = `${prefix}${displayPercentage.toFixed(0)}%`;
     }
@@ -69,6 +66,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 increaseButton.disabled = false;
                 decreaseButton.disabled = false;
                 percentageDisplay.style.display = 'inline-block';
+
+                // --- EDIT: Reset pricing state to neutral for original prices ---
+                priceMultiplier = 1.0;     // Remove all markups
+                displayPercentage = 0;       // Reset the display to 0
+                updatePercentageDisplay(); // Show "+0%" on the UI
+
+                // Now, this function will show the true original prices without any markup
                 updateOriginalPrices();
                 alert("Original prices unlocked!");
             } else {
@@ -85,7 +89,6 @@ document.addEventListener('DOMContentLoaded', function() {
             alert("Maximum price increase limit reached.");
             return;
         }
-        // --- EDIT: Logic adjusted for separate internal and display values ---
         priceMultiplier += 0.05;
         displayPercentage += 5;
         updateMultiplierPrices();
@@ -93,11 +96,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     decreaseButton.addEventListener('click', () => {
-        if (priceMultiplier <= 0.5) {
+        if (priceMultiplier <= 0.55) { // Prevent going too low
             alert("Minimum price limit reached.");
             return;
         }
-        // --- EDIT: Logic adjusted for separate internal and display values ---
         priceMultiplier -= 0.05;
         displayPercentage -= 5;
         updateMultiplierPrices();
@@ -183,7 +185,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         const basePrice = parseFloat(product['retail price Q']);
-        // The initial price correctly uses the 1.10 multiplier
         const initialPrice = basePrice * priceMultiplier;
         updateProductCardPrices(square, initialPrice, product['ea in ca']);
 
@@ -232,38 +233,29 @@ document.addEventListener('DOMContentLoaded', function() {
             items[i].querySelector('.cartLineNumber').textContent = `${i + 1}. `;
         }
     }
-
-    /**
-     * --- MODIFIED FUNCTION ---
-     * This function now shows the strikethrough price ONLY when the user makes a manual adjustment.
-     */
+    
     function updateProductCardPrices(squareElement, newCaPrice, eaInCa) {
         const productCode = squareElement.dataset.productCode;
         const product = products.find(p => p['item code'] == productCode);
         if (!product) return;
 
-        // 1. Determine the true base price from the Excel sheet
-        let trueBasePrice;
+        let basePriceForComparison;
+        // If password unlocked, the "base" is the true original price
         if (priceSelector.style.display !== 'none' && priceSelector.value) {
-            trueBasePrice = parseFloat(product[priceSelector.value]);
+            basePriceForComparison = parseFloat(product[priceSelector.value]);
         } else {
-            trueBasePrice = parseFloat(product['retail price Q']);
+            // Otherwise, the "base" for comparison is the price with the hidden 10%
+            basePriceForComparison = parseFloat(product['retail price Q']) * 1.10;
         }
 
         const eaInCaNum = parseInt(eaInCa);
-        
-        // 2. Calculate the "default" display price (the one with the hidden 10% markup)
-        const defaultDisplayPriceCa = trueBasePrice * 1.10;
-        const defaultDisplayPriceEa = defaultDisplayPriceCa / eaInCaNum;
-
-        // 3. The `newCaPrice` is the final price with all adjustments
+        const baseEaPriceForComparison = basePriceForComparison / eaInCaNum;
         const newEaPrice = newCaPrice / eaInCaNum;
 
-        // 4. Helper function to generate price HTML conditionally
-        const generatePriceHTML = (defaultPrice, currentPrice) => {
+        const generatePriceHTML = (basePrice, currentPrice) => {
             // Only show strikethrough if a manual adjustment has been made
             if (displayPercentage !== 0) {
-                return `<span class="original-price">${defaultPrice.toFixed(2)}</span> <span class="new-price">${currentPrice.toFixed(2)} SR</span>`;
+                return `<span class="original-price">${basePrice.toFixed(2)}</span> <span class="new-price">${currentPrice.toFixed(2)} SR</span>`;
             } else {
                 return `<span class="new-price">${currentPrice.toFixed(2)} SR</span>`;
             }
@@ -271,11 +263,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const contentDiv = squareElement.querySelector('.card-content');
         
-        // 5. Call the helper with the correct prices
-        contentDiv.querySelector('p:nth-of-type(2)').innerHTML = `Ca = ${generatePriceHTML(defaultDisplayPriceCa, newCaPrice)}`;
-        contentDiv.querySelector('p:nth-of-type(3)').innerHTML = `Ca + tax = ${generatePriceHTML(defaultDisplayPriceCa * 1.15, newCaPrice * 1.15)}`;
-        contentDiv.querySelector('p:nth-of-type(4)').innerHTML = `Bund = ${generatePriceHTML(defaultDisplayPriceEa, newEaPrice)}`;
-        contentDiv.querySelector('p:nth-of-type(5)').innerHTML = `Bund + Tax = ${generatePriceHTML(defaultDisplayPriceEa * 1.15, newEaPrice * 1.15)}`;
+        contentDiv.querySelector('p:nth-of-type(2)').innerHTML = `Ca = ${generatePriceHTML(basePriceForComparison, newCaPrice)}`;
+        contentDiv.querySelector('p:nth-of-type(3)').innerHTML = `Ca + tax = ${generatePriceHTML(basePriceForComparison * 1.15, newCaPrice * 1.15)}`;
+        contentDiv.querySelector('p:nth-of-type(4)').innerHTML = `Bund = ${generatePriceHTML(baseEaPriceForComparison, newEaPrice)}`;
+        contentDiv.querySelector('p:nth-of-type(5)').innerHTML = `Bund + Tax = ${generatePriceHTML(baseEaPriceForComparison * 1.15, newEaPrice * 1.15)}`;
     }
 
 
@@ -288,6 +279,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (product) {
                 const basePrice = parseFloat(product[selectedCategory]);
                 if (!isNaN(basePrice)) {
+                    // This now correctly multiplies by 1.0 initially
                     const newPrice = basePrice * priceMultiplier;
                     updateProductCardPrices(square, newPrice, product['ea in ca']);
                 }
@@ -331,12 +323,17 @@ document.addEventListener('DOMContentLoaded', function() {
             priceSelector.value = 'retail price Q';
         }
 
-        priceSelector.addEventListener('change', updateOriginalPrices);
+        // --- EDIT: Also reset pricing state when changing the dropdown ---
+        priceSelector.addEventListener('change', () => {
+            priceMultiplier = 1.0;
+            displayPercentage = 0;
+            updatePercentageDisplay();
+            updateOriginalPrices();
+        });
 
         if (!document.getElementById('priceSelector')) {
             document.getElementById('cartContainer').insertBefore(priceSelector, document.getElementById('cartItems'));
         }
-        // Set the initial "0%" text on load
         updatePercentageDisplay();
     }
 
