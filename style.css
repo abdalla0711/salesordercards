@@ -87,7 +87,7 @@ body {
 .card-content p:first-of-type {
     font-size: 0.8rem; /* Made font size bigger */
     font-weight: bold !important;
-    color: #ffffff !important; /* White text for high contrast */
+    color: #063970 !important; /* White text for high contrast */
     background-color: #063970; /* Blue background */
     padding: 4px 6px; /* Padding around the text */
     border-radius: 4px; /* Slightly rounded corners */
