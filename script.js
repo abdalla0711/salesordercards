@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
             commentsLabel: "Comments:"
         },
         ar: {
-            mainTitle: "سجل طلبيتك من متجر ايجل للمنتجات الاستهلاكية",
+            mainTitle: "متجر ايجل",
             filterPlaceholder: "البحث بالاسم أو الكود...",
             priceCa: "الكرتون",
             priceCaTax: "الكرتون+الضريبة",
