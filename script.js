@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const cartCommentInput = document.getElementById('cartComment');
     const langEnButton = document.getElementById('langEn');
     const langArButton = document.getElementById('langAr');
-    const mainTitle = document.getElementById('mainTitle'); // Title element
+    const mainTitle = document.getElementById('mainTitle');
     const priceSelector = document.createElement('select');
     priceSelector.id = 'priceSelector';
     priceSelector.style.display = 'none';
@@ -40,12 +40,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- Global State ---
     const products = [];
     let cartTotal = 0;
-    let currentLanguage = 'ar'; // Default language is Arabic
+    let currentLanguage = 'ar';
     let englishButtonClickCount = 0;
     let priceMultiplier = 1.10;
     let displayPercentage = 0;
+    // --- CUSTOMER MODE: New variables to track the special mode ---
+    let isCustomerMode = false;
+    let customerMarkupClicks = 0;
 
-    // --- EDIT: Central Translation Object ---
     const translations = {
         en: {
             mainTitle: "Eagle Store",
@@ -93,7 +95,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    // --- EDIT: Function to update all UI text elements ---
     function updateUIText() {
         const lang = translations[currentLanguage];
         mainTitle.textContent = lang.mainTitle;
@@ -103,20 +104,28 @@ document.addEventListener('DOMContentLoaded', function() {
         copyButton.textContent = lang.copyButtonText;
     }
 
-    // --- Update the Percentage Display ---
+    // --- CUSTOMER MODE: This function now shows dots when needed ---
     function updatePercentageDisplay() {
-        let prefix = displayPercentage > 0 ? '+' : '';
-        if (displayPercentage === 0) prefix = '+';
-        percentageDisplay.textContent = `${prefix}${displayPercentage.toFixed(0)}%`;
+        // If in customer mode AND we have clicked +, show dots instead of percentage
+        if (isCustomerMode && customerMarkupClicks > 0) {
+            percentageDisplay.textContent = '•'.repeat(customerMarkupClicks);
+        } else {
+            // Otherwise, show the normal percentage
+            let prefix = displayPercentage >= 0 ? '+' : '';
+            percentageDisplay.textContent = `${prefix}${displayPercentage.toFixed(0)}%`;
+        }
     }
 
-    // --- Language Switch Listeners ---
     langArButton.addEventListener('click', () => switchLanguage('ar'));
     langEnButton.addEventListener('click', () => {
         englishButtonClickCount++;
         if (englishButtonClickCount >= 5) {
             const password = prompt(translations[currentLanguage].unlockPasswordPrompt);
             if (password === "20202030") {
+                // --- CUSTOMER MODE: Activate the special mode ---
+                isCustomerMode = true;
+                customerMarkupClicks = 0; // Reset dot counter
+
                 priceSelector.style.display = 'block';
                 increaseButton.disabled = false;
                 decreaseButton.disabled = false;
@@ -134,36 +143,51 @@ document.addEventListener('DOMContentLoaded', function() {
         switchLanguage('en');
     });
 
-    // --- Price Multiplier Button Listeners ---
+    // --- CUSTOMER MODE: The '+' button has special logic now ---
     increaseButton.addEventListener('click', () => {
         if (priceMultiplier >= 2.0) {
             alert(translations[currentLanguage].maxLimitAlert);
             return;
         }
+        
         priceMultiplier += 0.05;
-        displayPercentage += 5;
+
+        if (isCustomerMode) {
+            // In customer mode, we only count clicks for the dots
+            customerMarkupClicks++;
+        } else {
+            // In normal mode, we change the percentage
+            displayPercentage += 5;
+        }
+
         updateMultiplierPrices();
         updatePercentageDisplay();
     });
 
+    // --- CUSTOMER MODE: The '-' button resets the special '+' clicks ---
     decreaseButton.addEventListener('click', () => {
         if (priceMultiplier <= 0.55) {
             alert(translations[currentLanguage].minLimitAlert);
             return;
         }
+        
+        // If we are applying a discount, it overrides any hidden markup
+        if(isCustomerMode) {
+            customerMarkupClicks = 0;
+        }
+
         priceMultiplier -= 0.05;
         displayPercentage -= 5;
         updateMultiplierPrices();
         updatePercentageDisplay();
     });
 
-    // --- EDIT: Main function to handle all language changes ---
     function switchLanguage(lang) {
         currentLanguage = lang;
-        updateUIText(); // Update all static text
-        updateProductLanguage(); // Update product names on cards
-        updateCartLanguage(); // Update product names in cart
-        updateMultiplierPrices(); // Redraw all cards to update price labels (Ca -> الكرتون)
+        updateUIText();
+        updateProductLanguage();
+        updateCartLanguage();
+        updateMultiplierPrices();
     }
 
     function getItemName(product) {
@@ -287,7 +311,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // --- EDIT: This function now uses the translation object for price labels ---
+    // --- CUSTOMER MODE: Logic to show/hide the red price is updated here ---
     function updateProductCardPrices(squareElement, newCaPrice, eaInCa) {
         const productCode = squareElement.dataset.productCode;
         const product = products.find(p => p['item code'] == productCode);
@@ -305,7 +329,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const newEaPrice = newCaPrice / eaInCaNum;
 
         const generatePriceHTML = (basePrice, currentPrice) => {
-            if (displayPercentage !== 0) {
+            // The condition to show the original price is now more specific:
+            // Show it if we are applying a discount (negative percentage), OR if we are NOT in customer mode and there's any change.
+            const showOriginal = displayPercentage < 0 || (!isCustomerMode && displayPercentage !== 0);
+
+            if (showOriginal) {
                 return `<span class="original-price">${basePrice.toFixed(2)}</span> <span class="new-price">${currentPrice.toFixed(2)} SR</span>`;
             } else {
                 return `<span class="new-price">${currentPrice.toFixed(2)} SR</span>`;
@@ -313,14 +341,13 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         const contentDiv = squareElement.querySelector('.card-content');
-        const lang = translations[currentLanguage]; // Get current language strings
+        const lang = translations[currentLanguage];
         
         contentDiv.querySelector('p:nth-of-type(2)').innerHTML = `<span>${lang.priceCa}</span> ${generatePriceHTML(basePriceForComparison, newCaPrice)}`;
         contentDiv.querySelector('p:nth-of-type(3)').innerHTML = `<span>${lang.priceCaTax}</span> ${generatePriceHTML(basePriceForComparison * 1.15, newCaPrice * 1.15)}`;
         contentDiv.querySelector('p:nth-of-type(4)').innerHTML = `<span>${lang.priceBund}</span> ${generatePriceHTML(baseEaPriceForComparison, newEaPrice)}`;
         contentDiv.querySelector('p:nth-of-type(5)').innerHTML = `<span>${lang.priceBundTax}</span> ${generatePriceHTML(baseEaPriceForComparison * 1.15, newEaPrice * 1.15)}`;
     }
-
 
     function updateOriginalPrices() {
         const selectedCategory = priceSelector.value;
@@ -338,15 +365,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-// REPLACE THE OLD FUNCTION WITH THIS NEW ONE
-function updateCartTotal() {
-    const cartTotalElement = document.getElementById('cartTotal');
-    const cartTotalWithTax = cartTotal * 1.15;
-    cartTotalElement.textContent = `${translations[currentLanguage].cartTotalText}: ${cartTotalWithTax.toFixed(2)} SR`;
-
-    // This is the new, more reliable line that shows and hides the button.
-    copyButton.classList.toggle('hidden', cartTotal <= 0);
-}
+    function updateCartTotal() {
+        const cartTotalElement = document.getElementById('cartTotal');
+        const cartTotalWithTax = cartTotal * 1.15;
+        cartTotalElement.textContent = `${translations[currentLanguage].cartTotalText}: ${cartTotalWithTax.toFixed(2)} SR`;
+        copyButton.classList.toggle('hidden', cartTotal <= 0);
+    }
     
     function loadProductsFromExcel(jsonData) {
         productGrid.innerHTML = '';
@@ -375,6 +399,8 @@ function updateCartTotal() {
         }
 
         priceSelector.addEventListener('change', () => {
+            // --- CUSTOMER MODE: Reset dot counter when changing price list ---
+            customerMarkupClicks = 0;
             priceMultiplier = 1.0;
             displayPercentage = 0;
             updatePercentageDisplay();
@@ -385,7 +411,6 @@ function updateCartTotal() {
             document.getElementById('cartContainer').insertBefore(priceSelector, document.getElementById('cartItems'));
         }
 
-        // --- EDIT: Set the initial language for the whole UI on load ---
         switchLanguage(currentLanguage);
         updatePercentageDisplay();
     }
