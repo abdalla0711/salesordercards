@@ -38,7 +38,6 @@ body {
 /* --- Product Grid --- */
 #productGrid {
     display: grid;
-    /* --- EDIT: Changed minmax to 160px to ensure at least two columns on mobile --- */
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     grid-gap: 25px;
     margin-top: 20px;
@@ -71,39 +70,46 @@ body {
     border-bottom: 1px solid #eee;
 }
 
-/* This is a new container for the text inside the card */
 .card-content {
-    padding: 5px;
+    padding: 10px 5px; /* Added more vertical padding */
 }
 
 /* --- Card Content --- */
 .productSquare p {
     margin: 0;
-    padding: 2px 0; /* Vertical padding only */
-    background-color: transparent !important; /* Override inline styles from JS */
-    font-weight: normal !important; /* Override inline styles from JS */
+    padding: 2px 0;
+    background-color: transparent !important;
+    font-weight: normal !important;
     color: #333;
 }
 
-/* Item Name */
-.card-content p:nth-of-type(1) {
-    font-size: .6rem;
+/* --- EDIT: Item Name Styling --- */
+.card-content p:first-of-type {
+    font-size: 0.8rem; /* Made font size bigger */
     font-weight: bold !important;
-    color: #000 !important;
-    padding-bottom: 5px;
-    /* --- EDIT: Added styles to make the item name fit correctly --- */
-    word-wrap: break-word;      /* Allows long words to break and wrap */
-    overflow-wrap: break-word;  /* Another property for word wrapping */
-    min-height: 2.5em;          /* Reserves space to prevent card size shifts */
+    color: #ffffff !important; /* White text for high contrast */
+    background-color: #0056b3; /* Blue background */
+    padding: 4px 6px; /* Padding around the text */
+    border-radius: 4px; /* Slightly rounded corners */
+    display: inline; /* Makes the background wrap only the text */
+    /* These ensure the background renders correctly if the name wraps to a new line */
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+    line-height: 1.6; /* Increased line height for readability */
 }
 
-/* Other text lines */
+/* --- EDIT: Price Line Styling --- */
 .card-content p:nth-of-type(n+2) {
-    font-size: 0.95rem;
+    font-size: 0.85rem; /* Adjusted font size for better fit */
     color: #555;
+    display: flex;            /* Use flexbox to align items in a row */
+    justify-content: space-between; /* Pushes label and price to opposite ends */
+    align-items: center;      /* Vertically centers the items */
+    white-space: nowrap;      /* Prevents the line from wrapping */
+    padding: 2px 5px;         /* Add horizontal padding */
 }
 
-/* Highlight the main prices */
+/* Highlight the main prices (label and value) */
 .card-content p:nth-of-type(2), .card-content p:nth-of-type(4) {
     font-weight: bold !important;
     color: #0056b3;
@@ -127,7 +133,7 @@ body {
 
 /* --- Buttons and Other Elements --- */
 #copyButton {
-    display: none; /* Controlled by JS */
+    display: none;
     font-size: 1rem;
     background-color: #28a745;
     color: white;
@@ -152,17 +158,15 @@ body {
     margin-bottom: 15px;
 }
 
-/* --- EDIT: Added new styles for original and edited prices --- */
-/* Style for the original price (strikethrough) */
+/* --- Price Color Styling (No changes needed here) --- */
 .original-price {
     text-decoration: line-through;
-    color: #dc3545; /* A reddish color */
+    color: #dc3545;
     margin-right: 8px;
-    font-weight: normal !important; /* Override parent bolding */
+    font-weight: normal !important;
 }
 
-/* Style for the new/current price */
 .new-price {
-    color: #28a745; /* A greenish color */
-    font-weight: bold !important; /* Ensure it's bold */
+    color: #28a745;
+    font-weight: bold !important;
 }
