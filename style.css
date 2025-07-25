@@ -182,14 +182,3 @@ body {
     /* Removes any space inside the element's border */
     padding: 0; 
 }
-/* --- Responsive Style for Small Screens --- */
-
-/* This rule applies only to screens 480px wide or smaller */
-@media (max-width: 480px) {
-
-    /* Target the placeholder of the filter input */
-    #filterInput::placeholder {
-        /* Set a smaller font size that will fit on phones */
-        font-size: 12px; 
-    }
-}
