@@ -27,18 +27,28 @@
     <button id="copyButton" style="display:none;">Copy Cart</button>
 </div>
     <div class="frame-container">
-        <div id="fixedArea">
-            <!-- Place this inside your <div id="fixedArea"> in your HTML file -->
-            <h1 id="mainTitle"></h1>
-            <input type="text" id="filterInput" placeholder="Filter by item name">
-            <div id="cartContainer">
-                <div id="cartCustomer"></div>
-                <div id="cartItems"></div>
-                <p id="cartTotal"></p>
-                <button id="copyButton">Copy Cart</button>
-            </div>
-        </div>
+       <!-- This is the complete, correct structure for the top section of your page -->
+
+<div id="fixedArea">
+    <h1 id="mainTitle"></h1>
+
+    <div>
+        <button id="langEn">English</button>
+        <button id="langAr">العربية</button>
     </div>
+
+    <input type="file" id="fallbackFileInput" style="display:none;">
+    <input type="text" id="filterInput">
+
+    <div id="cartContainer">
+        <div id="cartItems"></div>
+        <div id="cartTotal"></div>
+        
+        <!-- The button and comment box that were missing -->
+        <button id="copyButton"></button>
+        <textarea id="cartComment" placeholder="ملاحظات..."></textarea>
+    </div>
+</div>
 
     <div id="productGrid"></div>
     <input type="file" id="fallbackFileInput" accept=".xlsx">
