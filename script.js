@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
     markupDots.style.color = '#cccccc';
     markupDots.style.fontSize = '1rem';
     markupDots.style.verticalAlign = 'middle';
-    markupDots.style.fontWeight = 'normal'; // Ensures the dots are not bold
+    markupDots.style.fontWeight = 'lighter'; // Ensures the dots are not bold
 
 
     controlsContainer.appendChild(decreaseButton);
