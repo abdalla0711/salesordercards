@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- EDIT: Central Translation Object ---
     const translations = {
         en: {
-            mainTitle: "Sales Order from Eagle Consumer Products",
+            mainTitle: "Eagle Store",
             filterPlaceholder: "Search by name or code...",
             priceCa: "Ca",
             priceCaTax: "Ca + tax",
