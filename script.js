@@ -54,6 +54,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let isDiscounting = false;
     let discountBaseMultiplier = 1.0;
     let customerMarkupClicks = 0;
+    let scrollClickCount = 0;
 
     // --- Translation Object ---
     const translations = {
@@ -69,8 +70,8 @@ document.addEventListener('DOMContentLoaded', function() {
             copyErrorAlert: "Copy error.", fileNotFoundAlert: "Price file not found.", commentsLabel: "Comments:", 
             scrollTopTitle: "Scroll to Top", scrollBottomTitle: "Scroll to Bottom",
             priceCategories: {
-                "retail price Q": "Retail Price", "wholesale price": "Wholesale Price", "supermarket price": "Supermarket Price","hypermarket price":
-                    "Hypermarket Price", "other price 1": "Price 1", "other price 2": "Price 2", "other price 3": "Price 3"
+                "retail price Q": "Retail Price", "wholesale price": "Wholesale Price", "supermarket price": "Supermarket Price",
+                "hypermarket price": "Hypermarket Price", "other price 1": "Price 1", "other price 2": "Price 2", "other price 3": "Price 3"
             }
         },
         ar: { 
@@ -85,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
             copyErrorAlert: "حدث خطأ.", fileNotFoundAlert: "ملف الأسعار غير موجود.", commentsLabel: "ملاحظات:", 
             scrollTopTitle: "الانتقال للأعلى", scrollBottomTitle: "الانتقال للأسفل",
             priceCategories: {
-                "retail price Q": "سعر التجزئة القريات", "retail price": "سعر التجزئة", "discountshops price": "سعر التخفيضات",
+              "retail price Q": "سعر التجزئة القريات", "retail price": "سعر التجزئة", "discountshops price": "سعر التخفيضات",
                 "wholesale price": "سعر الجملة", "discountshops price Q": "سعر تخفيضات القريات ", "wholesale price Q": "سعر جملة القريات", "contract 5% price": "سعر العقود5%ـ"
             }
         }
@@ -101,13 +102,9 @@ document.addEventListener('DOMContentLoaded', function() {
         copyButton.textContent = lang.copyButtonText;
         scrollToTopBtn.title = lang.scrollTopTitle;
         scrollToBottomBtn.title = lang.scrollBottomTitle;
-        rebuildPriceSelectorOptions();
     }
 
-    function updatePercentageDisplay() {
-        let prefix = displayPercentage >= 0 ? '+' : '';
-        percentageDisplay.textContent = `${prefix}${displayPercentage.toFixed(0)}%`;
-    }
+    function updatePercentageDisplay() { let prefix = displayPercentage >= 0 ? '+' : ''; percentageDisplay.textContent = `${prefix}${displayPercentage.toFixed(0)}%`; }
 
     langArButton.addEventListener('click', () => switchLanguage('ar'));
     langEnButton.addEventListener('click', () => {
@@ -128,6 +125,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 displayPercentage = 0;
                 updatePercentageDisplay();
                 updateOriginalPrices();
+                scrollClickCount = 0;
                 alert(translations[currentLanguage].unlockedAlert);
             } else {
                 alert(translations[currentLanguage].incorrectPasswordAlert);
@@ -140,20 +138,29 @@ document.addEventListener('DOMContentLoaded', function() {
     increaseButton.addEventListener('click', () => { if (priceMultiplier >= 2.0) { alert(translations[currentLanguage].maxLimitAlert); return; } priceMultiplier += 0.05; if (isDiscounting) { displayPercentage += 5; updatePercentageDisplay(); } else if (isCustomerMode) { customerMarkupClicks++; markupDots.textContent = '•'.repeat(customerMarkupClicks); } else { displayPercentage += 5; updatePercentageDisplay(); } updateMultiplierPrices(); });
     decreaseButton.addEventListener('click', () => { if (priceMultiplier <= 0.55) { alert(translations[currentLanguage].minLimitAlert); return; } if (isCustomerMode && !isDiscounting) { isDiscounting = true; discountBaseMultiplier = priceMultiplier; } customerMarkupClicks = 0; markupDots.textContent = ''; priceMultiplier -= 0.05; displayPercentage -= 5; updateMultiplierPrices(); updatePercentageDisplay(); });
     scrollToTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-    scrollToBottomBtn.addEventListener('click', () => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }));
+    
+    scrollToBottomBtn.addEventListener('click', () => {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        if (isCustomerMode && priceSelector.style.display === 'none') {
+            scrollClickCount++;
+            if (scrollClickCount >= 5) {
+                priceSelector.style.display = 'block';
+                scrollClickCount = 0;
+            }
+        }
+    });
 
-function switchLanguage(lang) {
-    currentLanguage = lang;
-    document.documentElement.lang = lang;
-    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-    updateUIText();
-    updateProductLanguage();
-    updateCartLanguage();
-    updateMultiplierPrices();
-    rebuildPriceSelectorOptions(); // <-- هذا هو السطر الجديد الذي يقوم بترجمة القائمة
+    function switchLanguage(lang) {
+        currentLanguage = lang;
+        document.documentElement.lang = lang;
+        document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+        updateUIText();
+        updateProductLanguage();
+        updateCartLanguage();
+        updateMultiplierPrices();
+        rebuildPriceSelectorOptions();
     }
     
-    // --- (The rest of the functions are mostly unchanged) ---
     function getItemName(product) { if (currentLanguage === 'en' && product['en_item_name']) return product['en_item_name']; return product['item name']; }
     function updateProductLanguage() { document.querySelectorAll('.productSquare').forEach(square => { const productCode = square.dataset.productCode; const product = products.find(p => p['item code'] == productCode); if (product) square.querySelector('.card-content p:first-of-type').textContent = getItemName(product); }); filterInput.dispatchEvent(new Event('input')); }
     function updateCartLanguage() { document.querySelectorAll('.cartItem').forEach(cartItem => { const productCode = cartItem.dataset.productCode; const product = products.find(p => p['item code'] == productCode); if (product) cartItem.querySelector('.itemName').textContent = getItemName(product); }); }
@@ -165,13 +172,13 @@ function switchLanguage(lang) {
     function updateCartTotal() { const cartTotalElement = document.getElementById('cartTotal'); const cartTotalWithTax = cartTotal * 1.15; cartTotalElement.textContent = `${translations[currentLanguage].cartTotalText}: ${cartTotalWithTax.toFixed(2)} SR`; copyButton.classList.toggle('hidden', cartTotal <= 0); }
 
     function rebuildPriceSelectorOptions() {
+        if (!priceSelector.options.length) return; // Don't run if it's empty
         const currentSelection = priceSelector.value;
         const lang = translations[currentLanguage];
-        // Go through each existing option and update its text
         Array.from(priceSelector.options).forEach(option => {
             option.textContent = lang.priceCategories[option.value] || option.value;
         });
-        priceSelector.value = currentSelection; // Keep the same option selected
+        priceSelector.value = currentSelection;
     }
 
     function loadProductsFromExcel(jsonData) { 
@@ -184,12 +191,27 @@ function switchLanguage(lang) {
             if (typeof jsonData[0][header] === 'number' && header.toLowerCase().includes('price')) { 
                 const option = document.createElement('option'); 
                 option.value = header; 
-                option.textContent = lang.priceCategories[header] || header; // Use translation on initial load
+                option.textContent = lang.priceCategories[header] || header;
                 priceSelector.appendChild(option); 
             } 
         }); 
         if (priceSelector.querySelector('[value="retail price Q"]')) priceSelector.value = 'retail price Q'; 
-        priceSelector.addEventListener('change', () => { isDiscounting = false; customerMarkupClicks = 0; markupDots.textContent = ''; priceMultiplier = 1.0; displayPercentage = 0; updatePercentageDisplay(); updateOriginalPrices(); }); 
+        
+        priceSelector.addEventListener('change', () => { 
+            isDiscounting = false; 
+            customerMarkupClicks = 0; 
+            markupDots.textContent = ''; 
+            priceMultiplier = 1.0; 
+            displayPercentage = 0; 
+            updatePercentageDisplay(); 
+            updateOriginalPrices();
+            
+            if (isCustomerMode) {
+                priceSelector.style.display = 'none';
+                scrollClickCount = 0;
+            }
+        }); 
+
         if (!document.getElementById('priceSelector')) document.getElementById('cartContainer').insertBefore(priceSelector, document.getElementById('cartItems')); 
         switchLanguage(currentLanguage); 
         updatePercentageDisplay(); 
