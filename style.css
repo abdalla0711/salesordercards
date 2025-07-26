@@ -20,6 +20,8 @@ body {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     border: none;
     transition: background-color 0.3s;
+    /* --- FIX: Keep the header direction Left-to-Right always --- */
+    direction: ltr;
 }
 
 #filterInput {
@@ -31,16 +33,13 @@ body {
     margin-top: 10px;
 }
 
-/* --- Cart Container (at the bottom) --- */
+/* --- Cart Container (at the bottom, NOT fixed) --- */
 #cartContainer {
-   /* position: fixed;*/
-    bottom: 0;
-    left: 0;
-    right: 0;
     background-color: #fff;
-    padding: 10px;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-    z-index: 99;
+    padding: 20px;
+    margin-top: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     transition: background-color 0.3s;
 }
 
@@ -50,7 +49,6 @@ body {
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     grid-gap: 25px;
     margin-top: 20px;
-    padding-bottom: 150px; /* Add space at the bottom to not be hidden by cart */
 }
 
 /* --- The Product Card --- */
@@ -84,14 +82,14 @@ body {
 /* --- Title and Subtitle --- */
 h1 { margin: 0; text-align: center; }
 #mainTitleText { font-size: 1.5rem; }
-#subtitle { font-size: 0.9rem; color: #6c757d; font-weight: normal; display: block; height: 1.2em; /* Reserve space */ }
+#subtitle { font-size: 0.9rem; color: #6c757d; font-weight: normal; display: block; height: 1.2em; }
 
 /* --- Price Color Styling --- */
 .original-price { text-decoration: line-through; color: #dc3545; margin-right: 8px; font-weight: normal !important; }
 .new-price { color: #28a745; font-weight: bold !important; }
 
 /* --- Scroll Buttons --- */
-#scrollControls { position: absolute; top: 10px; left: 10px; display: flex; flex-direction: column; gap: 5px; }
+#scrollControls { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; gap: 5px; }
 #scrollToTopBtn, #scrollToBottomBtn { background-color: #e9ecef; border: 1px solid #dee2e6; color: #495057; width: 35px; height: 35px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; transition: background-color 0.2s; padding: 0; line-height: 35px; }
 #scrollToTopBtn:hover, #scrollToBottomBtn:hover { background-color: #ced4da; }
 
@@ -104,8 +102,14 @@ h1 { margin: 0; text-align: center; }
 /* ================================== */
 .sales-rep-mode { background-color: #2c3e50; color: #ecf0f1; }
 .sales-rep-mode #fixedArea, .sales-rep-mode #cartContainer { background-color: #34495e; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); }
-.sales-rep-mode .productSquare { background-color: #34495e; border-color: #7f8c8d; }
-.sales-rep-mode .productSquare p, .sales-rep-mode #cartTotal, .sales-rep-mode .cartItem, .sales-rep-mode #subtitle { color: #ecf0f1; }
+/* --- FIX: This rule was removed to keep the product cards white --- */
+/*
+.sales-rep-mode .productSquare {
+    background-color: #34495e;
+    border-color: #7f8c8d;
+}
+*/
+.sales-rep-mode #cartTotal, .sales-rep-mode .cartItem, .sales-rep-mode #subtitle { color: #ecf0f1; }
 .sales-rep-mode .card-content p:first-of-type { color: #fff !important; background-color: #3498db !important; }
 .sales-rep-mode .card-content p:nth-of-type(2), .sales-rep-mode .card-content p:nth-of-type(4) { color: #5dade2; }
 .sales-rep-mode input, .sales-rep-mode textarea, .sales-rep-mode select { background-color: #2c3e50; color: #fff; border-color: #7f8c8d; }
