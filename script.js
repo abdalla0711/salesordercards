@@ -142,14 +142,15 @@ document.addEventListener('DOMContentLoaded', function() {
     scrollToTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
     scrollToBottomBtn.addEventListener('click', () => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }));
 
-    function switchLanguage(lang) {
-        currentLanguage = lang;
-        document.documentElement.lang = lang;
-        document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-        updateUIText();
-        updateProductLanguage();
-        updateCartLanguage();
-        updateMultiplierPrices();
+function switchLanguage(lang) {
+    currentLanguage = lang;
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    updateUIText();
+    updateProductLanguage();
+    updateCartLanguage();
+    updateMultiplierPrices();
+    rebuildPriceSelectorOptions(); // <-- هذا هو السطر الجديد الذي يقوم بترجمة القائمة
     }
     
     // --- (The rest of the functions are mostly unchanged) ---
