@@ -91,7 +91,7 @@ h1 { margin: 0; text-align: center; }
 .new-price { color: #28a745; font-weight: bold !important; }
 
 /* --- Scroll Buttons --- */
-#scrollControls { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; gap: 5px; }
+#scrollControls { position: absolute; top: 10px; left: 10px; display: flex; flex-direction: column; gap: 5px; }
 #scrollToTopBtn, #scrollToBottomBtn { background-color: #e9ecef; border: 1px solid #dee2e6; color: #495057; width: 35px; height: 35px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; transition: background-color 0.2s; padding: 0; line-height: 35px; }
 #scrollToTopBtn:hover, #scrollToBottomBtn:hover { background-color: #ced4da; }
 
