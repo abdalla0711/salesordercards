@@ -57,22 +57,51 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- Translation Object ---
     const translations = {
-        en: { mainTitle: "Eagle Store", salesRepSubtitle: "(Sales Rep Window)", filterPlaceholder: "Register an item by clicking on it...", priceCa: "Ca", priceCaTax: "Ca + tax", priceBund: "Bund", priceBundTax: "Bund + Tax", increaseTitle: "Increase prices by 5%", decreaseTitle: "Decrease prices by 5%", unlockPasswordPrompt: "Please enter the password:", unlockedAlert: "Original prices unlocked!", incorrectPasswordAlert: "Incorrect password.", maxLimitAlert: "Max limit reached.", minLimitAlert: "Min limit reached.", quantityPrompt: "Enter quantity:", cartTotalText: "Total with tax", copyButtonText: "Copy & Open WhatsApp", copySuccessAlert: "Cart copied.", copyErrorAlert: "Copy error.", fileNotFoundAlert: "Price file not found.", commentsLabel: "Comments:", scrollTopTitle: "Scroll to Top", scrollBottomTitle: "Scroll to Bottom" },
-        ar: { mainTitle: "متجر ايجل", salesRepSubtitle: "(نافذة خاصة بالمندوب)", filterPlaceholder: "يمكنك تسجيل الصنف بالضغط عليه...", priceCa: "الكرتون", priceCaTax: "الكرتون+الضريبة", priceBund: "الشد", priceBundTax: "الشد+الضريبة", increaseTitle: "زيادة الأسعار ٥٪", decreaseTitle: "تخفيض الأسعار ٥٪", unlockPasswordPrompt: "الرجاء إدخال كلمة المرور:", unlockedAlert: "تم عرض الأسعار الأصلية!", incorrectPasswordAlert: "كلمة مرور غير صحيحة.", maxLimitAlert: "تم الوصول للحد الأعلى.", minLimitAlert: "تم الوصول للحد الأدنى.", quantityPrompt: "أدخل الكمية:", cartTotalText: "الإجمالي مع الضريبة", copyButtonText: "نسخ الطلب وفتح واتساب", copySuccessAlert: "تم نسخ السلة.", copyErrorAlert: "حدث خطأ.", fileNotFoundAlert: "ملف الأسعار غير موجود.", commentsLabel: "ملاحظات:", scrollTopTitle: "الانتقال للأعلى", scrollBottomTitle: "الانتقال للأسفل" }
+        en: { 
+            mainTitle: "Eagle Store", salesRepSubtitle: "(Sales Rep Window)", 
+            filterPlaceholder: "Register an item by clicking on it...", 
+            priceCa: "Ca", priceCaTax: "Ca + tax", priceBund: "Bund", priceBundTax: "Bund + Tax", 
+            increaseTitle: "Increase prices by 5%", decreaseTitle: "Decrease prices by 5%", 
+            unlockPasswordPrompt: "Please enter the password:", unlockedAlert: "Original prices unlocked!", 
+            incorrectPasswordAlert: "Incorrect password.", maxLimitAlert: "Max limit reached.", minLimitAlert: "Min limit reached.", 
+            quantityPrompt: "Enter quantity:", cartTotalText: "Total with tax", 
+            copyButtonText: "Copy & Open WhatsApp", copySuccessAlert: "Cart copied.", 
+            copyErrorAlert: "Copy error.", fileNotFoundAlert: "Price file not found.", commentsLabel: "Comments:", 
+            scrollTopTitle: "Scroll to Top", scrollBottomTitle: "Scroll to Bottom",
+            priceCategories: {
+                "retail price Q": "Retail Price", "wholesale price": "Wholesale Price", "supermarket price": "Supermarket Price","hypermarket price":
+                    "Hypermarket Price", "other price 1": "Price 1", "other price 2": "Price 2", "other price 3": "Price 3"
+            }
+        },
+        ar: { 
+            mainTitle: "متجر ايجل", salesRepSubtitle: "(نافذة خاصة بالمندوب)", 
+            filterPlaceholder: "يمكنك تسجيل الصنف بالضغط عليه...", 
+            priceCa: "الكرتون", priceCaTax: "الكرتون+الضريبة", priceBund: "الشد", priceBundTax: "الشد+الضريبة", 
+            increaseTitle: "زيادة الأسعار ٥٪", decreaseTitle: "تخفيض الأسعار ٥٪", 
+            unlockPasswordPrompt: "الرجاء إدخال كلمة المرور:", unlockedAlert: "تم عرض الأسعار الأصلية!", 
+            incorrectPasswordAlert: "كلمة مرور غير صحيحة.", maxLimitAlert: "تم الوصول للحد الأعلى.", minLimitAlert: "تم الوصول للحد الأدنى.", 
+            quantityPrompt: "أدخل الكمية:", cartTotalText: "الإجمالي مع الضريبة", 
+            copyButtonText: "نسخ الطلب وفتح واتساب", copySuccessAlert: "تم نسخ السلة.", 
+            copyErrorAlert: "حدث خطأ.", fileNotFoundAlert: "ملف الأسعار غير موجود.", commentsLabel: "ملاحظات:", 
+            scrollTopTitle: "الانتقال للأعلى", scrollBottomTitle: "الانتقال للأسفل",
+            priceCategories: {
+                "retail price Q": "سعر التجزئة", "wholesale price": "سعر الجملة", "supermarket price": "سعر السوبرماركت",
+                "hypermarket price": "سعر الهايبرماركت", "other price 1": "سعر 1", "other price 2": "سعر 2", "other price 3": "سعر 3"
+            }
+        }
     };
 
     function updateUIText() {
         const lang = translations[currentLanguage];
         mainTitleText.textContent = lang.mainTitle;
-        if (isCustomerMode) {
-            subtitle.textContent = lang.salesRepSubtitle;
-        }
+        subtitle.textContent = isCustomerMode ? lang.salesRepSubtitle : '';
         filterInput.placeholder = lang.filterPlaceholder;
         increaseButton.title = lang.increaseTitle;
         decreaseButton.title = lang.decreaseTitle;
         copyButton.textContent = lang.copyButtonText;
         scrollToTopBtn.title = lang.scrollTopTitle;
         scrollToBottomBtn.title = lang.scrollBottomTitle;
+        rebuildPriceSelectorOptions();
     }
 
     function updatePercentageDisplay() {
@@ -80,16 +109,15 @@ document.addEventListener('DOMContentLoaded', function() {
         percentageDisplay.textContent = `${prefix}${displayPercentage.toFixed(0)}%`;
     }
 
-    // --- Event Listeners ---
     langArButton.addEventListener('click', () => switchLanguage('ar'));
     langEnButton.addEventListener('click', () => {
         englishButtonClickCount++;
         if (englishButtonClickCount >= 5) {
             const password = prompt(translations[currentLanguage].unlockPasswordPrompt);
             if (password === "20202030") {
-                document.body.classList.add('sales-rep-mode'); // ACTIVATE DARK MODE
+                document.body.classList.add('sales-rep-mode');
                 isCustomerMode = true;
-                subtitle.textContent = translations[currentLanguage].salesRepSubtitle; // Show subtitle
+                updateUIText();
                 priceSelector.style.display = 'block';
                 increaseButton.disabled = false;
                 decreaseButton.disabled = false;
@@ -109,49 +137,22 @@ document.addEventListener('DOMContentLoaded', function() {
         switchLanguage('en');
     });
 
-    increaseButton.addEventListener('click', () => {
-        if (priceMultiplier >= 2.0) { alert(translations[currentLanguage].maxLimitAlert); return; }
-        priceMultiplier += 0.05;
-        if (isDiscounting) {
-            displayPercentage += 5;
-            updatePercentageDisplay();
-        } else if (isCustomerMode) {
-            customerMarkupClicks++;
-            markupDots.textContent = '•'.repeat(customerMarkupClicks);
-        } else {
-            displayPercentage += 5;
-            updatePercentageDisplay();
-        }
-        updateMultiplierPrices();
-    });
-
-    decreaseButton.addEventListener('click', () => {
-        if (priceMultiplier <= 0.55) { alert(translations[currentLanguage].minLimitAlert); return; }
-        if (isCustomerMode && !isDiscounting) {
-            isDiscounting = true;
-            discountBaseMultiplier = priceMultiplier;
-        }
-        customerMarkupClicks = 0;
-        markupDots.textContent = '';
-        priceMultiplier -= 0.05;
-        displayPercentage -= 5;
-        updateMultiplierPrices();
-        updatePercentageDisplay();
-    });
-
+    increaseButton.addEventListener('click', () => { if (priceMultiplier >= 2.0) { alert(translations[currentLanguage].maxLimitAlert); return; } priceMultiplier += 0.05; if (isDiscounting) { displayPercentage += 5; updatePercentageDisplay(); } else if (isCustomerMode) { customerMarkupClicks++; markupDots.textContent = '•'.repeat(customerMarkupClicks); } else { displayPercentage += 5; updatePercentageDisplay(); } updateMultiplierPrices(); });
+    decreaseButton.addEventListener('click', () => { if (priceMultiplier <= 0.55) { alert(translations[currentLanguage].minLimitAlert); return; } if (isCustomerMode && !isDiscounting) { isDiscounting = true; discountBaseMultiplier = priceMultiplier; } customerMarkupClicks = 0; markupDots.textContent = ''; priceMultiplier -= 0.05; displayPercentage -= 5; updateMultiplierPrices(); updatePercentageDisplay(); });
     scrollToTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
     scrollToBottomBtn.addEventListener('click', () => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }));
 
     function switchLanguage(lang) {
         currentLanguage = lang;
+        document.documentElement.lang = lang;
+        document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
         updateUIText();
         updateProductLanguage();
         updateCartLanguage();
         updateMultiplierPrices();
     }
-
-    // --- (The rest of the JavaScript functions are the same as before) ---
     
+    // --- (The rest of the functions are mostly unchanged) ---
     function getItemName(product) { if (currentLanguage === 'en' && product['en_item_name']) return product['en_item_name']; return product['item name']; }
     function updateProductLanguage() { document.querySelectorAll('.productSquare').forEach(square => { const productCode = square.dataset.productCode; const product = products.find(p => p['item code'] == productCode); if (product) square.querySelector('.card-content p:first-of-type').textContent = getItemName(product); }); filterInput.dispatchEvent(new Event('input')); }
     function updateCartLanguage() { document.querySelectorAll('.cartItem').forEach(cartItem => { const productCode = cartItem.dataset.productCode; const product = products.find(p => p['item code'] == productCode); if (product) cartItem.querySelector('.itemName').textContent = getItemName(product); }); }
@@ -161,7 +162,38 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateProductCardPrices(squareElement, newCaPrice, eaInCa) { const productCode = squareElement.dataset.productCode; const product = products.find(p => p['item code'] == productCode); if (!product) return; const trueBasePrice = parseFloat(product[priceSelector.style.display !== 'none' && priceSelector.value ? priceSelector.value : 'retail price Q']); const eaInCaNum = parseInt(eaInCa); const newEaPrice = newCaPrice / eaInCaNum; let basePriceForComparison; let showOriginal = false; if (isCustomerMode && isDiscounting) { basePriceForComparison = trueBasePrice * discountBaseMultiplier; showOriginal = true; } else if (!isCustomerMode && displayPercentage !== 0) { basePriceForComparison = trueBasePrice * 1.10; showOriginal = true; } const baseEaPriceForComparison = basePriceForComparison / eaInCaNum; const generatePriceHTML = (basePrice, currentPrice) => { if (showOriginal) { return `<span class="original-price">${basePrice.toFixed(2)}</span> <span class="new-price">${currentPrice.toFixed(2)} SR</span>`; } else { return `<span class="new-price">${currentPrice.toFixed(2)} SR</span>`; } }; const contentDiv = squareElement.querySelector('.card-content'); const lang = translations[currentLanguage]; contentDiv.querySelector('p:nth-of-type(2)').innerHTML = `<span>${lang.priceCa}</span> ${generatePriceHTML(basePriceForComparison, newCaPrice)}`; contentDiv.querySelector('p:nth-of-type(3)').innerHTML = `<span>${lang.priceCaTax}</span> ${generatePriceHTML(basePriceForComparison * 1.15, newCaPrice * 1.15)}`; contentDiv.querySelector('p:nth-of-type(4)').innerHTML = `<span>${lang.priceBund}</span> ${generatePriceHTML(baseEaPriceForComparison, newEaPrice)}`; contentDiv.querySelector('p:nth-of-type(5)').innerHTML = `<span>${lang.priceBundTax}</span> ${generatePriceHTML(baseEaPriceForComparison * 1.15, newEaPrice * 1.15)}`; }
     function updateOriginalPrices() { const selectedCategory = priceSelector.value; if (!selectedCategory) return; document.querySelectorAll('.productSquare').forEach(square => { const productCode = square.dataset.productCode; const product = products.find(p => p['item code'] == productCode); if (product) { const basePrice = parseFloat(product[selectedCategory]); if (!isNaN(basePrice)) { const newPrice = basePrice * priceMultiplier; updateProductCardPrices(square, newPrice, product['ea in ca']); } } }); }
     function updateCartTotal() { const cartTotalElement = document.getElementById('cartTotal'); const cartTotalWithTax = cartTotal * 1.15; cartTotalElement.textContent = `${translations[currentLanguage].cartTotalText}: ${cartTotalWithTax.toFixed(2)} SR`; copyButton.classList.toggle('hidden', cartTotal <= 0); }
-    function loadProductsFromExcel(jsonData) { productGrid.innerHTML = ''; products.length = 0; if (!jsonData || jsonData.length === 0) return; const headers = Object.keys(jsonData[0]); jsonData.forEach(product => { if (product['stock quantity'] !== undefined && Number(product['stock quantity']) === 0) return; products.push(product); const square = createProductSquare(product); productGrid.appendChild(square); }); priceSelector.innerHTML = ''; headers.forEach(header => { if (typeof jsonData[0][header] === 'number' && header.toLowerCase().includes('price')) { const option = document.createElement('option'); option.value = header; option.textContent = header; priceSelector.appendChild(option); } }); if (priceSelector.querySelector('[value="retail price Q"]')) priceSelector.value = 'retail price Q'; priceSelector.addEventListener('change', () => { isDiscounting = false; customerMarkupClicks = 0; markupDots.textContent = ''; priceMultiplier = 1.0; displayPercentage = 0; updatePercentageDisplay(); updateOriginalPrices(); }); if (!document.getElementById('priceSelector')) document.getElementById('cartContainer').insertBefore(priceSelector, document.getElementById('cartItems')); switchLanguage(currentLanguage); updatePercentageDisplay(); }
+
+    function rebuildPriceSelectorOptions() {
+        const currentSelection = priceSelector.value;
+        const lang = translations[currentLanguage];
+        // Go through each existing option and update its text
+        Array.from(priceSelector.options).forEach(option => {
+            option.textContent = lang.priceCategories[option.value] || option.value;
+        });
+        priceSelector.value = currentSelection; // Keep the same option selected
+    }
+
+    function loadProductsFromExcel(jsonData) { 
+        productGrid.innerHTML = ''; products.length = 0; if (!jsonData || jsonData.length === 0) return; 
+        const headers = Object.keys(jsonData[0]); 
+        jsonData.forEach(product => { if (product['stock quantity'] !== undefined && Number(product['stock quantity']) === 0) return; products.push(product); const square = createProductSquare(product); productGrid.appendChild(square); }); 
+        priceSelector.innerHTML = ''; 
+        const lang = translations[currentLanguage];
+        headers.forEach(header => { 
+            if (typeof jsonData[0][header] === 'number' && header.toLowerCase().includes('price')) { 
+                const option = document.createElement('option'); 
+                option.value = header; 
+                option.textContent = lang.priceCategories[header] || header; // Use translation on initial load
+                priceSelector.appendChild(option); 
+            } 
+        }); 
+        if (priceSelector.querySelector('[value="retail price Q"]')) priceSelector.value = 'retail price Q'; 
+        priceSelector.addEventListener('change', () => { isDiscounting = false; customerMarkupClicks = 0; markupDots.textContent = ''; priceMultiplier = 1.0; displayPercentage = 0; updatePercentageDisplay(); updateOriginalPrices(); }); 
+        if (!document.getElementById('priceSelector')) document.getElementById('cartContainer').insertBefore(priceSelector, document.getElementById('cartItems')); 
+        switchLanguage(currentLanguage); 
+        updatePercentageDisplay(); 
+    }
+    
     fetch('PRICES.xlsx').then(response => { if (!response.ok) throw new Error('File not found'); return response.arrayBuffer(); }).then(data => { const workbook = XLSX.read(data, { type: 'array' }); const sheet = workbook.Sheets[workbook.SheetNames[0]]; const jsonData = XLSX.utils.sheet_to_json(sheet); loadProductsFromExcel(jsonData); }).catch(err => { console.error("Error fetching or processing Excel file:", err); alert(translations[currentLanguage].fileNotFoundAlert); fallbackFileInput.style.display = 'block'; fallbackFileInput.addEventListener('change', function(e) { const reader = new FileReader(); reader.onload = function(ev) { const workbook = XLSX.read(ev.target.result, { type: 'array' }); const sheet = workbook.Sheets[workbook.SheetNames[0]]; const jsonData = XLSX.utils.sheet_to_json(sheet); loadProductsFromExcel(jsonData); fallbackFileInput.style.display = 'none'; }; reader.readAsArrayBuffer(e.target.files[0]); }); });
     copyButton.addEventListener('click', function() { let cartText = ''; document.querySelectorAll('.cartItem').forEach(item => { const tempItem = item.cloneNode(true); tempItem.querySelector('.delete-btn').remove(); cartText += tempItem.innerText.replace(/\s+/g, ' ').trim() + '\n'; }); cartText += '\n' + document.getElementById('cartTotal').textContent; const comment = cartCommentInput.value.trim(); if (comment) cartText += `\n\n${translations[currentLanguage].commentsLabel}\n` + comment; navigator.clipboard.writeText(cartText).then(() => { alert(translations[currentLanguage].copySuccessAlert); const phoneNumber = "966550245871"; const encodedCartText = encodeURIComponent(cartText); const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedCartText}`; window.open(whatsappUrl, '_blank'); }).catch(err => { console.error('Failed to copy or open WhatsApp: ', err); alert(translations[currentLanguage].copyErrorAlert); }); });
     filterInput.addEventListener('input', function() { const val = this.value.toLowerCase(); document.querySelectorAll('.productSquare').forEach(el => { const nameAr = el.dataset.productNameAr.toLowerCase(); const nameEn = el.dataset.productNameEn.toLowerCase(); const code = el.dataset.productCode.toLowerCase(); const isVisible = nameAr.includes(val) || nameEn.includes(val) || code.includes(val); el.style.display = isVisible ? 'block' : 'none'; }); });
