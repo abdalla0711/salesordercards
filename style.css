@@ -33,7 +33,7 @@ body {
 
 /* --- Cart Container (at the bottom) --- */
 #cartContainer {
-    position: fixed;
+   /* position: fixed;*/
     bottom: 0;
     left: 0;
     right: 0;
