@@ -138,38 +138,31 @@ document.addEventListener('DOMContentLoaded', function() {
         switchLanguage('en');
     });
 
-// --- هذا هو الكود الجديد الذي يصلح المشكلة ---
+// --- استبدل الكود القديم بهذا الكود ---
 increaseButton.addEventListener('click', () => {
-    let newMultiplier;
-
-    // A. If we are in sales rep mode and adding markup (not discounting)
-    if (isCustomerMode && !isDiscounting) {
-        // Apply a compounding 5% increase to the current price
-        newMultiplier = priceMultiplier * 1.05;
-    } 
-    // B. For all other cases (public mode, or cancelling a discount)
-    else {
-        // Apply a flat 5% increase based on the original price
-        newMultiplier = priceMultiplier + 0.05;
-    }
-
-    // Safety check to prevent extreme prices
-    const limitMultiplier = isDiscounting ? discountBaseMultiplier : 1.0;
-    if (newMultiplier >= limitMultiplier * 2.5) { // Increased limit slightly for compounding
+    // Safety check
+    if (priceMultiplier >= 2.5) {
         alert(translations[currentLanguage].maxLimitAlert);
         return;
     }
-    
-    priceMultiplier = newMultiplier;
 
-    // Update the UI as before
     if (isDiscounting) {
+        // If we are cancelling a discount, the logic is simple addition.
+        priceMultiplier += 0.05;
         displayPercentage += 5;
         updatePercentageDisplay();
-    } else if (isCustomerMode) {
+    } 
+    else if (isCustomerMode) {
+        // THIS IS THE FIX:
+        // Instead of adding to the old multiplier, we recalculate it from scratch
+        // based on how many times the button has been clicked.
         customerMarkupClicks++;
-        markupDots.textContent = '.'.repeat(customerMarkupClicks);
-    } else {
+        priceMultiplier = 1.0 + (customerMarkupClicks * 0.05);
+        markupDots.textContent = '•'.repeat(customerMarkupClicks);
+    } 
+    else {
+        // Public mode logic remains the same
+        priceMultiplier += 0.05;
         displayPercentage += 5;
         updatePercentageDisplay();
     }
