@@ -23,8 +23,13 @@
             <small id="subtitle"></small>
         </h1>
         
+        <!-- FIX: Buttons are now inside this container in the HTML -->
         <div id="topControls">
-            <!-- The new home for language and dark mode buttons -->
+            <div id="langControls">
+                <button id="langEn">English</button>
+                <button id="langAr">العربية</button>
+            </div>
+            <button id="darkModeToggle" title="Toggle Dark Mode">🌙</button> 
         </div>
 
         <input type="file" id="fallbackFileInput" style="display:none;">
