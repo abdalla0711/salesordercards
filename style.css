@@ -45,43 +45,50 @@ body {
     #scrollControls { order: 5; flex-direction: row !important; position: static !important; flex-shrink: 0; }
 }
 
-/* --- NARROW SCREEN LAYOUT (Mobile) --- */
+/* --- NARROW SCREEN LAYOUT (Mobile) - COMPACT VERSION --- */
 @media (max-width: 849px) {
     body {
-        padding-top: 160px; /* Reduced padding for the shorter header */
+        padding-top: 125px; /* Reduced padding for the shorter header */
     }
     #fixedArea {
         display: flex;
-        flex-wrap: wrap; /* Allow items to wrap to the next line */
+        flex-wrap: wrap;
         justify-content: space-between;
         align-items: center;
-        gap: 10px;
+        row-gap: 8px; /* Reduced vertical gap */
+        padding: 8px; /* Reduced padding */
     }
     h1 {
-        flex-basis: 100%; /* Title takes the full first row */
+        flex-basis: 100%;
         text-align: center;
         order: 1;
+        margin-bottom: 5px; /* Reduced bottom margin */
     }
     #topControls {
-        order: 2; /* Language/Dark mode buttons come second */
+        order: 2;
+        flex-grow: 1; /* Allow it to take available space */
     }
     #controlsContainer {
-        order: 3; /* Price controls come third */
+        order: 3;
     }
     #filterInput {
-        flex-basis: 100%; /* Search bar takes the full next row */
+        flex-basis: 100%;
         order: 4;
-        margin-top: 0; /* Remove extra space */
+        margin: 0; /* Remove all margins */
+    }
+    #mainTitleText {
+        font-size: 1.2rem; /* Slightly smaller title */
+    }
+    #subtitle {
+        font-size: 0.8rem; /* Smaller subtitle */
     }
 }
 
 #filterInput {
     width: calc(100% - 30px);
-    padding: 12px 15px;
+    padding: 10px 15px; /* Reduced padding */
     border-radius: 8px;
     border: 1px solid #ddd;
-    margin-bottom: 5px;
-    margin-top: 10px;
 }
 
 /* --- Cart Container --- */
@@ -131,7 +138,7 @@ h1 { margin: 0; text-align: center; }
 /* --- Language & Dark Mode Buttons --- */
 #topControls { display: flex; justify-content: center; align-items: center; }
 #langControls { display: inline-flex; border-radius: 8px; overflow: hidden; border: 1px solid #ced4da; }
-#langEn, #langAr { background-color: #ffffff; border: none; padding: 8px 16px; font-size: 0.9rem; font-weight: 500; color: #495057; cursor: pointer; transition: all 0.2s ease-in-out; white-space: nowrap; }
+#langEn, #langAr { background-color: #ffffff; border: none; padding: 8px 12px; font-size: 0.8rem; font-weight: 500; color: #495057; cursor: pointer; transition: all 0.2s ease-in-out; white-space: nowrap; }
 #langEn { border-left: 1px solid #ced4da; }
 #langControls button.active { background-color: #007bff; color: white; }
 #langControls button:not(.active):hover { background-color: #e9ecef; }
