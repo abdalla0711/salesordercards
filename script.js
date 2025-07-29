@@ -89,9 +89,9 @@ document.addEventListener('DOMContentLoaded', function() {
             copyButtonText: "نسخ الطلب وفتح واتساب", copySuccessAlert: "تم نسخ السلة.", 
             copyErrorAlert: "حدث خطأ.", fileNotFoundAlert: "ملف الأسعار غير موجود.", commentsLabel: "ملاحظات:", 
             scrollTopTitle: "الانتقال للأعلى", scrollBottomTitle: "الانتقال للأسفل",
-            priceCategories: {
-                "retail price Q": "سعر التجزئة", "wholesale price": "سعر الجملة", "supermarket price": "سعر السوبرماركت",
-                "hypermarket price": "سعر الهايبرماركت", "other price 1": "سعر 1", "other price 2": "سعر 2", "other price 3": "سعر 3"
+               priceCategories: {
+                "retail price Q": "سعر التجزئة القريات", "Retail Price": "سعر التجزئة", "discountshops price": "سعر التخفيضات",
+                "wholesale price": "سعر الجملة", "discountshops price Q": "سعر تخفيضات القريات ", "wholesale price Q": "سعر جملة القريات", "contract 5% price": "سعر العقود5%ـ"
             }
         }
     };
