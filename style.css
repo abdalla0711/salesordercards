@@ -219,3 +219,61 @@ h1 { margin: 0; text-align: center; }
 
 /* --- Removing old button margin from JS for cleaner look --- */
 #increasePrice { margin-left: 0 !important; }
+
+/* ============================================== */
+/*          MODERN LANGUAGE SWITCHER              */
+/* ============================================== */
+
+/* 1. The container for the language buttons */
+#langControls {
+    display: inline-flex; /* Align buttons horizontally */
+    border-radius: 8px;   /* Rounded corners for the group */
+    overflow: hidden;     /* Keeps the corners sharp inside */
+    border: 1px solid #ced4da;
+}
+
+/* 2. General style for both language buttons */
+#langEn, #langAr {
+    background-color: #ffffff;
+    border: none;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #495057;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+/* 3. Add a separator line between the buttons */
+#langEn {
+    border-left: 1px solid #ced4da; /* Separator line */
+}
+
+/* 4. The currently active language button */
+#langControls button.active {
+    background-color: #007bff; /* A nice blue color for active state */
+    color: white;
+}
+/* Inactive button hover effect */
+#langControls button:not(.active):hover {
+    background-color: #e9ecef;
+}
+
+/* 5. Styling for Sales Rep (Dark) Mode */
+.sales-rep-mode #langControls {
+    border-color: #7f8c8d;
+}
+.sales-rep-mode #langEn, 
+.sales-rep-mode #langAr {
+    background-color: #4b6584;
+    color: #ecf0f1;
+}
+.sales-rep-mode #langEn {
+    border-left-color: #7f8c8d;
+}
+.sales-rep-mode #langControls button.active {
+    background-color: #3498db; /* A bright blue for dark mode */
+}
+.sales-rep-mode #langControls button:not(.active):hover {
+    background-color: #7f8c8d;
+}
