@@ -138,16 +138,44 @@ document.addEventListener('DOMContentLoaded', function() {
         switchLanguage('en');
     });
 
-    increaseButton.addEventListener('click', () => {
-        const baseMultiplier = isDiscounting ? discountBaseMultiplier : 1.0;
-        const newMultiplier = priceMultiplier + 0.05;
-        if (newMultiplier >= baseMultiplier * 2) { alert(translations[currentLanguage].maxLimitAlert); return; }
-        priceMultiplier = newMultiplier;
-        if (isDiscounting) { displayPercentage += 5; updatePercentageDisplay(); } 
-        else if (isCustomerMode) { customerMarkupClicks++; markupDots.textContent = '•'.repeat(customerMarkupClicks); } 
-        else { displayPercentage += 5; updatePercentageDisplay(); }
-        updateMultiplierPrices();
-    });
+// --- هذا هو الكود الجديد الذي يصلح المشكلة ---
+increaseButton.addEventListener('click', () => {
+    let newMultiplier;
+
+    // A. If we are in sales rep mode and adding markup (not discounting)
+    if (isCustomerMode && !isDiscounting) {
+        // Apply a compounding 5% increase to the current price
+        newMultiplier = priceMultiplier * 1.05;
+    } 
+    // B. For all other cases (public mode, or cancelling a discount)
+    else {
+        // Apply a flat 5% increase based on the original price
+        newMultiplier = priceMultiplier + 0.05;
+    }
+
+    // Safety check to prevent extreme prices
+    const limitMultiplier = isDiscounting ? discountBaseMultiplier : 1.0;
+    if (newMultiplier >= limitMultiplier * 2.5) { // Increased limit slightly for compounding
+        alert(translations[currentLanguage].maxLimitAlert);
+        return;
+    }
+    
+    priceMultiplier = newMultiplier;
+
+    // Update the UI as before
+    if (isDiscounting) {
+        displayPercentage += 5;
+        updatePercentageDisplay();
+    } else if (isCustomerMode) {
+        customerMarkupClicks++;
+        markupDots.textContent = '.'.repeat(customerMarkupClicks);
+    } else {
+        displayPercentage += 5;
+        updatePercentageDisplay();
+    }
+    
+    updateMultiplierPrices();
+});
 
     decreaseButton.addEventListener('click', () => { if (priceMultiplier <= 0.55) { alert(translations[currentLanguage].minLimitAlert); return; } if (isCustomerMode && !isDiscounting) { isDiscounting = true; discountBaseMultiplier = priceMultiplier; } customerMarkupClicks = 0; markupDots.textContent = ''; priceMultiplier -= 0.05; displayPercentage -= 5; updateMultiplierPrices(); updatePercentageDisplay(); });
     scrollToTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
