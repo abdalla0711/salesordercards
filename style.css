@@ -147,7 +147,7 @@ h1 { margin: 0; text-align: center; }
     margin: 0 3px;
     flex-shrink: 0;
     /* Black symbol for light mode */
-    background-image: url("https://www.sama.gov.sa/ar-sa/Currency/SRS/PublishingImages/Saudi_Riyal_Symbol-1.png");
+    background-image: url("https://ibn-thani.com/wp-content/uploads/2025/02/Photoroom_20250220_183836.png");
 }
 .dark-mode .currency-symbol {
     /* White symbol for dark mode */
