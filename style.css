@@ -23,7 +23,7 @@ body {
 }
 
 /* --- Layout for wide screens --- */
-@media (min-width: 768px) {
+@media (min-width: 850px) {
     #fixedArea {
         display: flex;
         justify-content: space-between;
@@ -41,12 +41,11 @@ body {
     h1 { order: 1; text-align: left; flex-shrink: 0; }
     #filterInput { order: 2; width: 300px; margin: 0 !important; }
     #controlsContainer { order: 3; flex-shrink: 0; }
-    #langControls { order: 4; flex-shrink: 0; }
+    #topControls { order: 4; flex-shrink: 0; } /* Use the new container */
     #scrollControls { order: 5; flex-direction: row !important; position: static !important; flex-shrink: 0; }
-    #langControls button { min-width: 90px; text-align: center; }
 }
 /* Layout for mobile screens */
-@media (max-width: 767px) {
+@media (max-width: 849px) {
     body {
         padding-top: 200px;
     }
@@ -92,22 +91,12 @@ h1 { margin: 0; text-align: center; }
 #mainTitleText { font-size: 1.5rem; }
 #subtitle { font-size: 0.9rem; color: #6c757d; font-weight: normal; display: block; height: 1.2em; }
 .original-price { text-decoration: line-through; color: #dc3545; margin-right: 8px; font-weight: normal !important; }
-/* --- هذا هو الكود الجديد والصحيح --- */
-.new-price {
-    color: #28a745;
-    font-weight: bold !important;
-    display: inline-flex; /* تفعيل Flexbox */
-    align-items: center;  /* محاذاة السعر والرمز عمودياً */
-    justify-content: center; /* محاذاة أفقية (احتياطي) */
-}
-
-
-
+.new-price { color: #28a745; font-weight: bold !important; display: inline-flex; align-items: center; }
 #scrollControls { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; gap: 5px; }
 #scrollToTopBtn, #scrollToBottomBtn { background-color: #e9ecef; border: 1px solid #dee2e6; color: #495057; width: 35px; height: 35px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; transition: background-color 0.2s; padding: 0; line-height: 35px; }
 #scrollToTopBtn:hover, #scrollToBottomBtn:hover { background-color: #ced4da; }
 
-/* --- Modern Controls --- */
+/* --- Modern Price Controls --- */
 #controlsContainer { display: inline-flex; align-items: center; border: 1px solid #dee2e6; border-radius: 50px; padding: 4px; background-color: #f8f9fa; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); }
 #increasePrice, #decreasePrice { background-color: #fff; border: 1px solid #ced4da; width: 32px; height: 32px; border-radius: 50%; font-size: 1.4rem; font-weight: bold; color: #495057; cursor: pointer; transition: all 0.2s ease-in-out; display: flex; justify-content: center; align-items: center; padding-bottom: 3px; }
 #increasePrice:hover { background-color: #28a745; color: white; border-color: #28a745; transform: scale(1.1); }
@@ -115,72 +104,14 @@ h1 { margin: 0; text-align: center; }
 #percentageDisplay { font-weight: bold; color: #0056b3; margin: 0 12px; min-width: 50px; text-align: center; }
 #increasePrice { margin-left: 0 !important; }
 
-/* ============================================== */
-/*          MODERN LANGUAGE SWITCHER (FIXED)      */
-/* ============================================== */
-
-/* 1. The container for the language buttons */
-#langControls {
-    display: inline-flex;
-    border-radius: 8px;
-    overflow: hidden;
-    border: 1px solid #ced4da;
-    flex-shrink: 0; /* --- FIX: Prevents the container from shrinking */
-}
-
-/* 2. General style for both language buttons */
-#langEn, #langAr, #darkModeToggle {
-    background-color: #ffffff;
-    border: none;
-    padding: 8px 16px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #495057;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    white-space: nowrap; /* --- FIX: Prevents text from wrapping */
-}
-
-/* 3. Add a separator line between the buttons */
-#langEn, #darkModeToggle {
-    border-left: 1px solid #ced4da; /* Separator line */
-}
-
-/* 4. The currently active language button */
-#langControls button.active {
-    background-color: #007bff;
-    color: white;
-}
-/* Inactive button hover effect */
-#langControls button:not(.active):hover {
-    background-color: #e9ecef;
-}
-
-/* 5. Styling for Dark Mode */
-.dark-mode #langControls {
-    border-color: #7f8c8d;
-}
-.dark-mode #langEn, 
-.dark-mode #langAr,
-.dark-mode #darkModeToggle {
-    background-color: #4b6584;
-    color: #ecf0f1;
-    border-left-color: #7f8c8d;
-}
-.dark-mode #langControls button.active {
-    background-color: #3498db;
-}
-.dark-mode #langControls button:not(.active):hover {
-    background-color: #7f8c8d;
-}
-
-
-
-#langEn, #langAr { background-color: #ffffff; border: none; padding: 8px 16px; font-size: 0.9rem; font-weight: 500; color: #495057; cursor: pointer; transition: all 0.2s ease-in-out; }
+/* --- FIXED Language & Dark Mode Buttons --- */
+#topControls { display: flex; justify-content: center; margin: 10px 0; }
+#langControls { display: inline-flex; border-radius: 8px; overflow: hidden; border: 1px solid #ced4da; }
+#langEn, #langAr { background-color: #ffffff; border: none; padding: 8px 16px; font-size: 0.9rem; font-weight: 500; color: #495057; cursor: pointer; transition: all 0.2s ease-in-out; white-space: nowrap; }
 #langEn { border-left: 1px solid #ced4da; }
 #langControls button.active { background-color: #007bff; color: white; }
 #langControls button:not(.active):hover { background-color: #e9ecef; }
-#darkModeToggle { background-color: #f8f9fa; border: none; border-left: 1px solid #ced4da; padding: 8px 12px; font-size: 1.1rem; cursor: pointer; transition: all 0.2s ease-in-out; }
+#darkModeToggle { background-color: #ffffff; border: 1px solid #ced4da; border-radius: 8px; margin-left: 10px; padding: 8px 12px; font-size: 1.1rem; cursor: pointer; transition: all 0.2s ease-in-out; }
 #darkModeToggle:hover { background-color: #e9ecef; }
 
 /* ================================== */
@@ -198,28 +129,27 @@ h1 { margin: 0; text-align: center; }
 .dark-mode #increasePrice, .dark-mode #decreasePrice { background-color: #4b6584; border-color: #7f8c8d; color: #ecf0f1; }
 .dark-mode #percentageDisplay { color: #5dade2; }
 .dark-mode #langControls { border-color: #7f8c8d; }
-.dark-mode #langEn, .dark-mode #langAr, .dark-mode #darkModeToggle { background-color: #4b6584; color: #ecf0f1; border-left-color: #7f8c8d; }
+.dark-mode #langEn, .dark-mode #langAr { background-color: #4b6584; color: #ecf0f1; border-left-color: #7f8c8d; }
+.dark-mode #darkModeToggle { background-color: #4b6584; color: #ecf0f1; border-color: #7f8c8d; }
 .dark-mode #langControls button.active { background-color: #3498db; }
 .dark-mode #langControls button:not(.active):hover, .dark-mode #darkModeToggle:hover { background-color: #7f8c8d; }
 
 /* ============================================== */
-/*          SAUDI RIYAL SVG SYMBOL                */
+/*          SAUDI RIYAL SYMBOL (IMAGE FIX)        */
 /* ============================================== */
-/* --- هذا هو الكود الجديد والصحيح --- */
 .currency-symbol {
     display: inline-block;
-    width: 28px;
-    height: 14px;
+    width: 25px; /* Adjusted size */
+    height: 12px; /* Adjusted size */
     background-repeat: no-repeat;
     background-size: contain;
     background-position: center;
-    margin-left: 4px;  /* مسافة بسيطة من السعر */
-    margin-right: 4px; /* مسافة بسيطة من السعر */
-    flex-shrink: 0;    /* لمنع الرمز من الانكماش */
-    
-    /* The SVG icon (dark gray color for light mode) */
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 16'%3E%3Cpath fill='%23000000' d='M29.5,4.7H26.3V2.1c0-0.4-0.3-0.7-0.7-0.7s-0.7,0.3-0.7,0.7v2.6h-2.1c-0.4,0-0.7,0.3-0.7,0.7s0.3,0.7,0.7,0.7h2.1v2.5h-2.9 c-0.4,0-0.7,0.3-0.7,0.7s0.3,0.7,0.7,0.7h2.9v2.6c0,0.4,0.3,0.7,0.7,0.7s0.7-0.3,0.7-0.7V9.7h3.2c0.4,0,0.7-0.3,0.7-0.7 S29.9,8.3,29.5,8.3H26.3V6.1h3.2c0.4,0,0.7-0.3,0.7-0.7S29.9,4.7,29.5,4.7z M12.8,1.4H2.8C2.4,1.4,2.1,1.7,2.1,2.1v9.8 c0,0.4,0.3,0.7,0.7,0.7h1.6v1.1c0,0.4,0.3,0.7,0.7,0.7s0.7-0.3,0.7-0.7v-1.1h4.6v1.1c0,0.4,0.3,0.7,0.7,0.7s0.7-0.3,0.7-0.7v-1.1 h1.6c0.4,0,0.7-0.3,0.7-0.7V2.1C13.5,1.7,13.2,1.4,12.8,1.4z M12.1,9.1H3.5V2.8h8.6V9.1z'/%3E%3C/svg%3E");
+    margin: 0 3px;
+    flex-shrink: 0;
+    /* Black symbol for light mode */
+    background-image: url("https://i.ibb.co/9vM9kYq/saudi-riyal-symbol-black.png");
 }
-
-
-.dark-mode .currency-symbol { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 16'%3E%3Cpath fill='%23ffffff' d='M29.5,4.7H26.3V2.1c0-0.4-0.3-0.7-0.7-0.7s-0.7,0.3-0.7,0.7v2.6h-2.1c-0.4,0-0.7,0.3-0.7,0.7s0.3,0.7,0.7,0.7h2.1v2.5h-2.9 c-0.4,0-0.7,0.3-0.7,0.7s0.3,0.7,0.7,0.7h2.9v2.6c0,0.4,0.3,0.7,0.7,0.7s0.7-0.3,0.7-0.7V9.7h3.2c0.4,0,0.7-0.3,0.7-0.7 S29.9,8.3,29.5,8.3H26.3V6.1h3.2c0.4,0,0.7-0.3,0.7-0.7S29.9,4.7,29.5,4.7z M12.8,1.4H2.8C2.4,1.4,2.1,1.7,2.1,2.1v9.8 c0,0.4,0.3,0.7,0.7,0.7h1.6v1.1c0,0.4,0.3,0.7,0.7,0.7s0.7-0.3,0.7-0.7v-1.1h4.6v1.1c0,0.4,0.3,0.7,0.7,0.7s0.7-0.3,0.7-0.7v-1.1 h1.6c0.4,0,0.7-0.3,0.7-0.7V2.1C13.5,1.7,13.2,1.4,12.8,1.4z M12.1,9.1H3.5V2.8h8.6V9.1z'/%3E%3C/svg%3E"); }
+.dark-mode .currency-symbol {
+    /* White symbol for dark mode */
+    background-image: url("https://i.ibb.co/P9tPzCg/saudi-riyal-symbol-white.png");
+}
