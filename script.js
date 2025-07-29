@@ -20,7 +20,15 @@ document.addEventListener('DOMContentLoaded', function() {
     priceSelector.style.display = 'none';
 
     // --- Create and Add Price Adjustment Controls ---
-    const controlsContainer = filterInput.parentElement;
+    const header = document.getElementById('fixedArea'); // Target the main header
+    const langControls = document.createElement('div'); // Container for lang buttons
+    langControls.id = 'langControls';
+    langControls.appendChild(langEnButton);
+    langControls.appendChild(langArButton);
+
+    const controlsContainer = document.createElement('div'); // Container for +/- buttons
+    controlsContainer.id = 'controlsContainer';
+
     const increaseButton = document.createElement('button');
     increaseButton.textContent = '+';
     increaseButton.id = 'increasePrice';
@@ -38,10 +46,17 @@ document.addEventListener('DOMContentLoaded', function() {
     markupDots.style.fontSize = '1.2rem';
     markupDots.style.verticalAlign = 'middle';
     markupDots.style.fontWeight = 'normal';
+
+    // Append controls to their new container
     controlsContainer.appendChild(decreaseButton);
     controlsContainer.appendChild(percentageDisplay);
     controlsContainer.appendChild(increaseButton);
     controlsContainer.appendChild(markupDots);
+
+    // Append the new containers to the main header
+    header.appendChild(controlsContainer);
+    header.appendChild(langControls); // Add the language buttons container
+
 
     // --- Global State ---
     const products = [];
@@ -86,8 +101,8 @@ document.addEventListener('DOMContentLoaded', function() {
             copyErrorAlert: "حدث خطأ.", fileNotFoundAlert: "ملف الأسعار غير موجود.", commentsLabel: "ملاحظات:", 
             scrollTopTitle: "الانتقال للأعلى", scrollBottomTitle: "الانتقال للأسفل",
             priceCategories: {
-              "retail price Q": "سعر التجزئة القريات", "retail price": "سعر التجزئة", "discountshops price": "سعر التخفيضات",
-                "wholesale price": "سعر الجملة", "discountshops price Q": "سعر تخفيضات القريات ", "wholesale price Q": "سعر جملة القريات", "contract 5% price": "سعر العقود5%ـ"
+                "retail price Q": "سعر التجزئة", "wholesale price": "سعر الجملة", "supermarket price": "سعر السوبرماركت",
+                "hypermarket price": "سعر الهايبرماركت", "other price 1": "سعر 1", "other price 2": "سعر 2", "other price 3": "سعر 3"
             }
         }
     };
@@ -108,6 +123,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     langArButton.addEventListener('click', () => switchLanguage('ar'));
     langEnButton.addEventListener('click', () => {
+        // --- This click counter is only for unlocking the sales rep mode ---
         englishButtonClickCount++;
         if (englishButtonClickCount >= 5) {
             const password = prompt(translations[currentLanguage].unlockPasswordPrompt);
@@ -130,12 +146,35 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 alert(translations[currentLanguage].incorrectPasswordAlert);
             }
-            englishButtonClickCount = 0;
+            englishButtonClickCount = 0; // Reset counter after attempt
         }
+        // Always switch language regardless of password attempt
         switchLanguage('en');
     });
 
-    increaseButton.addEventListener('click', () => { if (priceMultiplier >= 2.0) { alert(translations[currentLanguage].maxLimitAlert); return; } priceMultiplier += 0.05; if (isDiscounting) { displayPercentage += 5; updatePercentageDisplay(); } else if (isCustomerMode) { customerMarkupClicks++; markupDots.textContent = '•'.repeat(customerMarkupClicks); } else { displayPercentage += 5; updatePercentageDisplay(); } updateMultiplierPrices(); });
+    increaseButton.addEventListener('click', () => {
+        const baseMultiplier = isDiscounting ? discountBaseMultiplier : 1.0;
+        const newMultiplier = priceMultiplier + 0.05;
+
+        if (newMultiplier >= baseMultiplier * 2) {
+            alert(translations[currentLanguage].maxLimitAlert);
+            return;
+        }
+        priceMultiplier = newMultiplier;
+
+        if (isDiscounting) {
+            displayPercentage += 5;
+            updatePercentageDisplay();
+        } else if (isCustomerMode) {
+            customerMarkupClicks++;
+            markupDots.textContent = '•'.repeat(customerMarkupClicks);
+        } else {
+            displayPercentage += 5;
+            updatePercentageDisplay();
+        }
+        updateMultiplierPrices();
+    });
+
     decreaseButton.addEventListener('click', () => { if (priceMultiplier <= 0.55) { alert(translations[currentLanguage].minLimitAlert); return; } if (isCustomerMode && !isDiscounting) { isDiscounting = true; discountBaseMultiplier = priceMultiplier; } customerMarkupClicks = 0; markupDots.textContent = ''; priceMultiplier -= 0.05; displayPercentage -= 5; updateMultiplierPrices(); updatePercentageDisplay(); });
     scrollToTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
     
@@ -172,7 +211,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateCartTotal() { const cartTotalElement = document.getElementById('cartTotal'); const cartTotalWithTax = cartTotal * 1.15; cartTotalElement.textContent = `${translations[currentLanguage].cartTotalText}: ${cartTotalWithTax.toFixed(2)} SR`; copyButton.classList.toggle('hidden', cartTotal <= 0); }
 
     function rebuildPriceSelectorOptions() {
-        if (!priceSelector.options.length) return; // Don't run if it's empty
+        if (!priceSelector.options.length) return;
         const currentSelection = priceSelector.value;
         const lang = translations[currentLanguage];
         Array.from(priceSelector.options).forEach(option => {
@@ -212,7 +251,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }); 
 
-        if (!document.getElementById('priceSelector')) document.getElementById('cartContainer').insertBefore(priceSelector, document.getElementById('cartItems')); 
+        // Important: Add the priceSelector to the cartContainer, not the header
+        document.getElementById('cartContainer').insertBefore(priceSelector, document.getElementById('cartItems')); 
         switchLanguage(currentLanguage); 
         updatePercentageDisplay(); 
     }
