@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Apply a compounding 5% increase on the CURRENT price.
             priceMultiplier *= 1.05;
             customerMarkupClicks++;
-            markupDots.textContent = '•'.repeat(customerMarkupClicks);
+            markupDots.textContent = '.'.repeat(customerMarkupClicks);
         }
         // B. For all other cases (public mode, or cancelling a discount)
         else {
