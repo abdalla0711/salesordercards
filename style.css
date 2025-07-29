@@ -24,35 +24,39 @@ body {
 
 
 /* --- هذا هو الكود الجديد الذي يحل كل المشاكل --- */
+/* --- هذا هو الكود الجديد الذي يحل المشاكل نهائياً --- */
 @media (min-width: 768px) {
     #fixedArea {
         display: flex;
-        justify-content: space-between; /* Keeps elements spread out */
+        justify-content: space-between;
         align-items: center;
-        gap: 20px; /* Increased gap for better spacing */
-        padding: 10px 20px; /* More padding for a cleaner look */
+        gap: 15px;
+        padding: 10px 20px;
+        height: 80px; /* FIX 2: Give the header a fixed height */
     }
 
-    /* FIX 3: Add top margin to the grid to create space */
-    #productGrid {
-        margin-top: 100px; /* Adjust this value as needed */
-    }
-
-    /* Re-order elements for the new layout */
-    h1 { order: 1; text-align: left; flex-shrink: 0; } /* Prevent title from shrinking */
-    #filterInput { order: 2; width: 350px; margin: 0 !important; }
-    #controlsContainer { order: 3; }
-    #langControls { order: 4; }
-    #scrollControls { 
-        order: 5; 
-        flex-direction: row !important; /* Horizontal scroll buttons */
-        position: static !important; /* FIX 2: Remove absolute positioning */
-        flex-shrink: 0; /* Prevent buttons from shrinking */
+    /* FIX 2: Set the body's top padding equal to the header's height */
+    body {
+        padding-top: 100px; /* 80px for header + 20px extra space */
     }
     
-    /* FIX 1: Ensure language buttons have enough space */
+    /* Remove the margin from the grid as we are now using padding on the body */
+    #productGrid {
+        margin-top: 0; 
+    }
+
+    /* Re-order elements */
+    h1 { order: 1; text-align: left; flex-shrink: 0; }
+    #filterInput { order: 2; width: 300px; margin: 0 !important; }
+    #controlsContainer { order: 3; flex-shrink: 0; }
+    #langControls { order: 4; flex-shrink: 0; }
+    #scrollControls { order: 5; flex-direction: row !important; position: static !important; flex-shrink: 0; }
+    
+    /* FIX 1: Force language buttons to have a minimum width */
     #langControls button {
-        white-space: nowrap; /* Prevent text from wrapping */
+        white-space: nowrap;
+        min-width: 90px; /* Give buttons a minimum width to fit text */
+        text-align: center;
     }
 }
 
