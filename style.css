@@ -55,14 +55,14 @@ body {
         flex-wrap: wrap;
         justify-content: space-between;
         align-items: center;
-        row-gap: 8px; /* Reduced vertical gap */
-        padding: 8px; /* Reduced padding */
+        row-gap: 2px; /* Reduced vertical gap */
+        padding: 2px; /* Reduced padding */
     }
     h1 {
         flex-basis: 100%;
         text-align: center;
         order: 1;
-        margin-bottom: 5px; /* Reduced bottom margin */
+        margin-bottom: 1px; /* Reduced bottom margin */
     }
     #topControls {
         order: 2;
@@ -86,7 +86,7 @@ body {
 
 #filterInput {
     width: calc(100% - 30px);
-    padding: 10px 15px; /* Reduced padding */
+    padding: 4px 5px; /* Reduced padding */
     border-radius: 8px;
     border: 1px solid #ddd;
 }
