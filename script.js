@@ -189,16 +189,28 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    function switchLanguage(lang) {
-        currentLanguage = lang;
-        document.documentElement.lang = lang;
-        document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-        updateUIText();
-        updateProductLanguage();
-        updateCartLanguage();
-        updateMultiplierPrices();
-        rebuildPriceSelectorOptions();
+  // --- هذا هو الكود الجديد الذي يضيف كلاس "active" ---
+function switchLanguage(lang) {
+    currentLanguage = lang;
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+
+    // Highlight the active language button
+    if (lang === 'ar') {
+        langArButton.classList.add('active');
+        langEnButton.classList.remove('active');
+    } else {
+        langEnButton.classList.add('active');
+        langArButton.classList.remove('active');
     }
+
+    updateUIText();
+    updateProductLanguage();
+    updateCartLanguage();
+    updateMultiplierPrices();
+    rebuildPriceSelectorOptions();
+}
+
     
     function getItemName(product) { if (currentLanguage === 'en' && product['en_item_name']) return product['en_item_name']; return product['item name']; }
     function updateProductLanguage() { document.querySelectorAll('.productSquare').forEach(square => { const productCode = square.dataset.productCode; const product = products.find(p => p['item code'] == productCode); if (product) square.querySelector('.card-content p:first-of-type').textContent = getItemName(product); }); filterInput.dispatchEvent(new Event('input')); }
@@ -255,6 +267,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('cartContainer').insertBefore(priceSelector, document.getElementById('cartItems')); 
         switchLanguage(currentLanguage); 
         updatePercentageDisplay(); 
+         langArButton.classList.add('active');
     }
     
     fetch('PRICES.xlsx').then(response => { if (!response.ok) throw new Error('File not found'); return response.arrayBuffer(); }).then(data => { const workbook = XLSX.read(data, { type: 'array' }); const sheet = workbook.Sheets[workbook.SheetNames[0]]; const jsonData = XLSX.utils.sheet_to_json(sheet); loadProductsFromExcel(jsonData); }).catch(err => { console.error("Error fetching or processing Excel file:", err); alert(translations[currentLanguage].fileNotFoundAlert); fallbackFileInput.style.display = 'block'; fallbackFileInput.addEventListener('change', function(e) { const reader = new FileReader(); reader.onload = function(ev) { const workbook = XLSX.read(ev.target.result, { type: 'array' }); const sheet = workbook.Sheets[workbook.SheetNames[0]]; const jsonData = XLSX.utils.sheet_to_json(sheet); loadProductsFromExcel(jsonData); fallbackFileInput.style.display = 'none'; }; reader.readAsArrayBuffer(e.target.files[0]); }); });
