@@ -121,12 +121,12 @@ h1 { margin: 0; text-align: center; flex-grow: 1; }
 /* ============================================== */
 .currency-symbol {
     display: inline-block;
-    width: 25px;
-    height: 12px;
+    width: 30px;
+    height: 14px;
     background-repeat: no-repeat;
     background-size: contain;
     background-position: center;
-    margin: 0 3px;
+    margin: 0 1px;
     flex-shrink: 0;
     /* Black symbol for light mode */
     background-image: url("https://ibn-thani.com/wp-content/uploads/2025/02/Photoroom_20250220_183836.png");
