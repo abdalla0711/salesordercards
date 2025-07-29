@@ -138,55 +138,49 @@ document.addEventListener('DOMContentLoaded', function() {
         switchLanguage('en');
     });
 
-  // --- استبدل الكود القديم بهذا الكود النهائي ---
+    // --- FINAL, CORRECTED LOGIC FOR THE '+' AND '-' BUTTONS ---
+    increaseButton.addEventListener('click', () => {
+        if (priceMultiplier >= 2.5) { // Safety limit
+            alert(translations[currentLanguage].maxLimitAlert);
+            return;
+        }
 
-increaseButton.addEventListener('click', () => {
-    if (priceMultiplier >= 2.5) { // Safety limit
-        alert(translations[currentLanguage].maxLimitAlert);
-        return;
-    }
+        // If in Sales Rep mode AND NOT currently discounting, apply compounding increase.
+        if (isCustomerMode && !isDiscounting) {
+            priceMultiplier *= 1.05; // Multiply current price by 1.05
+            customerMarkupClicks++;
+            markupDots.textContent = '•'.repeat(customerMarkupClicks);
+        } 
+        // For all other cases (public mode, or cancelling a discount)
+        else {
+            priceMultiplier += 0.05; // Apply a flat 5% increase from original base
+            displayPercentage += 5;
+            updatePercentageDisplay();
+        }
+        
+        updateMultiplierPrices();
+    });
 
-    // A. If we are in Sales Rep mode and adding markup (NOT discounting)
-    if (isCustomerMode && !isDiscounting) {
-        // THIS IS THE COMPOUNDING FIX:
-        // Always multiply the current price by 1.05.
-        // If the price is 100, next is 105. If 105, next is 110.25.
-        priceMultiplier *= 1.05;
-        customerMarkupClicks++;
-        markupDots.textContent = '.'.repeat(customerMarkupClicks);
-    } 
-    // B. For all other cases (public mode, or cancelling a previously set discount)
-    else {
-        // Apply a flat 5% increase based on the original price.
-        priceMultiplier += 0.05;
-        displayPercentage += 5;
-        updatePercentageDisplay();
-    }
-    
-    updateMultiplierPrices();
-});
+    decreaseButton.addEventListener('click', () => { 
+        if (priceMultiplier <= 0.55) { 
+            alert(translations[currentLanguage].minLimitAlert); 
+            return; 
+        } 
+        
+        // If this is the FIRST time we click '-' in a markup cycle, lock the base price.
+        if (isCustomerMode && !isDiscounting) { 
+            isDiscounting = true; 
+            discountBaseMultiplier = priceMultiplier; // This is RULE 2. It happens ONLY ONCE.
+        } 
+        
+        customerMarkupClicks = 0; 
+        markupDots.textContent = ''; 
+        priceMultiplier -= 0.05; // Always apply a flat 5% discount from the original price
+        displayPercentage -= 5; 
+        updateMultiplierPrices(); 
+        updatePercentageDisplay(); 
+    });
 
-decreaseButton.addEventListener('click', () => { 
-    if (priceMultiplier <= 0.55) { 
-        alert(translations[currentLanguage].minLimitAlert); 
-        return; 
-    } 
-    
-    // THIS IS THE CRUCIAL "LOCK-IN" LOGIC
-    // If this is the FIRST time we click '-' in customer mode, lock the price base.
-    if (isCustomerMode && !isDiscounting) { 
-        isDiscounting = true; 
-        discountBaseMultiplier = priceMultiplier; // This happens ONLY ONCE and is never changed again.
-    } 
-    
-    customerMarkupClicks = 0; 
-    markupDots.textContent = ''; 
-    priceMultiplier -= 0.05; // Always apply a flat 5% discount from the original price
-    displayPercentage -= 5; 
-    updateMultiplierPrices(); 
-    updatePercentageDisplay(); 
-});
-    
     scrollToTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
     scrollToBottomBtn.addEventListener('click', () => {
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
@@ -263,6 +257,7 @@ decreaseButton.addEventListener('click', () => {
         priceSelector.value = currentSelection;
     }
 
+    // --- RULE 1 IS IMPLEMENTED HERE ---
     function loadProductsFromExcel(jsonData) { 
         productGrid.innerHTML = ''; products.length = 0; if (!jsonData || jsonData.length === 0) return; 
         const headers = Object.keys(jsonData[0]); 
@@ -280,6 +275,7 @@ decreaseButton.addEventListener('click', () => {
         if (priceSelector.querySelector('[value="retail price Q"]')) priceSelector.value = 'retail price Q'; 
         
         priceSelector.addEventListener('change', () => { 
+            // This is the reset that happens when you select a new channel.
             isDiscounting = false; 
             customerMarkupClicks = 0; 
             markupDots.textContent = ''; 
