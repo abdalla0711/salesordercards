@@ -16,14 +16,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const scrollToTopBtn = document.getElementById('scrollToTopBtn');
     const scrollToBottomBtn = document.getElementById('scrollToBottomBtn');
     const darkModeToggle = document.getElementById('darkModeToggle');
+    const controlsContainer = document.getElementById('controlsContainer'); // Get the main container from HTML
     const priceSelector = document.createElement('select');
     priceSelector.id = 'priceSelector';
     priceSelector.style.display = 'none';
 
     // --- Create and Add Price Adjustment Controls ---
-    const header = document.getElementById('fixedArea');
-    const controlsContainer = document.createElement('div');
-    controlsContainer.id = 'controlsContainer';
     const increaseButton = document.createElement('button');
     increaseButton.textContent = '+';
     increaseButton.id = 'increasePrice';
@@ -32,8 +30,6 @@ document.addEventListener('DOMContentLoaded', function() {
     decreaseButton.id = 'decreasePrice';
     const percentageDisplay = document.createElement('span');
     percentageDisplay.id = 'percentageDisplay';
-    percentageDisplay.style.margin = '0 10px';
-    percentageDisplay.style.fontWeight = 'bold';
     const markupDots = document.createElement('span');
     markupDots.id = 'markupDots';
     markupDots.style.marginLeft = '4px';
@@ -41,11 +37,11 @@ document.addEventListener('DOMContentLoaded', function() {
     markupDots.style.fontSize = '1.2rem';
     markupDots.style.verticalAlign = 'middle';
     markupDots.style.fontWeight = 'normal';
+    
     controlsContainer.appendChild(decreaseButton);
     controlsContainer.appendChild(percentageDisplay);
     controlsContainer.appendChild(increaseButton);
     controlsContainer.appendChild(markupDots);
-    header.insertBefore(controlsContainer, filterInput);
 
     // --- Global State ---
     const products = [];
