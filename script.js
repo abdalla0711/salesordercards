@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const scrollToTopBtn = document.getElementById('scrollToTopBtn');
     const scrollToBottomBtn = document.getElementById('scrollToBottomBtn');
     const darkModeToggle = document.getElementById('darkModeToggle');
-    const controlsContainer = document.getElementById('controlsContainer'); // Get the main container from HTML
+    const controlsContainer = document.getElementById('controlsContainer');
     const priceSelector = document.createElement('select');
     priceSelector.id = 'priceSelector';
     priceSelector.style.display = 'none';
@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
             copyButtonText: "Copy & Open WhatsApp", copySuccessAlert: "Cart copied.", 
             copyErrorAlert: "Copy error.", fileNotFoundAlert: "Price file not found.", commentsLabel: "Comments:", 
             scrollTopTitle: "Scroll to Top", scrollBottomTitle: "Scroll to Bottom",
-         priceCategories: {
+            priceCategories: {
                 "retail price Q": "Retail Price", "wholesale price": "Wholesale Price", "supermarket price": "Supermarket Price","hypermarket price":
                     "Hypermarket Price", "other price 1": "Price 1", "other price 2": "Price 2", "other price 3": "Price 3"
             }
@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function() {
             copyButtonText: "نسخ الطلب وفتح واتساب", copySuccessAlert: "تم نسخ السلة.", 
             copyErrorAlert: "حدث خطأ.", fileNotFoundAlert: "ملف الأسعار غير موجود.", commentsLabel: "ملاحظات:", 
             scrollTopTitle: "الانتقال للأعلى", scrollBottomTitle: "الانتقال للأسفل",
-              priceCategories: {
+            priceCategories: {
                 "retail price Q": "سعر التجزئة القريات", "retail price": "سعر التجزئة", "discountshops price": "سعر التخفيضات",
                 "wholesale price": "سعر الجملة", "discountshops price Q": "سعر تخفيضات القريات ", "wholesale price Q": "سعر جملة القريات", "contract 5% price": "سعر العقود5%ـ"
             }
@@ -138,34 +138,52 @@ document.addEventListener('DOMContentLoaded', function() {
         switchLanguage('en');
     });
 
-// --- هذا هو الكود النهائي والصحيح لزر الزيادة ---
-increaseButton.addEventListener('click', () => {
-    // Safety check to prevent extreme prices
-    if (priceMultiplier >= 2.5) {
-        alert(translations[currentLanguage].maxLimitAlert);
-        return;
-    }
+    // --- THIS IS THE FINAL, CORRECTED LOGIC FOR THE '+' BUTTON ---
+    increaseButton.addEventListener('click', () => {
+        if (priceMultiplier >= 2.5) { // Safety limit
+            alert(translations[currentLanguage].maxLimitAlert);
+            return;
+        }
 
-    // A. If we are in sales rep mode and adding markup (NOT discounting)
-    if (isCustomerMode && !isDiscounting) {
-        // THIS IS THE FIX:
-        // Apply a compounding 5% increase. It calculates 5% of the CURRENT green price.
-        priceMultiplier *= 1.05; 
-        customerMarkupClicks++;
-        markupDots.textContent = '•'.repeat(customerMarkupClicks);
-    } 
-    // B. For all other cases (public mode, or cancelling a discount)
-    else {
-        // Apply a flat 5% increase based on the original price.
-        priceMultiplier += 0.05;
-        displayPercentage += 5;
-        updatePercentageDisplay();
-    }
-    
-    updateMultiplierPrices();
-});
+        // A. If we are in sales rep mode and adding markup (NOT discounting)
+        if (isCustomerMode && !isDiscounting) {
+            // Apply a compounding 5% increase on the CURRENT price.
+            priceMultiplier *= 1.05;
+            customerMarkupClicks++;
+            markupDots.textContent = '•'.repeat(customerMarkupClicks);
+        }
+        // B. For all other cases (public mode, or cancelling a discount)
+        else {
+            // Apply a flat 5% increase based on the original price.
+            priceMultiplier += 0.05;
+            displayPercentage += 5;
+            updatePercentageDisplay();
+        }
+        
+        updateMultiplierPrices();
+    });
 
-    decreaseButton.addEventListener('click', () => { if (priceMultiplier <= 0.55) { alert(translations[currentLanguage].minLimitAlert); return; } if (isCustomerMode && !isDiscounting) { isDiscounting = true; discountBaseMultiplier = priceMultiplier; } customerMarkupClicks = 0; markupDots.textContent = ''; priceMultiplier -= 0.05; displayPercentage -= 5; updateMultiplierPrices(); updatePercentageDisplay(); });
+    // --- THIS IS THE FINAL, CORRECTED LOGIC FOR THE '-' BUTTON ---
+    decreaseButton.addEventListener('click', () => { 
+        if (priceMultiplier <= 0.55) { 
+            alert(translations[currentLanguage].minLimitAlert); 
+            return; 
+        } 
+        
+        // If this is the FIRST time we click '-' in customer mode, lock the price base.
+        if (isCustomerMode && !isDiscounting) { 
+            isDiscounting = true; 
+            discountBaseMultiplier = priceMultiplier; // This happens ONLY ONCE.
+        } 
+        
+        customerMarkupClicks = 0; 
+        markupDots.textContent = ''; 
+        priceMultiplier -= 0.05; 
+        displayPercentage -= 5; 
+        updateMultiplierPrices(); 
+        updatePercentageDisplay(); 
+    });
+
     scrollToTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
     scrollToBottomBtn.addEventListener('click', () => {
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
