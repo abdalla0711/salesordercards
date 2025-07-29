@@ -13,27 +13,33 @@
     <!-- This is the fixed header area -->
     <div id="fixedArea">
         
-        <div id="scrollControls">
-            <button id="scrollToTopBtn" title="Scroll to Top">↑</button>
-            <button id="scrollToBottomBtn" title="Scroll to Bottom">↓</button>
-        </div>
-
-        <h1>
-            <span id="mainTitleText"></span> 
-            <small id="subtitle"></small>
-        </h1>
-        
-        <!-- FIX: Buttons are now inside this container in the HTML -->
-        <div id="topControls">
-            <div id="langControls">
-                <button id="langEn">English</button>
-                <button id="langAr">العربية</button>
+        <!-- Row 1: Title and secondary controls -->
+        <div class="header-row">
+            <h1>
+                <span id="mainTitleText"></span> 
+                <small id="subtitle"></small>
+            </h1>
+            <div id="topControls">
+                <div id="langControls">
+                    <button id="langEn">English</button>
+                    <button id="langAr">العربية</button>
+                </div>
+                <button id="darkModeToggle" title="Toggle Dark Mode">🌙</button> 
+                <div id="scrollControls">
+                    <button id="scrollToTopBtn" title="Scroll to Top">↑</button>
+                    <button id="scrollToBottomBtn" title="Scroll to Bottom">↓</button>
+                </div>
             </div>
-            <button id="darkModeToggle" title="Toggle Dark Mode">🌙</button> 
         </div>
 
-        <input type="file" id="fallbackFileInput" style="display:none;">
-        <input type="text" id="filterInput">
+        <!-- Row 2: Main action controls -->
+        <div class="header-row">
+            <input type="text" id="filterInput">
+            <div id="controlsContainer">
+                <!-- Price controls will be added here by JS -->
+            </div>
+        </div>
+        
     </div>
 
     <!-- This is the main product grid -->
