@@ -22,38 +22,44 @@ body {
     direction: ltr;
 }
 
-/* --- NEW: Flexbox layout for the header on wide screens --- */
+
+/* --- هذا هو الكود الجديد الذي يحل كل المشاكل --- */
 @media (min-width: 768px) {
     #fixedArea {
         display: flex;
-        justify-content: space-between;
+        justify-content: space-between; /* Keeps elements spread out */
         align-items: center;
-        gap: 15px;
-        padding: 5px 15px;
+        gap: 20px; /* Increased gap for better spacing */
+        padding: 10px 20px; /* More padding for a cleaner look */
     }
-    body {
-        padding-top: 80px; /* Reduced top padding for the shorter header */
+
+    /* FIX 3: Add top margin to the grid to create space */
+    #productGrid {
+        margin-top: 100px; /* Adjust this value as needed */
     }
-    #filterInput {
-        order: 2; /* Change order of elements */
-        width: 300px; /* Give it a fixed width */
-        margin: 0 !important;
+
+    /* Re-order elements for the new layout */
+    h1 { order: 1; text-align: left; flex-shrink: 0; } /* Prevent title from shrinking */
+    #filterInput { order: 2; width: 350px; margin: 0 !important; }
+    #controlsContainer { order: 3; }
+    #langControls { order: 4; }
+    #scrollControls { 
+        order: 5; 
+        flex-direction: row !important; /* Horizontal scroll buttons */
+        position: static !important; /* FIX 2: Remove absolute positioning */
+        flex-shrink: 0; /* Prevent buttons from shrinking */
     }
-    #controlsContainer { /* A new ID we'll add in JS */
-        order: 3;
-    }
-    h1 {
-        order: 1;
-        text-align: left;
-    }
-    #langControls { /* A new ID we'll add in JS */
-        order: 4;
-    }
-    #scrollControls {
-        order: 5;
-        flex-direction: row !important; /* Make scroll buttons horizontal */
+    
+    /* FIX 1: Ensure language buttons have enough space */
+    #langControls button {
+        white-space: nowrap; /* Prevent text from wrapping */
     }
 }
+
+
+
+
+
 @media (max-width: 767px) {
     body {
         padding-top: 200px; /* Keep more space on mobile */
