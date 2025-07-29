@@ -138,61 +138,55 @@ document.addEventListener('DOMContentLoaded', function() {
         switchLanguage('en');
     });
 
-   // --- استبدل الكود القديم بهذا الكود النهائي ---
+  // --- استبدل الكود القديم بهذا الكود النهائي ---
+
 increaseButton.addEventListener('click', () => {
-    // Safety check to prevent extreme prices
-    if (priceMultiplier >= 2.5) {
+    if (priceMultiplier >= 2.5) { // Safety limit
         alert(translations[currentLanguage].maxLimitAlert);
         return;
     }
 
-    // A. If we are cancelling a discount (moving back towards 0)
-    if (isDiscounting) {
-        priceMultiplier += 0.05;
-        displayPercentage += 5;
-        updatePercentageDisplay();
-    } 
-    // B. If we are in Sales Rep mode and adding a markup
-    else if (isCustomerMode) {
-        // THIS IS THE FINAL FIX:
-        // Always recalculate the multiplier from scratch based on the number of clicks.
-        // This strictly enforces RULE 1.
+    // A. If we are in Sales Rep mode and adding markup (NOT discounting)
+    if (isCustomerMode && !isDiscounting) {
+        // THIS IS THE COMPOUNDING FIX:
+        // Always multiply the current price by 1.05.
+        // If the price is 100, next is 105. If 105, next is 110.25.
+        priceMultiplier *= 1.05;
         customerMarkupClicks++;
-        priceMultiplier = 1.0 + (customerMarkupClicks * 0.05);
-        markupDots.textContent = '•'.repeat(customerMarkupClicks);
+        markupDots.textContent = '.'.repeat(customerMarkupClicks);
     } 
-    // C. For the public-facing view
+    // B. For all other cases (public mode, or cancelling a previously set discount)
     else {
+        // Apply a flat 5% increase based on the original price.
         priceMultiplier += 0.05;
         displayPercentage += 5;
         updatePercentageDisplay();
     }
     
-    // Apply the newly calculated price
     updateMultiplierPrices();
 });
 
-    // --- THIS IS THE FINAL, CORRECTED LOGIC FOR THE '-' BUTTON ---
-    decreaseButton.addEventListener('click', () => { 
-        if (priceMultiplier <= 0.55) { 
-            alert(translations[currentLanguage].minLimitAlert); 
-            return; 
-        } 
-        
-        // If this is the FIRST time we click '-' in customer mode, lock the price base.
-        if (isCustomerMode && !isDiscounting) { 
-            isDiscounting = true; 
-            discountBaseMultiplier = priceMultiplier; // This happens ONLY ONCE.
-        } 
-        
-        customerMarkupClicks = 0; 
-        markupDots.textContent = ''; 
-        priceMultiplier -= 0.05; 
-        displayPercentage -= 5; 
-        updateMultiplierPrices(); 
-        updatePercentageDisplay(); 
-    });
-
+decreaseButton.addEventListener('click', () => { 
+    if (priceMultiplier <= 0.55) { 
+        alert(translations[currentLanguage].minLimitAlert); 
+        return; 
+    } 
+    
+    // THIS IS THE CRUCIAL "LOCK-IN" LOGIC
+    // If this is the FIRST time we click '-' in customer mode, lock the price base.
+    if (isCustomerMode && !isDiscounting) { 
+        isDiscounting = true; 
+        discountBaseMultiplier = priceMultiplier; // This happens ONLY ONCE and is never changed again.
+    } 
+    
+    customerMarkupClicks = 0; 
+    markupDots.textContent = ''; 
+    priceMultiplier -= 0.05; // Always apply a flat 5% discount from the original price
+    displayPercentage -= 5; 
+    updateMultiplierPrices(); 
+    updatePercentageDisplay(); 
+});
+    
     scrollToTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
     scrollToBottomBtn.addEventListener('click', () => {
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
