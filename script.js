@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
         ar: { 
             mainTitle: "متجر ايجل", salesRepSubtitle: "(نافذة خاصة بالمندوب)", 
             filterPlaceholder: "يمكنك تسجيل الصنف بالضغط عليه...", 
-            priceCa: "الكرتون", priceCaTax: "الكرتون+الضريبة", priceBund: "الشد", priceBundTax: "الشد+الضريبة", 
+            priceCa: "الكرتون", priceCaTax: "كرتون+ضريبة", priceBund: "الشد", priceBundTax: "الشد+ضريبة", 
             increaseTitle: "زيادة الأسعار ٥٪", decreaseTitle: "تخفيض الأسعار ٥٪", 
             unlockPasswordPrompt: "الرجاء إدخال كلمة المرور:", unlockedAlert: "تم تفعيل وضع المندوب!", 
             incorrectPasswordAlert: "كلمة مرور غير صحيحة.", maxLimitAlert: "تم الوصول للحد الأعلى.", minLimitAlert: "تم الوصول للحد الأدنى.", 
