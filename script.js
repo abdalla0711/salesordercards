@@ -22,13 +22,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- Create and Add Price Adjustment Controls ---
     const header = document.getElementById('fixedArea');
-    const topControls = document.getElementById('topControls'); // Get the new container
-
-    const langControls = document.createElement('div');
-    langControls.id = 'langControls';
-    langControls.appendChild(langEnButton);
-    langControls.appendChild(langArButton);
-
     const controlsContainer = document.createElement('div');
     controlsContainer.id = 'controlsContainer';
     const increaseButton = document.createElement('button');
@@ -48,15 +41,10 @@ document.addEventListener('DOMContentLoaded', function() {
     markupDots.style.fontSize = '1.2rem';
     markupDots.style.verticalAlign = 'middle';
     markupDots.style.fontWeight = 'normal';
-    
     controlsContainer.appendChild(decreaseButton);
     controlsContainer.appendChild(percentageDisplay);
     controlsContainer.appendChild(increaseButton);
     controlsContainer.appendChild(markupDots);
-    
-    topControls.appendChild(langControls);
-    topControls.appendChild(darkModeToggle);
-
     header.insertBefore(controlsContainer, filterInput);
 
     // --- Global State ---
