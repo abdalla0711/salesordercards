@@ -63,6 +63,7 @@ body {
         text-align: center;
         order: 1;
         margin-bottom: 1px; /* Reduced bottom margin */
+          padding: 2px;
     }
     #topControls {
         order: 2;
@@ -86,7 +87,7 @@ body {
 
 #filterInput {
     width: calc(100% - 30px);
-    padding: 4px 5px; /* Reduced padding */
+    padding: 5px 6px; /* Reduced padding */
     border-radius: 8px;
     border: 1px solid #ddd;
 }
