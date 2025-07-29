@@ -138,30 +138,25 @@ document.addEventListener('DOMContentLoaded', function() {
         switchLanguage('en');
     });
 
-// --- استبدل الكود القديم بهذا الكود ---
+// --- هذا هو الكود النهائي والصحيح لزر الزيادة ---
 increaseButton.addEventListener('click', () => {
-    // Safety check
+    // Safety check to prevent extreme prices
     if (priceMultiplier >= 2.5) {
         alert(translations[currentLanguage].maxLimitAlert);
         return;
     }
 
-    if (isDiscounting) {
-        // If we are cancelling a discount, the logic is simple addition.
-        priceMultiplier += 0.05;
-        displayPercentage += 5;
-        updatePercentageDisplay();
-    } 
-    else if (isCustomerMode) {
+    // A. If we are in sales rep mode and adding markup (NOT discounting)
+    if (isCustomerMode && !isDiscounting) {
         // THIS IS THE FIX:
-        // Instead of adding to the old multiplier, we recalculate it from scratch
-        // based on how many times the button has been clicked.
+        // Apply a compounding 5% increase. It calculates 5% of the CURRENT green price.
+        priceMultiplier *= 1.05; 
         customerMarkupClicks++;
-        priceMultiplier = 1.0 + (customerMarkupClicks * 0.05);
         markupDots.textContent = '•'.repeat(customerMarkupClicks);
     } 
+    // B. For all other cases (public mode, or cancelling a discount)
     else {
-        // Public mode logic remains the same
+        // Apply a flat 5% increase based on the original price.
         priceMultiplier += 0.05;
         displayPercentage += 5;
         updatePercentageDisplay();
