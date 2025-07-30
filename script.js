@@ -137,7 +137,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         switchLanguage('en');
     });
+
+
+
+
 // --- REPLACE IT WITH THIS FINAL, CORRECT FUNCTION ---
+
 increaseButton.addEventListener('click', () => {
     // Safety check
     if (priceMultiplier >= 2.5) {
@@ -151,13 +156,14 @@ increaseButton.addEventListener('click', () => {
         displayPercentage += 5;
         updatePercentageDisplay();
     } 
-    // B. If we are in Sales Rep mode and adding a markup
+    // B. If we are in Sales Rep mode and adding a markup (The correct logic)
     else if (isCustomerMode) {
-        // THIS IS THE CORRECT LOGIC THAT I FAILED TO GIVE YOU.
-        // It ALWAYS calculates from the base (1.0).
+        // THIS IS THE CORRECT COMPOUNDING LOGIC.
+        // It multiplies the current price multiplier by 1.05.
+        priceMultiplier *= 1.05; 
+        
         customerMarkupClicks++;
-        priceMultiplier = 1.0 + (customerMarkupClicks * 0.05);
-        markupDots.textContent = '.'.repeat(customerMarkupClicks);
+        markupDots.textContent = ','.repeat(customerMarkupClicks);
     } 
     // C. For the public-facing view
     else {
@@ -169,6 +175,10 @@ increaseButton.addEventListener('click', () => {
     // Apply the newly and correctly calculated price
     updateMultiplierPrices();
 });
+
+
+
+    
     // --- THIS IS THE FINAL, CORRECTED LOGIC FOR THE '-' BUTTON ---
     decreaseButton.addEventListener('click', () => { 
         if (priceMultiplier <= 0.55) { 
