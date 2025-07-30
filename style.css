@@ -14,72 +14,35 @@ body {
     left: 0;
     right: 0;
     background-color: #ffffff;
-    padding: 10px;
+    padding: 8px 10px;
     z-index: 100;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    border: none;
     transition: background-color 0.3s;
     direction: ltr;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+body {
+    padding-top: 140px; /* Default padding for mobile */
 }
 
-
-/* --- هذا هو الكود الجديد الذي يحل كل المشاكل --- */
-/* --- هذا هو الكود الجديد الذي يحل المشاكل نهائياً --- */
-@media (min-width: 768px) {
-    #fixedArea {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 15px;
-        padding: 10px 20px;
-        height: 80px; /* FIX 2: Give the header a fixed height */
-    }
-
-    /* FIX 2: Set the body's top padding equal to the header's height */
-    body {
-        padding-top: 100px; /* 80px for header + 20px extra space */
-    }
-    
-    /* Remove the margin from the grid as we are now using padding on the body */
-    #productGrid {
-        margin-top: 0; 
-    }
-
-    /* Re-order elements */
-    h1 { order: 1; text-align: left; flex-shrink: 0; }
-    #filterInput { order: 2; width: 300px; margin: 0 !important; }
-    #controlsContainer { order: 3; flex-shrink: 0; }
-    #langControls { order: 4; flex-shrink: 0; }
-    #scrollControls { order: 5; flex-direction: row !important; position: static !important; flex-shrink: 0; }
-    
-    /* FIX 1: Force language buttons to have a minimum width */
-    #langControls button {
-        white-space: nowrap;
-        min-width: 90px; /* Give buttons a minimum width to fit text */
-        text-align: center;
-    }
-}
-
-
-
-
-
-@media (max-width: 767px) {
-    body {
-        padding-top: 200px; /* Keep more space on mobile */
-    }
+.header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 10px;
 }
 
 #filterInput {
-    width: calc(100% - 30px);
-    padding: 12px 15px;
-    border-radius: 8px;
+    flex-grow: 1; /* Take up most of the space */
+    padding: 10px 15px;
+    border-radius: 20px;
     border: 1px solid #ddd;
-    margin-bottom: 5px;
-    margin-top: 10px;
 }
 
-/* --- Cart Container (at the bottom, NOT fixed) --- */
+/* --- Cart Container --- */
 #cartContainer {
     background-color: #fff;
     padding: 20px;
@@ -89,201 +52,86 @@ body {
     transition: background-color 0.3s;
 }
 
-/* --- Product Grid --- */
-#productGrid {
-    display: grid;
-    /* --- NEW: More flexible columns to guarantee at least 2 cards --- */
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    grid-gap: 15px; /* Slightly smaller gap */
-    margin-top: 20px;
-}
-
-/* --- The Product Card --- */
-.productSquare {
-    background-color: #ffffff !important;
-    border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
-    overflow: hidden;
-    text-align: center;
-    position: relative;
-    border: 1px solid #eee;
-    padding: 0;
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
+/* --- Product Grid & Cards --- */
+#productGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); grid-gap: 15px; margin-top: 20px; }
+.productSquare { background-color: #ffffff !important; border-radius: 12px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08); overflow: hidden; text-align: center; position: relative; border: 1px solid #eee; padding: 0; transition: all 0.3s ease; cursor: pointer; }
 .productSquare:hover { transform: translateY(-5px); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12); }
-.productSquare img { max-width: 100%; height: 150px; /* Reduced image height */ object-fit: cover; border-bottom: 1px solid #eee; }
+.productSquare img { max-width: 100%; height: 150px; object-fit: cover; border-bottom: 1px solid #eee; }
 .card-content { padding: 10px 5px; }
 .productSquare p { margin: 0; padding: 2px 0; background-color: transparent !important; font-weight: normal !important; color: #333; transition: color 0.3s; }
 .card-content p:first-of-type { font-size: 0.8rem; font-weight: bold !important; color: #063970 !important; background-color: #eab676; padding: 4px 6px; border-radius: 4px; display: inline; -webkit-box-decoration-break: clone; box-decoration-break: clone; line-height: 1.6; }
 .card-content p:nth-of-type(n+2) { font-size: 0.85rem; color: #555; display: flex; justify-content: space-between; align-items: center; padding: 2px 5px; }
 .card-content p:nth-of-type(2), .card-content p:nth-of-type(4) { font-weight: bold !important; color: #0056b3; }
 
-/* --- Cart and Buttons --- */
+/* --- Controls and Buttons --- */
 .cartItem { justify-content: space-between; margin-bottom: 10px; padding: 5px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
 #cartTotal { font-weight: bold; font-size: 1.2rem; margin-top: 15px; text-align: right; }
 #copyButton { font-size: 1rem; background-color: #28a745; color: white; border: none; padding: 12px 20px; cursor: pointer; border-radius: 8px; width: 100%; margin-top: 10px; transition: background-color 0.2s; }
 #copyButton:hover { background-color: #218838; }
 .hidden { display: none !important; }
-
-/* --- Title and Subtitle --- */
-h1 { margin: 0; text-align: center; }
-#mainTitleText { font-size: 1.5rem; }
-#subtitle { font-size: 0.9rem; color: #6c757d; font-weight: normal; display: block; height: 1.2em; }
-
-/* --- Price Color Styling --- */
+h1 { margin: 0; text-align: center; flex-grow: 1; }
+#mainTitleText { font-size: 1.3rem; }
+#subtitle { font-size: 0.8rem; color: #6c757d; font-weight: normal; display: block; height: 1.2em; }
 .original-price { text-decoration: line-through; color: #dc3545; margin-right: 8px; font-weight: normal !important; }
-.new-price { color: #28a745; font-weight: bold !important; }
+.new-price { color: #28a745; font-weight: bold !important; display: inline-flex; align-items: center; }
 
-/* --- Scroll Buttons --- */
-#scrollControls { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; gap: 5px; }
-#scrollToTopBtn, #scrollToBottomBtn { background-color: #e9ecef; border: 1px solid #dee2e6; color: #495057; width: 35px; height: 35px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; transition: background-color 0.2s; padding: 0; line-height: 35px; }
+#topControls, #scrollControls { display: flex; align-items: center; gap: 8px; }
+#scrollToTopBtn, #scrollToBottomBtn { background-color: #e9ecef; border: 1px solid #dee2e6; color: #495057; width: 30px; height: 30px; border-radius: 50%; font-size: 1rem; cursor: pointer; transition: background-color 0.2s; padding: 0; line-height: 30px; }
 #scrollToTopBtn:hover, #scrollToBottomBtn:hover { background-color: #ced4da; }
 
-/* --- Responsive Font Size for Filter --- */
-@media (min-width: 481px) { #filterInput { font-size: 16px; } }
-@media (max-width: 480px) { #filterInput { font-size: 12px; } }
-
-/* ================================== */
-/* --- SALES REP MODE (DARK THEME) --- */
-/* ================================== */
-.sales-rep-mode { background-color: #2c3e50; color: #ecf0f1; }
-.sales-rep-mode #fixedArea, .sales-rep-mode #cartContainer { background-color: #34495e; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); }
-.sales-rep-mode #cartTotal, .sales-rep-mode .cartItem, .sales-rep-mode #subtitle { color: #ecf0f1; }
-.sales-rep-mode .card-content p:first-of-type { color: #fff !important; background-color: #3498db !important; }
-.sales-rep-mode .card-content p:nth-of-type(2), .sales-rep-mode .card-content p:nth-of-type(4) { color: #5dade2; }
-.sales-rep-mode input, .sales-rep-mode textarea, .sales-rep-mode select { background-color: #2c3e50; color: #fff; border-color: #7f8c8d; }
-.sales-rep-mode #scrollToTopBtn, .sales-rep-mode #scrollToBottomBtn { background-color: #7f8c8d; border-color: #95a5a6; color: #ecf0f1; }
-.sales-rep-mode .cartItem { border-bottom-color: #4b6584; }
-
-/* ============================================== */
-/*          MODERN PRICE ADJUSTMENT CONTROLS      */
-/* ============================================== */
-
-/* 1. The main container for the controls */
-#controlsContainer {
-    display: inline-flex; /* Use inline-flex to only take up needed space */
-    align-items: center;  /* Vertically center everything */
-    border: 1px solid #dee2e6;
-    border-radius: 50px;  /* Fully rounded corners to create a pill shape */
-    padding: 4px;
-    background-color: #f8f9fa;
-    box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); /* Subtle inner shadow */
-}
-
-/* 2. Styling the '+' and '-' buttons */
-#increasePrice, #decreasePrice {
-    background-color: #fff;
-    border: 1px solid #ced4da;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%; /* Make them perfect circles */
-    font-size: 1.4rem;  /* Make the +/- symbols bigger */
-    font-weight: bold;
-    color: #495057;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding-bottom: 3px; /* Optical adjustment for the symbols */
-}
-
-/* 3. Hover effects for the buttons */
-#increasePrice:hover {
-    background-color: #28a745; /* Green */
-    color: white;
-    border-color: #28a745;
-    transform: scale(1.1); /* Slightly enlarge on hover */
-}
-#decreasePrice:hover {
-    background-color: #dc3545; /* Red */
-    color: white;
-    border-color: #dc3545;
-    transform: scale(1.1);
-}
-
-/* 4. The percentage display in the middle */
-#percentageDisplay {
-    font-weight: bold;
-    color: #0056b3;
-    margin: 0 12px;
-    min-width: 50px; /* Prevents layout jump when text changes */
-    text-align: center;
-}
-
-/* 5. Styling for Sales Rep (Dark) Mode */
-.sales-rep-mode #controlsContainer {
-    background-color: #2c3e50;
-    border-color: #7f8c8d;
-}
-.sales-rep-mode #increasePrice, 
-.sales-rep-mode #decreasePrice {
-    background-color: #4b6584;
-    border-color: #7f8c8d;
-    color: #ecf0f1;
-}
-.sales-rep-mode #percentageDisplay {
-    color: #5dade2;
-}
-
-/* --- Removing old button margin from JS for cleaner look --- */
+/* --- Modern Price Controls --- */
+#controlsContainer { display: inline-flex; align-items: center; border: 1px solid #dee2e6; border-radius: 50px; padding: 4px; background-color: #f8f9fa; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); }
+#increasePrice, #decreasePrice { background-color: #fff; border: 1px solid #ced4da; width: 30px; height: 30px; border-radius: 50%; font-size: 1.2rem; font-weight: bold; color: #495057; cursor: pointer; transition: all 0.2s ease-in-out; display: flex; justify-content: center; align-items: center; padding-bottom: 2px; }
+#increasePrice:hover { background-color: #28a745; color: white; border-color: #28a745; transform: scale(1.1); }
+#decreasePrice:hover { background-color: #dc3545; color: white; border-color: #dc3545; transform: scale(1.1); }
+#percentageDisplay { font-weight: bold; color: #0056b3; margin: 0 10px; min-width: 45px; text-align: center; font-size: 0.9rem; }
 #increasePrice { margin-left: 0 !important; }
 
+/* --- Language & Dark Mode Buttons --- */
+#langControls { display: inline-flex; border-radius: 8px; overflow: hidden; border: 1px solid #ced4da; }
+#langEn, #langAr { background-color: #ffffff; border: none; padding: 6px 12px; font-size: 0.8rem; font-weight: 500; color: #495057; cursor: pointer; transition: all 0.2s ease-in-out; white-space: nowrap; }
+#langEn { border-left: 1px solid #ced4da; }
+#langControls button.active { background-color: #007bff; color: white; }
+#langControls button:not(.active):hover { background-color: #e9ecef; }
+#darkModeToggle { background-color: #ffffff; border: 1px solid #ced4da; border-radius: 8px; padding: 6px 10px; font-size: 1rem; cursor: pointer; transition: all 0.2s ease-in-out; }
+#darkModeToggle:hover { background-color: #e9ecef; }
+
+/* ================================== */
+/* --- DARK MODE STYLES --- */
+/* ================================== */
+.dark-mode { background-color: #2c3e50; color: #ecf0f1; }
+.dark-mode #fixedArea, .dark-mode #cartContainer { background-color: #34495e; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); }
+.dark-mode #cartTotal, .dark-mode .cartItem, .dark-mode #subtitle { color: #ecf0f1; }
+.dark-mode .card-content p:first-of-type { color: #fff !important; background-color: #3498db !important; }
+.dark-mode .card-content p:nth-of-type(2), .dark-mode .card-content p:nth-of-type(4) { color: #5dade2; }
+.dark-mode input, .dark-mode textarea, .dark-mode select { background-color: #2c3e50; color: #fff; border-color: #7f8c8d; }
+.dark-mode #scrollToTopBtn, .dark-mode #scrollToBottomBtn { background-color: #7f8c8d; border-color: #95a5a6; color: #ecf0f1; }
+.dark-mode .cartItem { border-bottom-color: #4b6584; }
+.dark-mode #controlsContainer { background-color: #2c3e50; border-color: #7f8c8d; }
+.dark-mode #increasePrice, .dark-mode #decreasePrice { background-color: #4b6584; border-color: #7f8c8d; color: #ecf0f1; }
+.dark-mode #percentageDisplay { color: #5dade2; }
+.dark-mode #langControls { border-color: #7f8c8d; }
+.dark-mode #langEn, .dark-mode #langAr { background-color: #4b6584; color: #ecf0f1; border-left-color: #7f8c8d; }
+.dark-mode #darkModeToggle { background-color: #4b6584; color: #ecf0f1; border-color: #7f8c8d; }
+.dark-mode #langControls button.active { background-color: #3498db; }
+.dark-mode #langControls button:not(.active):hover, .dark-mode #darkModeToggle:hover { background-color: #7f8c8d; }
+
 /* ============================================== */
-/*          MODERN LANGUAGE SWITCHER              */
+/*          SAUDI RIYAL SYMBOL (IMAGE FIX)        */
 /* ============================================== */
-
-/* 1. The container for the language buttons */
-#langControls {
-    display: inline-flex; /* Align buttons horizontally */
-    border-radius: 8px;   /* Rounded corners for the group */
-    overflow: hidden;     /* Keeps the corners sharp inside */
-    border: 1px solid #ced4da;
+.currency-symbol {
+    display: inline-block;
+    width: 25px;
+    height: 12px;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+    margin: 0 3px;
+    flex-shrink: 0;
+    /* Black symbol for light mode */
+    background-image: url("https://ibn-thani.com/wp-content/uploads/2025/02/Photoroom_20250220_183836.png");
 }
-
-/* 2. General style for both language buttons */
-#langEn, #langAr {
-    background-color: #ffffff;
-    border: none;
-    padding: 8px 16px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #495057;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-}
-
-/* 3. Add a separator line between the buttons */
-#langEn {
-    border-left: 1px solid #ced4da; /* Separator line */
-}
-
-/* 4. The currently active language button */
-#langControls button.active {
-    background-color: #007bff; /* A nice blue color for active state */
-    color: white;
-}
-/* Inactive button hover effect */
-#langControls button:not(.active):hover {
-    background-color: #e9ecef;
-}
-
-/* 5. Styling for Sales Rep (Dark) Mode */
-.sales-rep-mode #langControls {
-    border-color: #7f8c8d;
-}
-.sales-rep-mode #langEn, 
-.sales-rep-mode #langAr {
-    background-color: #4b6584;
-    color: #ecf0f1;
-}
-.sales-rep-mode #langEn {
-    border-left-color: #7f8c8d;
-}
-.sales-rep-mode #langControls button.active {
-    background-color: #3498db; /* A bright blue for dark mode */
-}
-.sales-rep-mode #langControls button:not(.active):hover {
-    background-color: #7f8c8d;
+.dark-mode .currency-symbol {
+    /* White symbol for dark mode */
+    background-image: url("https://ibn-thani.com/wp-content/uploads/2025/02/Photoroom_20250220_183836.png");
 }
