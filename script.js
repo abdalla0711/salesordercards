@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', function() {
         en: { 
             mainTitle: "Eagle Store", salesRepSubtitle: "(Sales Rep Window)", 
             filterPlaceholder: "Register an item by clicking on it...", 
-            priceCa: "Ca", priceCaTax: "Ca + tax", priceBund: "Bund", priceBundTax: "Bund + Tax", 
+            priceCa: "Ca", priceCaTax: "Ca+tax", priceBund: "Bund", priceBundTax: "Bund+Tax", 
             increaseTitle: "Increase prices by 5%", decreaseTitle: "Decrease prices by 5%", 
             unlockPasswordPrompt: "Please enter the password:", unlockedAlert: "Sales Rep mode activated!", 
             incorrectPasswordAlert: "Incorrect password.", maxLimitAlert: "Max limit reached.", minLimitAlert: "Min limit reached.", 
@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
         ar: { 
             mainTitle: "متجر ايجل", salesRepSubtitle: "(نافذة خاصة بالمندوب)", 
             filterPlaceholder: "يمكنك تسجيل الصنف بالضغط عليه...", 
-            priceCa: "الكرتون", priceCaTax: "الكرتون+الضريبة", priceBund: "الشد", priceBundTax: "الشد+الضريبة", 
+            priceCa: "الكرتون", priceCaTax: "كرتون+ضريبة", priceBund: "الشد", priceBundTax: "شد+ضريبة", 
             increaseTitle: "زيادة الأسعار ٥٪", decreaseTitle: "تخفيض الأسعار ٥٪", 
             unlockPasswordPrompt: "الرجاء إدخال كلمة المرور:", unlockedAlert: "تم تفعيل وضع المندوب!", 
             incorrectPasswordAlert: "كلمة مرور غير صحيحة.", maxLimitAlert: "تم الوصول للحد الأعلى.", minLimitAlert: "تم الوصول للحد الأدنى.", 
