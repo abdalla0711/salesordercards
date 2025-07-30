@@ -1,3 +1,146 @@
+/* --- General Body and Layout --- */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    margin: 0;
+    padding: 7px;
+    background-color: #f4f4f9;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+/* --- Fixed Header Area --- */
+#fixedArea {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background-color: #ffffff;
+    padding: 8px 10px;
+    z-index: 100;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s;
+    direction: ltr;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+body {
+    padding-top: 140px; /* Default padding for mobile */
+}
+
+.header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 10px;
+}
+
+#filterInput {
+    flex-grow: 1; /* Take up most of the space */
+    padding: 10px 15px;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+}
+
+/* --- Cart Container --- */
+#cartContainer {
+    background-color: #fff;
+    padding: 20px;
+    margin-top: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: background-color 0.3s;
+}
+
+/* --- Product Grid & Cards --- */
+#productGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); grid-gap: 15px; margin-top: 20px; }
+.productSquare { background-color: #ffffff !important; border-radius: 12px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08); overflow: hidden; text-align: center; position: relative; border: 1px solid #eee; padding: 0; transition: all 0.3s ease; cursor: pointer; }
+.productSquare:hover { transform: translateY(-5px); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12); }
+.productSquare img { max-width: 100%; height: 150px; object-fit: cover; border-bottom: 1px solid #eee; }
+.card-content { padding: 10px 5px; }
+.productSquare p { margin: 0; padding: 2px 0; background-color: transparent !important; font-weight: normal !important; color: #333; transition: color 0.3s; }
+.card-content p:first-of-type { font-size: 0.8rem; font-weight: bold !important; color: #063970 !important; background-color: #eab676; padding: 4px 6px; border-radius: 4px; display: inline; -webkit-box-decoration-break: clone; box-decoration-break: clone; line-height: 1.6; }
+.card-content p:nth-of-type(n+2) { font-size: 0.85rem; color: #555; display: flex; justify-content: space-between; align-items: center; padding: 2px 5px; }
+.card-content p:nth-of-type(2), .card-content p:nth-of-type(4) { font-weight: bold !important; color: #0056b3; }
+
+/* --- Controls and Buttons --- */
+.cartItem { justify-content: space-between; margin-bottom: 10px; padding: 5px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+#cartTotal { font-weight: bold; font-size: 1.2rem; margin-top: 15px; text-align: right; }
+#copyButton { font-size: 1rem; background-color: #28a745; color: white; border: none; padding: 12px 20px; cursor: pointer; border-radius: 8px; width: 100%; margin-top: 10px; transition: background-color 0.2s; }
+#copyButton:hover { background-color: #218838; }
+.hidden { display: none !important; }
+h1 { margin: 0; text-align: center; flex-grow: 1; }
+#mainTitleText { font-size: 1.3rem; }
+#subtitle { font-size: 0.8rem; color: #6c757d; font-weight: normal; display: block; height: 1.2em; }
+.original-price { text-decoration: line-through; color: #dc3545; margin-right: 8px; font-weight: normal !important; }
+.new-price { color: #28a745; font-weight: bold !important; display: inline-flex; align-items: center; }
+
+#topControls, #scrollControls { display: flex; align-items: center; gap: 8px; }
+#scrollToTopBtn, #scrollToBottomBtn { background-color: #e9ecef; border: 1px solid #dee2e6; color: #495057; width: 30px; height: 30px; border-radius: 50%; font-size: 1rem; cursor: pointer; transition: background-color 0.2s; padding: 0; line-height: 30px; }
+#scrollToTopBtn:hover, #scrollToBottomBtn:hover { background-color: #ced4da; }
+
+/* --- Modern Price Controls --- */
+#controlsContainer { display: inline-flex; align-items: center; border: 1px solid #dee2e6; border-radius: 50px; padding: 4px; background-color: #f8f9fa; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); }
+#increasePrice, #decreasePrice { background-color: #fff; border: 1px solid #ced4da; width: 30px; height: 30px; border-radius: 50%; font-size: 1.2rem; font-weight: bold; color: #495057; cursor: pointer; transition: all 0.2s ease-in-out; display: flex; justify-content: center; align-items: center; padding-bottom: 2px; }
+#increasePrice:hover { background-color: #28a745; color: white; border-color: #28a745; transform: scale(1.1); }
+#decreasePrice:hover { background-color: #dc3545; color: white; border-color: #dc3545; transform: scale(1.1); }
+#percentageDisplay { font-weight: bold; color: #0056b3; margin: 0 10px; min-width: 45px; text-align: center; font-size: 0.9rem; }
+#increasePrice { margin-left: 0 !important; }
+
+/* --- Language & Dark Mode Buttons --- */
+#langControls { display: inline-flex; border-radius: 8px; overflow: hidden; border: 1px solid #ced4da; }
+#langEn, #langAr { background-color: #ffffff; border: none; padding: 6px 12px; font-size: 0.8rem; font-weight: 500; color: #495057; cursor: pointer; transition: all 0.2s ease-in-out; white-space: nowrap; }
+#langEn { border-left: 1px solid #ced4da; }
+#langControls button.active { background-color: #007bff; color: white; }
+#langControls button:not(.active):hover { background-color: #e9ecef; }
+#darkModeToggle { background-color: #ffffff; border: 1px solid #ced4da; border-radius: 8px; padding: 6px 10px; font-size: 1rem; cursor: pointer; transition: all 0.2s ease-in-out; }
+#darkModeToggle:hover { background-color: #e9ecef; }
+
+/* ================================== */
+/* --- DARK MODE STYLES --- */
+/* ================================== */
+.dark-mode { background-color: #2c3e50; color: #ecf0f1; }
+.dark-mode #fixedArea, .dark-mode #cartContainer { background-color: #34495e; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); }
+.dark-mode #cartTotal, .dark-mode .cartItem, .dark-mode #subtitle { color: #ecf0f1; }
+.dark-mode .card-content p:first-of-type { color: #fff !important; background-color: #3498db !important; }
+.dark-mode .card-content p:nth-of-type(2), .dark-mode .card-content p:nth-of-type(4) { color: #5dade2; }
+.dark-mode input, .dark-mode textarea, .dark-mode select { background-color: #2c3e50; color: #fff; border-color: #7f8c8d; }
+.dark-mode #scrollToTopBtn, .dark-mode #scrollToBottomBtn { background-color: #7f8c8d; border-color: #95a5a6; color: #ecf0f1; }
+.dark-mode .cartItem { border-bottom-color: #4b6584; }
+.dark-mode #controlsContainer { background-color: #2c3e50; border-color: #7f8c8d; }
+.dark-mode #increasePrice, .dark-mode #decreasePrice { background-color: #4b6584; border-color: #7f8c8d; color: #ecf0f1; }
+.dark-mode #percentageDisplay { color: #5dade2; }
+.dark-mode #langControls { border-color: #7f8c8d; }
+.dark-mode #langEn, .dark-mode #langAr { background-color: #4b6584; color: #ecf0f1; border-left-color: #7f8c8d; }
+.dark-mode #darkModeToggle { background-color: #4b6584; color: #ecf0f1; border-color: #7f8c8d; }
+.dark-mode #langControls button.active { background-color: #3498db; }
+.dark-mode #langControls button:not(.active):hover, .dark-mode #darkModeToggle:hover { background-color: #7f8c8d; }
+
+/* ============================================== */
+/*          SAUDI RIYAL SYMBOL (IMAGE FIX)        */
+/* ============================================== */
+.currency-symbol {
+    display: inline-block;
+    width: 25px;
+    height: 12px;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+    margin: 0 3px;
+    flex-shrink: 0;
+    /* Black symbol for light mode */
+    background-image: url("https://i.ibb.co/9vM9kYq/saudi-riyal-symbol-black.png");
+}
+.dark-mode .currency-symbol {
+    /* White symbol for dark mode */
+    background-image: url("https://i.ibb.co/P9tPzCg/saudi-riyal-symbol-white.png");
+}```
+
+---
+
+### **Final `script.js`**
+
+```javascript
 // --- SCRIPT START ---
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -138,48 +281,38 @@ document.addEventListener('DOMContentLoaded', function() {
         switchLanguage('en');
     });
 
+    // --- FINAL, CORRECTED LOGIC FOR THE '+' AND '-' BUTTONS ---
+    increaseButton.addEventListener('click', () => {
+        if (priceMultiplier >= 2.5) { // Safety limit
+            alert(translations[currentLanguage].maxLimitAlert);
+            return;
+        }
 
-
-
-// --- REPLACE IT WITH THIS FINAL, CORRECT FUNCTION ---
-
-increaseButton.addEventListener('click', () => {
-    // Safety check
-    if (priceMultiplier >= 2.5) {
-        alert(translations[currentLanguage].maxLimitAlert);
-        return;
-    }
-
-    // A. If we are cancelling a discount (moving back towards 0)
-    if (isDiscounting) {
-        priceMultiplier += 0.05;
-        displayPercentage += 5;
-        updatePercentageDisplay();
-    } 
-    // B. If we are in Sales Rep mode and adding a markup (The correct logic)
-    else if (isCustomerMode) {
-        // THIS IS THE CORRECT COMPOUNDING LOGIC.
-        // It multiplies the current price multiplier by 1.05.
-        priceMultiplier *= 1.05; 
+        // A. If we are cancelling a discount (moving back towards 0)
+        if (isDiscounting) {
+            priceMultiplier += 0.05;
+            displayPercentage += 5;
+            updatePercentageDisplay();
+        } 
+        // B. If we are in Sales Rep mode and adding a markup
+        else if (isCustomerMode) {
+            // THIS IS THE CORRECT, STATELESS LOGIC.
+            // It ALWAYS calculates from the base (1.0).
+            customerMarkupClicks++;
+            priceMultiplier = 1.0 + (customerMarkupClicks * 0.05);
+            markupDots.textContent = '•'.repeat(customerMarkupClicks);
+        } 
+        // C. For the public-facing view
+        else {
+            priceMultiplier += 0.05;
+            displayPercentage += 5;
+            updatePercentageDisplay();
+        }
         
-        customerMarkupClicks++;
-        markupDots.textContent = ','.repeat(customerMarkupClicks);
-    } 
-    // C. For the public-facing view
-    else {
-        priceMultiplier += 0.05;
-        displayPercentage += 5;
-        updatePercentageDisplay();
-    }
-    
-    // Apply the newly and correctly calculated price
-    updateMultiplierPrices();
-});
+        // Apply the newly and correctly calculated price
+        updateMultiplierPrices();
+    });
 
-
-
-    
-    // --- THIS IS THE FINAL, CORRECTED LOGIC FOR THE '-' BUTTON ---
     decreaseButton.addEventListener('click', () => { 
         if (priceMultiplier <= 0.55) { 
             alert(translations[currentLanguage].minLimitAlert); 
@@ -194,7 +327,7 @@ increaseButton.addEventListener('click', () => {
         
         customerMarkupClicks = 0; 
         markupDots.textContent = ''; 
-        priceMultiplier -= 0.05; 
+        priceMultiplier -= 0.05; // Always apply a flat 5% discount from the original price
         displayPercentage -= 5; 
         updateMultiplierPrices(); 
         updatePercentageDisplay(); 
@@ -276,6 +409,7 @@ increaseButton.addEventListener('click', () => {
         priceSelector.value = currentSelection;
     }
 
+    // --- FINAL, CORRECTED LOGIC FOR PRICE CHANNEL SELECTION ---
     function loadProductsFromExcel(jsonData) { 
         productGrid.innerHTML = ''; products.length = 0; if (!jsonData || jsonData.length === 0) return; 
         const headers = Object.keys(jsonData[0]); 
@@ -292,10 +426,11 @@ increaseButton.addEventListener('click', () => {
         }); 
         if (priceSelector.querySelector('[value="retail price Q"]')) priceSelector.value = 'retail price Q'; 
         
-        // This is RULE 1. It resets the state completely.
         priceSelector.addEventListener('change', () => { 
+            // THIS IS THE CRITICAL BUG FIX.
+            customerMarkupClicks = 0; // Reset the click counter to ZERO.
+
             isDiscounting = false; 
-            customerMarkupClicks = 0; 
             markupDots.textContent = ''; 
             priceMultiplier = 1.0; 
             displayPercentage = 0; 
