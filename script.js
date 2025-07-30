@@ -138,28 +138,39 @@ document.addEventListener('DOMContentLoaded', function() {
         switchLanguage('en');
     });
 
-    // --- FINAL, CORRECTED LOGIC FOR THE '+' AND '-' BUTTONS ---
-    increaseButton.addEventListener('click', () => {
-        if (priceMultiplier >= 2.5) { // Safety limit
-            alert(translations[currentLanguage].maxLimitAlert);
-            return;
-        }
+   // --- استبدل الكود القديم بهذا الكود النهائي والمضمون ---
+increaseButton.addEventListener('click', () => {
+    // Safety check
+    if (priceMultiplier >= 2.5) {
+        alert(translations[currentLanguage].maxLimitAlert);
+        return;
+    }
 
-        // If in Sales Rep mode AND NOT currently discounting, apply compounding increase.
-        if (isCustomerMode && !isDiscounting) {
-            priceMultiplier *= 1.05; // Multiply current price by 1.05
-            customerMarkupClicks++;
-            markupDots.textContent = '•'.repeat(customerMarkupClicks);
-        } 
-        // For all other cases (public mode, or cancelling a discount)
-        else {
-            priceMultiplier += 0.05; // Apply a flat 5% increase from original base
-            displayPercentage += 5;
-            updatePercentageDisplay();
-        }
-        
-        updateMultiplierPrices();
-    });
+    // A. If we are cancelling a discount (moving back towards 0)
+    if (isDiscounting) {
+        priceMultiplier += 0.05;
+        displayPercentage += 5;
+        updatePercentageDisplay();
+    } 
+    // B. If we are in Sales Rep mode and adding a markup
+    else if (isCustomerMode) {
+        // THIS IS THE FINAL, CORRECT LOGIC.
+        // It ALWAYS calculates from the original base (1.0).
+        // It does NOT use the previous priceMultiplier value for calculation.
+        customerMarkupClicks++;
+        priceMultiplier = 1.0 + (customerMarkupClicks * 0.05);
+        markupDots.textContent = '.'.repeat(customerMarkupClicks);
+    } 
+    // C. For the public-facing view
+    else {
+        priceMultiplier += 0.05;
+        displayPercentage += 5;
+        updatePercentageDisplay();
+    }
+    
+    // Apply the newly and correctly calculated price
+    updateMultiplierPrices();
+});
 
     decreaseButton.addEventListener('click', () => { 
         if (priceMultiplier <= 0.55) { 
