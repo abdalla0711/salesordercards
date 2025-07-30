@@ -134,18 +134,18 @@ h1 { margin: 0; text-align: left; flex-grow: 1; }
 /* ============================================== */
 .currency-symbol {
     display: inline-block;
-    width: 25px;
-    height: 12px;
+    width: 32px;
+    height: 15px;
     background-repeat: no-repeat;
     background-size: contain;
     background-position: center;
-    margin: 0 3px;
+    margin: 0 1px;
     flex-shrink: 0;
     /* Black symbol for light mode */
-    background-image: url("https://i.ibb.co/9vM9kYq/saudi-riyal-symbol-black.png");
+    background-image: url("https://ibn-thani.com/wp-content/uploads/2025/02/Photoroom_20250220_183836.png");
 }
 .dark-mode .currency-symbol {
     /* White symbol for dark mode */
-    background-image: url("https://i.ibb.co/P9tPzCg/saudi-riyal-symbol-white.png");
+    background-image: url("https://ibn-thani.com/wp-content/uploads/2025/02/Photoroom_20250220_183836.png");
 }```
 
