@@ -138,55 +138,53 @@ document.addEventListener('DOMContentLoaded', function() {
         switchLanguage('en');
     });
 
-   // --- استبدل الكود القديم بهذا الكود النهائي والمضمون ---
-increaseButton.addEventListener('click', () => {
-    // Safety check
-    if (priceMultiplier >= 2.5) {
-        alert(translations[currentLanguage].maxLimitAlert);
-        return;
-    }
+    // --- THIS IS THE FINAL, CORRECTED LOGIC FOR THE '+' BUTTON ---
+    increaseButton.addEventListener('click', () => {
+        if (priceMultiplier >= 2.5) { // Safety limit
+            alert(translations[currentLanguage].maxLimitAlert);
+            return;
+        }
 
-    // A. If we are cancelling a discount (moving back towards 0)
-    if (isDiscounting) {
-        priceMultiplier += 0.05;
-        displayPercentage += 5;
-        updatePercentageDisplay();
-    } 
-    // B. If we are in Sales Rep mode and adding a markup
-    else if (isCustomerMode) {
-        // THIS IS THE FINAL, CORRECT LOGIC.
-        // It ALWAYS calculates from the original base (1.0).
-        // It does NOT use the previous priceMultiplier value for calculation.
-        customerMarkupClicks++;
-        priceMultiplier = 1.0 + (customerMarkupClicks * 0.05);
-        markupDots.textContent = '.'.repeat(customerMarkupClicks);
-    } 
-    // C. For the public-facing view
-    else {
-        priceMultiplier += 0.05;
-        displayPercentage += 5;
-        updatePercentageDisplay();
-    }
-    
-    // Apply the newly and correctly calculated price
-    updateMultiplierPrices();
-});
+        // A. If we are cancelling a discount (moving back towards 0)
+        if (isDiscounting) {
+            priceMultiplier += 0.05;
+            displayPercentage += 5;
+            updatePercentageDisplay();
+        } 
+        // B. If we are in Sales Rep mode and adding a markup
+        else if (isCustomerMode) {
+            // This is the guaranteed correct logic. It ALWAYS calculates from the base.
+            customerMarkupClicks++;
+            priceMultiplier = 1.0 + (customerMarkupClicks * 0.05);
+            markupDots.textContent = '•'.repeat(customerMarkupClicks);
+        } 
+        // C. For the public-facing view
+        else {
+            priceMultiplier += 0.05;
+            displayPercentage += 5;
+            updatePercentageDisplay();
+        }
+        
+        // Apply the newly and correctly calculated price
+        updateMultiplierPrices();
+    });
 
+    // --- THIS IS THE FINAL, CORRECTED LOGIC FOR THE '-' BUTTON ---
     decreaseButton.addEventListener('click', () => { 
         if (priceMultiplier <= 0.55) { 
             alert(translations[currentLanguage].minLimitAlert); 
             return; 
         } 
         
-        // If this is the FIRST time we click '-' in a markup cycle, lock the base price.
+        // This is RULE 2. It happens ONLY ONCE per markup cycle.
         if (isCustomerMode && !isDiscounting) { 
             isDiscounting = true; 
-            discountBaseMultiplier = priceMultiplier; // This is RULE 2. It happens ONLY ONCE.
+            discountBaseMultiplier = priceMultiplier; // Locks the current green price as the new red price base.
         } 
         
         customerMarkupClicks = 0; 
         markupDots.textContent = ''; 
-        priceMultiplier -= 0.05; // Always apply a flat 5% discount from the original price
+        priceMultiplier -= 0.05; 
         displayPercentage -= 5; 
         updateMultiplierPrices(); 
         updatePercentageDisplay(); 
@@ -268,7 +266,6 @@ increaseButton.addEventListener('click', () => {
         priceSelector.value = currentSelection;
     }
 
-    // --- RULE 1 IS IMPLEMENTED HERE ---
     function loadProductsFromExcel(jsonData) { 
         productGrid.innerHTML = ''; products.length = 0; if (!jsonData || jsonData.length === 0) return; 
         const headers = Object.keys(jsonData[0]); 
@@ -285,8 +282,8 @@ increaseButton.addEventListener('click', () => {
         }); 
         if (priceSelector.querySelector('[value="retail price Q"]')) priceSelector.value = 'retail price Q'; 
         
+        // This is RULE 1. It resets the state completely.
         priceSelector.addEventListener('change', () => { 
-            // This is the reset that happens when you select a new channel.
             isDiscounting = false; 
             customerMarkupClicks = 0; 
             markupDots.textContent = ''; 
