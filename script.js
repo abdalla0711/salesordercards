@@ -137,38 +137,38 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         switchLanguage('en');
     });
+// --- REPLACE IT WITH THIS FINAL, CORRECT FUNCTION ---
+increaseButton.addEventListener('click', () => {
+    // Safety check
+    if (priceMultiplier >= 2.5) {
+        alert(translations[currentLanguage].maxLimitAlert);
+        return;
+    }
 
-    // --- THIS IS THE FINAL, CORRECTED LOGIC FOR THE '+' BUTTON ---
-    increaseButton.addEventListener('click', () => {
-        if (priceMultiplier >= 2.5) { // Safety limit
-            alert(translations[currentLanguage].maxLimitAlert);
-            return;
-        }
-
-        // A. If we are cancelling a discount (moving back towards 0)
-        if (isDiscounting) {
-            priceMultiplier += 0.05;
-            displayPercentage += 5;
-            updatePercentageDisplay();
-        } 
-        // B. If we are in Sales Rep mode and adding a markup
-        else if (isCustomerMode) {
-            // This is the guaranteed correct logic. It ALWAYS calculates from the base.
-            customerMarkupClicks++;
-            priceMultiplier = 1.0 + (customerMarkupClicks * 0.05);
-            markupDots.textContent = '•'.repeat(customerMarkupClicks);
-        } 
-        // C. For the public-facing view
-        else {
-            priceMultiplier += 0.05;
-            displayPercentage += 5;
-            updatePercentageDisplay();
-        }
-        
-        // Apply the newly and correctly calculated price
-        updateMultiplierPrices();
-    });
-
+    // A. If we are cancelling a discount (moving back towards 0)
+    if (isDiscounting) {
+        priceMultiplier += 0.05;
+        displayPercentage += 5;
+        updatePercentageDisplay();
+    } 
+    // B. If we are in Sales Rep mode and adding a markup
+    else if (isCustomerMode) {
+        // THIS IS THE CORRECT LOGIC THAT I FAILED TO GIVE YOU.
+        // It ALWAYS calculates from the base (1.0).
+        customerMarkupClicks++;
+        priceMultiplier = 1.0 + (customerMarkupClicks * 0.05);
+        markupDots.textContent = '.'.repeat(customerMarkupClicks);
+    } 
+    // C. For the public-facing view
+    else {
+        priceMultiplier += 0.05;
+        displayPercentage += 5;
+        updatePercentageDisplay();
+    }
+    
+    // Apply the newly and correctly calculated price
+    updateMultiplierPrices();
+});
     // --- THIS IS THE FINAL, CORRECTED LOGIC FOR THE '-' BUTTON ---
     decreaseButton.addEventListener('click', () => { 
         if (priceMultiplier <= 0.55) { 
