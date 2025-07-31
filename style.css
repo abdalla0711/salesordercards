@@ -84,7 +84,7 @@ h1 { margin: 0; text-align: center; flex-grow: 1; }
 #increasePrice, #decreasePrice { background-color: #fff; border: 1px solid #ced4da; width: 30px; height: 30px; border-radius: 50%; font-size: 1.2rem; font-weight: bold; color: #495057; cursor: pointer; transition: all 0.2s ease-in-out; display: flex; justify-content: center; align-items: center; padding-bottom: 2px; }
 #increasePrice:hover { background-color: #28a745; color: white; border-color: #28a745; transform: scale(1.1); }
 #decreasePrice:hover { background-color: #dc3545; color: white; border-color: #dc3545; transform: scale(1.1); }
-#percentageDisplay { font-weight: bold; color: #0056b3; margin: 0 1px; min-width: 30px; text-align: center; font-size: 0.9rem; }
+#percentageDisplay { font-weight: bold; color: #0056b3; margin: 0 1px; min-width: 20px; text-align: center; font-size: 0.9rem; }
 #increasePrice { margin-left: 0 !important; }
 
 /* --- Language & Dark Mode Buttons --- */
@@ -385,10 +385,10 @@ h1 { margin: 0; text-align: center; flex-grow: 1; }
 
 /* A common style for all buttons in the top control bar */
 .control-btn {
-    background-color: #fff;
+    background-color: #blue;
     color: #555; /* Icon color */
     border: none;
-    padding: 4px 6px;
+    padding: 2px 3px;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -432,8 +432,8 @@ h1 { margin: 0; text-align: center; flex-grow: 1; }
 
 /* Style for the SVG icons inside the buttons */
 .control-btn svg {
-    width: 15px;
-    height: 10px;
+    width: 20px;
+    height: 20px;
     fill: currentColor; 
 }
 
