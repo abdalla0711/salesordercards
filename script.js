@@ -1,5 +1,8 @@
 // --- SCRIPT START ---
 
+// Greet the user on script load
+alert("Welcome to the Eagle Store portal!");
+
 document.addEventListener('DOMContentLoaded', function() {
     document.body.style.visibility = 'visible';
 
@@ -16,10 +19,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const scrollToTopBtn = document.getElementById('scrollToTopBtn');
     const scrollToBottomBtn = document.getElementById('scrollToBottomBtn');
     const darkModeToggle = document.getElementById('darkModeToggle');
-    const controlsContainer = document.getElementById('controlsContainer'); // Get the main container from HTML
+    const controlsContainer = document.getElementById('controlsContainer');
     const priceSelector = document.createElement('select');
     priceSelector.id = 'priceSelector';
     priceSelector.style.display = 'none';
+
+    // --- NEW: Floating Cart Selectors ---
+    const floatingCartIcon = document.getElementById('floatingCartIcon');
+    const cartModal = document.getElementById('cartModal');
+    const cartModalClose = document.getElementById('cartModalClose');
+    const modalCartItemsContainer = document.getElementById('modalCartItemsContainer');
+    const modalCartTotal = document.getElementById('modalCartTotal');
 
     // --- Create and Add Price Adjustment Controls ---
     const increaseButton = document.createElement('button');
@@ -45,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- Global State ---
     const products = [];
-    let cartTotal = 0;
+    let cart = []; // REFACTORED: Central array for cart items
     let currentLanguage = 'ar';
     let englishButtonClickCount = 0;
     let priceMultiplier = 1.10;
@@ -106,9 +116,13 @@ document.addEventListener('DOMContentLoaded', function() {
     function updatePercentageDisplay() { let prefix = displayPercentage >= 0 ? '+' : ''; percentageDisplay.textContent = `${prefix}${displayPercentage.toFixed(0)}%`; }
 
     // --- Event Listeners ---
-    darkModeToggle.addEventListener('click', () => {
-        document.body.classList.toggle('dark-mode');
-    });
+    darkModeToggle.addEventListener('click', () => { document.body.classList.toggle('dark-mode'); });
+
+    // --- NEW: Floating Cart Listeners ---
+    floatingCartIcon.addEventListener('click', () => cartModal.classList.remove('modal-hidden'));
+    cartModalClose.addEventListener('click', () => cartModal.classList.add('modal-hidden'));
+    window.addEventListener('click', (event) => { if (event.target == cartModal) cartModal.classList.add('modal-hidden'); });
+
 
     langArButton.addEventListener('click', () => switchLanguage('ar'));
     langEnButton.addEventListener('click', () => {
@@ -119,9 +133,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 isCustomerMode = true;
                 updateUIText();
                 priceSelector.style.display = 'block';
-                // --- MODIFICATION: Deactivate +/- buttons in Sales Rep mode ---
-                increaseButton.disabled = true;
-                decreaseButton.disabled = true;
+                increaseButton.disabled = true; // Deactivate in sales rep mode
+                decreaseButton.disabled = true; // Deactivate in sales rep mode
                 isDiscounting = false;
                 customerMarkupClicks = 0;
                 markupDots.textContent = '';
@@ -171,114 +184,155 @@ document.addEventListener('DOMContentLoaded', function() {
         else { langEnButton.classList.add('active'); langArButton.classList.remove('active'); }
         updateUIText();
         updateProductLanguage();
-        updateCartLanguage();
+        renderCart(); // UPDATED: Render cart to update language
         updateMultiplierPrices();
         rebuildPriceSelectorOptions();
     }
     
     function getItemName(product) { if (currentLanguage === 'en' && product['en_item_name']) return product['en_item_name']; return product['item name']; }
     function updateProductLanguage() { document.querySelectorAll('.productSquare').forEach(square => { const productCode = square.dataset.productCode; const product = products.find(p => p['item code'] == productCode); if (product) square.querySelector('.card-content p:first-of-type').textContent = getItemName(product); }); filterInput.dispatchEvent(new Event('input')); }
-    function updateCartLanguage() { document.querySelectorAll('.cartItem').forEach(cartItem => { const productCode = cartItem.dataset.productCode; const product = products.find(p => p['item code'] == productCode); if (product) cartItem.querySelector('.itemName').textContent = getItemName(product); }); }
     function updateMultiplierPrices() { document.querySelectorAll('.productSquare').forEach(square => { const productCode = square.dataset.productCode; const product = products.find(p => p['item code'] == productCode); if (product) { let basePrice; if (priceSelector.style.display !== 'none' && priceSelector.value) { basePrice = parseFloat(product[priceSelector.value]); } else { basePrice = parseFloat(product['retail price Q']); } if (!isNaN(basePrice)) { const newPrice = basePrice * priceMultiplier; updateProductCardPrices(square, newPrice, product['ea in ca']); } } }); }
     
-    // --- MODIFICATION: Updated createProductSquare to use correct price in cart for Sales Rep mode ---
     function createProductSquare(product) { 
         const square = document.createElement('div'); square.className = 'productSquare'; square.dataset.productCode = product['item code']; square.dataset.productNameAr = product['item name'] || ''; square.dataset.productNameEn = product['en_item_name'] || ''; const image = document.createElement('img'); image.src = product['image_ulr'] || 'https://via.placeholder.com/300x200.png?text=No+Image'; square.appendChild(image); const contentDiv = document.createElement('div'); contentDiv.className = 'card-content'; square.appendChild(contentDiv); const name = document.createElement('p'); name.textContent = getItemName(product); contentDiv.appendChild(name); for (let i = 0; i < 4; i++) contentDiv.appendChild(document.createElement('p')); const basePrice = parseFloat(product['retail price Q']); const initialPrice = basePrice * priceMultiplier; updateProductCardPrices(square, initialPrice, product['ea in ca']); 
+        
         square.addEventListener('click', function() { 
-            const quantity = prompt(translations[currentLanguage].quantityPrompt); 
-            if (quantity && !isNaN(quantity) && quantity > 0) { 
+            const quantityInput = prompt(translations[currentLanguage].quantityPrompt); 
+            if (quantityInput && !isNaN(quantityInput) && Number(quantityInput) > 0) {
+                const quantity = Number(quantityInput);
                 let basePrice; 
                 if (priceSelector.style.display !== 'none' && priceSelector.value) basePrice = parseFloat(product[priceSelector.value]); 
                 else basePrice = parseFloat(product['retail price Q']); 
                 
                 let priceToUse;
                 if (isCustomerMode) {
-                    priceToUse = basePrice + 10; // Sales Rep mode uses original + 10
+                    priceToUse = basePrice + 10;
                 } else {
-                    priceToUse = basePrice * priceMultiplier; // Normal mode uses multiplier
+                    priceToUse = basePrice * priceMultiplier;
                 }
-
-                const itemTotal = priceToUse * quantity; 
-                const cartItem = document.createElement('div'); 
-                cartItem.className = 'cartItem'; cartItem.dataset.productCode = product['item code']; cartItem.dataset.itemTotal = itemTotal; 
-                cartItem.innerHTML = `<span class="cartLineNumber"></span><span>${product['item code']} | </span><span>${quantity}Ca | </span><span>${priceToUse.toFixed(2)}</span><span class="currency-symbol"></span><span> | </span><span class="itemName">${getItemName(product)}</span><button class="delete-btn">X</button>`; 
-                cartItemsContainer.appendChild(cartItem); 
-                cartItem.querySelector('.delete-btn').addEventListener('click', function() { cartTotal -= parseFloat(cartItem.dataset.itemTotal); cartItem.remove(); updateCartTotal(); renumberCartItems(); }); 
-                cartTotal += itemTotal; 
-                updateCartTotal(); 
-                renumberCartItems(); 
+                
+                // REFACTORED: Add item to cart array and re-render
+                const existingItem = cart.find(item => item.productCode === product['item code']);
+                if (existingItem) {
+                    existingItem.quantity += quantity;
+                } else {
+                    cart.push({ productCode: product['item code'], quantity: quantity, pricePerUnit: priceToUse });
+                }
+                renderCart();
             } 
         }); 
         return square; 
     }
-
-    function renumberCartItems() { const items = cartItemsContainer.getElementsByClassName('cartItem'); for (let i = 0; i < items.length; i++) items[i].querySelector('.cartLineNumber').textContent = `${i + 1}. `; }
     
-    // --- MODIFICATION: Overhauled updateProductCardPrices for Sales Rep mode display logic ---
-    function updateProductCardPrices(squareElement, passedPrice, eaInCa) {
-        const productCode = squareElement.dataset.productCode;
-        const product = products.find(p => p['item code'] == productCode);
-        if (!product) return;
+    // --- NEW: Central function to render the cart in both main view and modal view ---
+    function renderCart() {
+        cartItemsContainer.innerHTML = '';
+        modalCartItemsContainer.innerHTML = '';
+        let currentCartTotal = 0;
 
-        const contentDiv = squareElement.querySelector('.card-content');
-        const lang = translations[currentLanguage];
+        cart.forEach((cartItemData, index) => {
+            const product = products.find(p => p['item code'] == cartItemData.productCode);
+            if (!product) return;
+
+            currentCartTotal += cartItemData.quantity * cartItemData.pricePerUnit;
+
+            const cartItemHTML = `
+                <span class="cartLineNumber">${index + 1}. </span>
+                <span>${product['item code']} | </span>
+                <span>${cartItemData.quantity}Ca | </span>
+                <span>${cartItemData.pricePerUnit.toFixed(2)}</span>
+                <span class="currency-symbol"></span>
+                <span> | </span>
+                <span class="itemName">${getItemName(product)}</span>
+                <button class="delete-btn" data-cart-index="${index}">X</button>
+            `;
+            
+            const mainCartItemEl = document.createElement('div');
+            mainCartItemEl.className = 'cartItem';
+            mainCartItemEl.innerHTML = cartItemHTML;
+            cartItemsContainer.appendChild(mainCartItemEl);
+
+            const modalCartItemEl = document.createElement('div');
+            modalCartItemEl.className = 'cartItem';
+            modalCartItemEl.innerHTML = cartItemHTML;
+            modalCartItemsContainer.appendChild(modalCartItemEl);
+        });
+
+        document.querySelectorAll('.delete-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const indexToDelete = parseInt(this.dataset.cartIndex);
+                cart.splice(indexToDelete, 1);
+                renderCart(); // Re-render after deletion
+            });
+        });
+
+        updateCartTotal(currentCartTotal);
+    }
+
+    // --- MODIFIED: Major overhaul for Sales Rep price styling ---
+    function updateProductCardPrices(squareElement, passedPrice, eaInCa) { 
+        const productCode = squareElement.dataset.productCode; 
+        const product = products.find(p => p['item code'] == productCode); if (!product) return; 
+        
+        const contentDiv = squareElement.querySelector('.card-content'); 
+        const lang = translations[currentLanguage]; 
         const eaInCaNum = parseInt(eaInCa);
         const currencySymbolHTML = '<span class="currency-symbol"></span>';
-
         const trueBasePrice = parseFloat(product[priceSelector.style.display !== 'none' && priceSelector.value ? priceSelector.value : 'retail price Q']);
 
         if (isCustomerMode) {
-            // --- Sales Rep Mode Logic: Green original price, Red new price (original + 10) ---
             const originalPriceCa = trueBasePrice;
             const newPriceCa = originalPriceCa + 10;
-
             const originalPriceEa = originalPriceCa / eaInCaNum;
             const newPriceEa = newPriceCa / eaInCaNum;
 
             const generateSalesRepHTML = (original, newPrice) => {
-                return `<span class="original-price" style="color: green; text-decoration: none;">${original.toFixed(2)}</span> <span class="new-price" style="color: red;">${newPrice.toFixed(2)}${currencySymbolHTML}</span>`;
+                return `<span style="font-weight: bold; color: green;">${original.toFixed(2)}</span> 
+                        <span style="text-decoration: line-through; font-size: smaller; color: red; margin-left: 5px;">${newPrice.toFixed(2)}${currencySymbolHTML}</span>`;
             };
 
-            contentDiv.querySelector('p:nth-of-type(2)').innerHTML = `<span>${lang.priceCa}</span> ${generateSalesRepHTML(originalPriceCa, newPriceCa)}`;
-            contentDiv.querySelector('p:nth-of-type(3)').innerHTML = `<span>${lang.priceCaTax}</span> ${generateSalesRepHTML(originalPriceCa * 1.15, newPriceCa * 1.15)}`;
-            contentDiv.querySelector('p:nth-of-type(4)').innerHTML = `<span>${lang.priceBund}</span> ${generateSalesRepHTML(originalPriceEa, newPriceEa)}`;
-            contentDiv.querySelector('p:nth-of-type(5)').innerHTML = `<span>${lang.priceBundTax}</span> ${generateSalesRepHTML(originalPriceEa * 1.15, newPriceEa * 1.15)}`;
+            contentDiv.querySelector('p:nth-of-type(2)').innerHTML = `<span>${lang.priceCa}</span> ${generateSalesRepHTML(originalPriceCa, newPriceCa)}`; 
+            contentDiv.querySelector('p:nth-of-type(3)').innerHTML = `<span>${lang.priceCaTax}</span> ${generateSalesRepHTML(originalPriceCa * 1.15, newPriceCa * 1.15)}`; 
+            contentDiv.querySelector('p:nth-of-type(4)').innerHTML = `<span>${lang.priceBund}</span> ${generateSalesRepHTML(originalPriceEa, newPriceEa)}`; 
+            contentDiv.querySelector('p:nth-of-type(5)').innerHTML = `<span>${lang.priceBundTax}</span> ${generateSalesRepHTML(originalPriceEa * 1.15, newPriceEa * 1.15)}`; 
 
         } else {
-            // --- Original Mode Logic ---
             const newCaPrice = passedPrice;
             const newEaPrice = newCaPrice / eaInCaNum;
             let basePriceForComparison;
             let showOriginal = false;
 
-            if (isDiscounting) {
-                basePriceForComparison = trueBasePrice * discountBaseMultiplier;
-                showOriginal = true;
-            } else if (displayPercentage !== 0) {
-                basePriceForComparison = trueBasePrice * 1.10;
-                showOriginal = true;
-            }
+            if (isDiscounting) { basePriceForComparison = trueBasePrice * discountBaseMultiplier; showOriginal = true; } 
+            else if (displayPercentage !== 0) { basePriceForComparison = trueBasePrice * 1.10; showOriginal = true; }
 
             const baseEaPriceForComparison = basePriceForComparison / eaInCaNum;
-
             const generatePriceHTML = (basePrice, currentPrice) => {
-                if (showOriginal) {
-                    return `<span class="original-price">${basePrice.toFixed(2)}</span> <span class="new-price">${currentPrice.toFixed(2)}${currencySymbolHTML}</span>`;
-                } else {
-                    return `<span class="new-price">${currentPrice.toFixed(2)}${currencySymbolHTML}</span>`;
-                }
+                return showOriginal ? `<span class="original-price">${basePrice.toFixed(2)}</span> <span class="new-price">${currentPrice.toFixed(2)}${currencySymbolHTML}</span>`
+                                    : `<span class="new-price">${currentPrice.toFixed(2)}${currencySymbolHTML}</span>`;
             };
 
-            contentDiv.querySelector('p:nth-of-type(2)').innerHTML = `<span>${lang.priceCa}</span> ${generatePriceHTML(basePriceForComparison, newCaPrice)}`;
-            contentDiv.querySelector('p:nth-of-type(3)').innerHTML = `<span>${lang.priceCaTax}</span> ${generatePriceHTML(basePriceForComparison * 1.15, newCaPrice * 1.15)}`;
-            contentDiv.querySelector('p:nth-of-type(4)').innerHTML = `<span>${lang.priceBund}</span> ${generatePriceHTML(baseEaPriceForComparison, newEaPrice)}`;
-            contentDiv.querySelector('p:nth-of-type(5)').innerHTML = `<span>${lang.priceBundTax}</span> ${generatePriceHTML(baseEaPriceForComparison * 1.15, newEaPrice * 1.15)}`;
+            contentDiv.querySelector('p:nth-of-type(2)').innerHTML = `<span>${lang.priceCa}</span> ${generatePriceHTML(basePriceForComparison, newCaPrice)}`; 
+            contentDiv.querySelector('p:nth-of-type(3)').innerHTML = `<span>${lang.priceCaTax}</span> ${generatePriceHTML(basePriceForComparison * 1.15, newCaPrice * 1.15)}`; 
+            contentDiv.querySelector('p:nth-of-type(4)').innerHTML = `<span>${lang.priceBund}</span> ${generatePriceHTML(baseEaPriceForComparison, newEaPrice)}`; 
+            contentDiv.querySelector('p:nth-of-type(5)').innerHTML = `<span>${lang.priceBundTax}</span> ${generatePriceHTML(baseEaPriceForComparison * 1.15, newEaPrice * 1.15)}`; 
         }
     }
 
-
     function updateOriginalPrices() { const selectedCategory = priceSelector.value; if (!selectedCategory) return; document.querySelectorAll('.productSquare').forEach(square => { const productCode = square.dataset.productCode; const product = products.find(p => p['item code'] == productCode); if (product) { const basePrice = parseFloat(product[selectedCategory]); if (!isNaN(basePrice)) { const newPrice = basePrice * priceMultiplier; updateProductCardPrices(square, newPrice, product['ea in ca']); } } }); }
-    function updateCartTotal() { const cartTotalElement = document.getElementById('cartTotal'); const cartTotalWithTax = cartTotal * 1.15; cartTotalElement.textContent = `${translations[currentLanguage].cartTotalText}: ${cartTotalWithTax.toFixed(2)}`; copyButton.classList.toggle('hidden', cartTotal <= 0); }
+    
+    // --- MODIFIED: updates both totals and floating icon visibility ---
+    function updateCartTotal(currentTotal) { 
+        const cartTotalElement = document.getElementById('cartTotal'); 
+        const cartTotalWithTax = currentTotal * 1.15;
+        const totalText = `${translations[currentLanguage].cartTotalText}: ${cartTotalWithTax.toFixed(2)}`;
+        
+        cartTotalElement.textContent = totalText;
+        modalCartTotal.textContent = totalText; // Also update modal total
+
+        const isCartEmpty = cart.length === 0;
+        copyButton.classList.toggle('hidden', isCartEmpty);
+        floatingCartIcon.classList.toggle('hidden', isCartEmpty);
+    }
 
     function rebuildPriceSelectorOptions() {
         if (!priceSelector.options.length) return;
@@ -328,34 +382,58 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     fetch('PRICES.xlsx').then(response => { if (!response.ok) throw new Error('File not found'); return response.arrayBuffer(); }).then(data => { const workbook = XLSX.read(data, { type: 'array' }); const sheet = workbook.Sheets[workbook.SheetNames[0]]; const jsonData = XLSX.utils.sheet_to_json(sheet); loadProductsFromExcel(jsonData); }).catch(err => { console.error("Error fetching or processing Excel file:", err); alert(translations[currentLanguage].fileNotFoundAlert); fallbackFileInput.style.display = 'block'; fallbackFileInput.addEventListener('change', function(e) { const reader = new FileReader(); reader.onload = function(ev) { const workbook = XLSX.read(ev.target.result, { type: 'array' }); const sheet = workbook.Sheets[workbook.SheetNames[0]]; const jsonData = XLSX.utils.sheet_to_json(sheet); loadProductsFromExcel(jsonData); fallbackFileInput.style.display = 'none'; }; reader.readAsArrayBuffer(e.target.files[0]); }); });
-    copyButton.addEventListener('click', function() { let cartText = ''; document.querySelectorAll('.cartItem').forEach(item => { const tempItem = item.cloneNode(true); tempItem.querySelector('.delete-btn').remove(); cartText += tempItem.innerText.replace(/\s+/g, ' ').trim() + '\n'; }); cartText += '\n' + document.getElementById('cartTotal').textContent; const comment = cartCommentInput.value.trim(); if (comment) cartText += `\n\n${translations[currentLanguage].commentsLabel}\n` + comment; navigator.clipboard.writeText(cartText).then(() => { alert(translations[currentLanguage].copySuccessAlert); const phoneNumber = "966550245871"; const encodedCartText = encodeURIComponent(cartText); const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedCartText}`; window.open(whatsappUrl, '_blank'); }).catch(err => { console.error('Failed to copy or open WhatsApp: ', err); alert(translations[currentLanguage].copyErrorAlert); }); });
+    
+    // --- MODIFIED: Copy button builds text from cart array and adds "SR" ---
+    copyButton.addEventListener('click', function() { 
+        let cartText = ''; 
+        let cartTotalForCopy = 0;
+
+        cart.forEach((cartItemData, index) => {
+            const product = products.find(p => p['item code'] == cartItemData.productCode);
+            if (product) {
+                cartTotalForCopy += cartItemData.quantity * cartItemData.pricePerUnit;
+                const line = `${index + 1}. ${product['item code']} | ${cartItemData.quantity}Ca | ${cartItemData.pricePerUnit.toFixed(2)} SR | ${getItemName(product)}`;
+                cartText += line + '\n';
+            }
+        });
+        
+        const totalWithTax = cartTotalForCopy * 1.15;
+        cartText += `\n${translations[currentLanguage].cartTotalText}: ${totalWithTax.toFixed(2)} SR`;
+        
+        const comment = cartCommentInput.value.trim(); 
+        if (comment) cartText += `\n\n${translations[currentLanguage].commentsLabel}\n` + comment; 
+        
+        navigator.clipboard.writeText(cartText).then(() => { 
+            alert(translations[currentLanguage].copySuccessAlert); 
+            const phoneNumber = "966550245871"; 
+            const encodedCartText = encodeURIComponent(cartText); 
+            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedCartText}`; 
+            window.open(whatsappUrl, '_blank'); 
+        }).catch(err => { console.error('Failed to copy or open WhatsApp: ', err); alert(translations[currentLanguage].copyErrorAlert); }); 
+    });
+
     filterInput.addEventListener('input', function() { const val = this.value.toLowerCase(); document.querySelectorAll('.productSquare').forEach(el => { const nameAr = el.dataset.productNameAr.toLowerCase(); const nameEn = el.dataset.productNameEn.toLowerCase(); const code = el.dataset.productCode.toLowerCase(); const isVisible = nameAr.includes(val) || nameEn.includes(val) || code.includes(val); el.style.display = isVisible ? 'block' : 'none'; }); });
 });
 
 
-
-// --- الوضع الليلي التلقائي مع دعم الزر اليدوي ---
+// --- Auto Night Mode ---
 let manualDarkToggle = false;
 
 function autoNightMode() {
-    const now = new Date();
-    const hour = now.getHours();
-    const isNight = (hour >= 19 || hour < 6); // من المغرب (7 مساءً) إلى الفجر (6 صباحًا)
-
-    if (!manualDarkToggle) {
-        if (isNight) document.body.classList.add('dark-mode');
-        else document.body.classList.remove('dark-mode');
-    }
+    if (manualDarkToggle) return;
+    const hour = new Date().getHours();
+    const isNight = (hour >= 18 || hour < 5);
+    document.body.classList.toggle('dark-mode', isNight);
 }
 
-// استدعاء عند التحميل وكل ساعة
 document.addEventListener('DOMContentLoaded', () => {
+    const darkModeToggle = document.getElementById('darkModeToggle');
     autoNightMode();
     setInterval(autoNightMode, 60 * 60 * 1000);
-});
 
-darkModeToggle.addEventListener('click', () => {
-    document.body.classList.toggle('dark-mode');
-    manualDarkToggle = true;
+    darkModeToggle.addEventListener('click', () => {
+        manualDarkToggle = true; // User has taken manual control
+        document.body.classList.toggle('dark-mode');
+    });
 });
 // --- SCRIPT END ---
