@@ -43,7 +43,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const priceControls = document.createElement('div');
     priceControls.className = 'control-group';
 
-    // --- MODIFIED: Using new, sleeker SVG icons ---
     const zoomInButton = document.createElement('button');
     zoomInButton.className = 'control-btn';
     zoomInButton.id = 'zoomIn';
@@ -70,7 +69,6 @@ document.addEventListener('DOMContentLoaded', function() {
     percentageDisplay.style.backgroundColor = '#fff';
     percentageDisplay.style.color = '#333';
     
-    // Add buttons to their respective groups
     zoomControls.appendChild(zoomOutButton);
     zoomControls.appendChild(zoomInButton);
     
@@ -78,7 +76,6 @@ document.addEventListener('DOMContentLoaded', function() {
     priceControls.appendChild(percentageDisplay);
     priceControls.appendChild(increaseButton);
 
-    // Add groups to the main container
     controlsContainer.appendChild(zoomControls);
     controlsContainer.appendChild(priceControls);
 
@@ -94,6 +91,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let discountBaseMultiplier = 1.0;
     let scrollClickCount = 0;
     let currentZoom = 1.0;
+    let manualDarkToggle = false; // Consolidated dark mode flag
 
     const translations = {
         en: { 
@@ -157,7 +155,6 @@ document.addEventListener('DOMContentLoaded', function() {
         let prefix = displayPercentage >= 0 ? '+' : ''; 
         percentageDisplay.textContent = `${prefix}${displayPercentage.toFixed(0)}%`; 
         
-        // Handle dark mode for percentage display
         if (document.body.classList.contains('dark-mode')) {
             percentageDisplay.style.backgroundColor = '#363636';
             percentageDisplay.style.color = '#e0e0e0';
@@ -490,8 +487,6 @@ document.addEventListener('DOMContentLoaded', function() {
         langArButton.classList.add('active');
     }
     
-    fetch('PRICES.xlsx').then(response => { if (!response.ok) throw new Error('File not found'); return response.arrayBuffer(); }).then(data => { const workbook = XLSX.read(data, { type: 'array' }); const sheet = workbook.Sheets[workbook.SheetNames[0]]; const jsonData = XLSX.utils.sheet_to_json(sheet); loadProductsFromExcel(jsonData); }).catch(err => { console.error("Error fetching or processing Excel file:", err); alert(translations[currentLanguage].fileNotFoundAlert); fallbackFileInput.style.display = 'block'; fallbackFileInput.addEventListener('change', function(e) { const reader = new FileReader(); reader.onload = function(ev) { const workbook = XLSX.read(ev.target.result, { type: 'array' }); const sheet = workbook.Sheets[workbook.SheetNames[0]]; const jsonData = XLSX.utils.sheet_to_json(sheet); loadProductsFromExcel(jsonData); fallbackFileInput.style.display = 'none'; }; reader.readAsArrayBuffer(e.target.files[0]); }); });
-    
     function performCartCopy() {
         let cartText = ''; 
         let cartTotalForCopy = 0;
@@ -524,28 +519,29 @@ document.addEventListener('DOMContentLoaded', function() {
     modalCopyButton.addEventListener('click', performCartCopy);
 
     filterInput.addEventListener('input', function() { const val = this.value.toLowerCase(); document.querySelectorAll('.productSquare').forEach(el => { const nameAr = el.dataset.productNameAr.toLowerCase(); const nameEn = el.dataset.productNameEn.toLowerCase(); const code = el.dataset.productCode.toLowerCase(); const isVisible = nameAr.includes(val) || nameEn.includes(val) || code.includes(val); el.style.display = isVisible ? 'block' : 'none'; }); });
-});
 
-// --- Auto Night Mode (Consolidated and Fixed) ---
-let manualDarkToggle = false;
+    // --- BUG FIX: All logic is now inside a single DOMContentLoaded listener ---
 
-function autoNightMode() {
-    if (manualDarkToggle) return;
-    const hour = new Date().getHours();
-    const isNight = (hour >= 18 || hour < 5);
-    document.body.classList.toggle('dark-mode', isNight);
-}
-
-document.addEventListener('DOMContentLoaded', () => {
+    // --- Auto Night Mode ---
+    function autoNightMode() {
+        if (manualDarkToggle) return;
+        const hour = new Date().getHours();
+        const isNight = (hour >= 18 || hour < 5);
+        document.body.classList.toggle('dark-mode', isNight);
+        updatePercentageDisplay(); // Update colors after auto-toggle
+    }
+    
     autoNightMode();
     setInterval(autoNightMode, 60 * 60 * 1000);
 
     darkModeToggle.addEventListener('click', () => {
         manualDarkToggle = true;
         document.body.classList.toggle('dark-mode');
-        // Manually update percentage display colors after toggling
-        document.getElementById('percentageDisplay').style.backgroundColor = document.body.classList.contains('dark-mode') ? '#363636' : '#fff';
-        document.getElementById('percentageDisplay').style.color = document.body.classList.contains('dark-mode') ? '#e0e0e0' : '#333';
+        updatePercentageDisplay(); // Update colors after manual toggle
     });
+
+    // --- Initial setup calls ---
+    fetch('PRICES.xlsx').then(response => { if (!response.ok) throw new Error('File not found'); return response.arrayBuffer(); }).then(data => { const workbook = XLSX.read(data, { type: 'array' }); const sheet = workbook.Sheets[workbook.SheetNames[0]]; const jsonData = XLSX.utils.sheet_to_json(sheet); loadProductsFromExcel(jsonData); }).catch(err => { console.error("Error fetching or processing Excel file:", err); const fallbackFileInput = document.getElementById('fallbackFileInput'); if(fallbackFileInput) { fallbackFileInput.style.display = 'block'; fallbackFileInput.addEventListener('change', function(e) { const reader = new FileReader(); reader.onload = function(ev) { const workbook = XLSX.read(ev.target.result, { type: 'array' }); const sheet = workbook.Sheets[workbook.SheetNames[0]]; const jsonData = XLSX.utils.sheet_to_json(sheet); loadProductsFromExcel(jsonData); fallbackFileInput.style.display = 'none'; }; reader.readAsArrayBuffer(e.target.files[0]); }); } alert(translations[currentLanguage].fileNotFoundAlert); });
+
 });
-// --- SCRIPT END ---```
+// --- SCRIPT END ---
