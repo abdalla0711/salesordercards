@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
             incorrectPasswordAlert: "Incorrect password.", maxLimitAlert: "Max limit reached.", minLimitAlert: "Min limit reached.", 
             quantityPrompt: "Enter quantity:", cartTotalText: "Total with tax", 
             copyButtonText: "Copy & Open WhatsApp", copySuccessAlert: "Cart copied.", 
-            copyErrorAlert: "Copy error.", fileNotFoundAlert: "Price file not found.", commentsLabel: "Comments:", 
+            copyErrorAlert: "Copy error.", fileNotFoundAlert: "Price file not found.", commentsLabel: "Enter the name of the company representative or the city name and the customer name:", 
             scrollTopTitle: "Scroll to Top", scrollBottomTitle: "Scroll to Bottom",
             priceCategories: {
                 "retail price Q": "Retail Price", "wholesale price": "Wholesale Price", "supermarket price": "Supermarket Price","hypermarket price":
@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function() {
             incorrectPasswordAlert: "كلمة مرور غير صحيحة.", maxLimitAlert: "تم الوصول للحد الأعلى.", minLimitAlert: "تم الوصول للحد الأدنى.", 
             quantityPrompt: "أدخل الكمية:", cartTotalText: "الإجمالي مع الضريبة", 
             copyButtonText: "نسخ الطلب وفتح واتساب", copySuccessAlert: "تم نسخ السلة.", 
-            copyErrorAlert: "حدث خطأ.", fileNotFoundAlert: "ملف الأسعار غير موجود.", commentsLabel: "ملاحظات:", 
+            copyErrorAlert: "حدث خطأ.", fileNotFoundAlert: "ملف الأسعار غير موجود.", commentsLabel: "ادخل اسم مندوب الشركة او اسم المدينة واسم العميل:", 
             scrollTopTitle: "الانتقال للأعلى", scrollBottomTitle: "الانتقال للأسفل",
               priceCategories: {
                 "retail price Q": "سعر التجزئة القريات", "retail price": "سعر التجزئة", "discountshops price": "سعر التخفيضات",
