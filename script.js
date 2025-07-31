@@ -51,8 +51,6 @@ document.addEventListener('DOMContentLoaded', function() {
     let priceMultiplier = 1.10;
     let displayPercentage = 10;
     let isCustomerMode = false;
-    let isDiscounting = false;
-    let discountBaseMultiplier = 1.0;
     let customerMarkupClicks = 0;
     let scrollClickCount = 0;
 
@@ -121,7 +119,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 priceSelector.style.display = 'block';
                 increaseButton.disabled = false;
                 decreaseButton.disabled = false;
-                isDiscounting = false;
                 customerMarkupClicks = 0;
                 markupDots.textContent = '';
                 priceMultiplier = 1.10;
@@ -139,17 +136,24 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     increaseButton.addEventListener('click', () => {
-        const baseMultiplier = isDiscounting ? discountBaseMultiplier : 1.0;
-        const newMultiplier = priceMultiplier + 0.05;
-        if (newMultiplier >= baseMultiplier * 2) { alert(translations[currentLanguage].maxLimitAlert); return; }
-        priceMultiplier = newMultiplier;
-        if (isDiscounting) { displayPercentage += 5; updatePercentageDisplay(); } 
-        else if (isCustomerMode) { customerMarkupClicks++; markupDots.textContent = '•'.repeat(customerMarkupClicks); } 
-        else { displayPercentage += 5; updatePercentageDisplay(); }
+        if (priceMultiplier >= 1.95) { alert(translations[currentLanguage].maxLimitAlert); return; }
+        priceMultiplier += 0.05;
+        displayPercentage += 5;
+        updatePercentageDisplay();
+        if (isCustomerMode) { customerMarkupClicks++; markupDots.textContent = '•'.repeat(customerMarkupClicks); }
         updateMultiplierPrices();
     });
 
-    decreaseButton.addEventListener('click', () => { if (priceMultiplier <= 0.55) { alert(translations[currentLanguage].minLimitAlert); return; } if (isCustomerMode && !isDiscounting) { isDiscounting = true; discountBaseMultiplier = priceMultiplier; } customerMarkupClicks = 0; markupDots.textContent = ''; priceMultiplier -= 0.05; displayPercentage -= 5; updateMultiplierPrices(); updatePercentageDisplay(); });
+    decreaseButton.addEventListener('click', () => {
+        if (priceMultiplier <= 0.55) { alert(translations[currentLanguage].minLimitAlert); return; }
+        customerMarkupClicks = 0;
+        markupDots.textContent = '';
+        priceMultiplier -= 0.05;
+        displayPercentage -= 5;
+        updateMultiplierPrices();
+        updatePercentageDisplay();
+    });
+
     scrollToTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
     scrollToBottomBtn.addEventListener('click', () => {
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
@@ -186,22 +190,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function renumberCartItems() { const items = cartItemsContainer.getElementsByClassName('cartItem'); for (let i = 0; i < items.length; i++) items[i].querySelector('.cartLineNumber').textContent = `${i + 1}. `; }
     
-    // --- MODIFIED FUNCTION ---
+    // --- DEFINITIVE FIX IS HERE ---
     function updateProductCardPrices(squareElement, newCaPrice, eaInCa) {
         const productCode = squareElement.dataset.productCode;
         const product = products.find(p => p['item code'] == productCode);
         if (!product) return;
 
+        // Step 1: Always get the true, unaltered base price from the selected price channel.
         const trueBasePrice = parseFloat(product[priceSelector.style.display !== 'none' && priceSelector.value ? priceSelector.value : 'retail price Q']);
+        if (isNaN(trueBasePrice)) return;
+
         const eaInCaNum = parseInt(eaInCa);
         const newEaPrice = newCaPrice / eaInCaNum;
 
-        // --- FIX ---
-        // The "basePriceForComparison" (the strikethrough price) should ALWAYS be the true base price from the Excel file.
-        // The flawed logic that multiplied it by "discountBaseMultiplier" has been removed.
+        // Step 2: The strikethrough price is ALWAYS the true base price. No other calculations.
         const basePriceForComparison = trueBasePrice;
-        const showOriginal = displayPercentage !== 0 && Math.abs(newCaPrice - trueBasePrice) > 0.01;
         const baseEaPriceForComparison = basePriceForComparison / eaInCaNum;
+
+        // Step 3: Show the strikethrough price if the current price is different from the base price.
+        const showOriginal = Math.abs(newCaPrice - trueBasePrice) > 0.01;
 
         const generatePriceHTML = (basePrice, currentPrice) => {
             const currencySymbolHTML = '<span class="currency-symbol"></span>';
@@ -250,7 +257,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (priceSelector.querySelector('[value="retail price Q"]')) priceSelector.value = 'retail price Q'; 
         
         priceSelector.addEventListener('change', () => { 
-            isDiscounting = false; 
             customerMarkupClicks = 0; 
             markupDots.textContent = ''; 
             priceMultiplier = 1.10;
