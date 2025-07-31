@@ -1,7 +1,7 @@
 // --- SCRIPT START ---
 
 // Greet the user on script load
-alert("Welcome to the Eagle Store portal!");
+//alert("Welcome to the Eagle Store portal!");
 
 document.addEventListener('DOMContentLoaded', function() {
     document.body.style.visibility = 'visible';
