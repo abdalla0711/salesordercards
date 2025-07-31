@@ -1,7 +1,7 @@
 // --- SCRIPT START ---
 
 // Greet the user on script load
-//alert("Welcome to the Eagle Store portal!");
+alert("Welcome to the Eagle Store portal!");
 
 document.addEventListener('DOMContentLoaded', function() {
     document.body.style.visibility = 'visible';
@@ -30,6 +30,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const cartModalClose = document.getElementById('cartModalClose');
     const modalCartItemsContainer = document.getElementById('modalCartItemsContainer');
     const modalCartTotal = document.getElementById('modalCartTotal');
+    // --- NEW: Selectors for new modal controls ---
+    const modalControlsContainer = document.getElementById('modalControlsContainer');
+    const modalCartComment = document.getElementById('modalCartComment');
+    const modalCopyButton = document.getElementById('modalCopyButton');
+    const modalCommentsLabel = document.getElementById('modalCommentsLabel');
+
 
     // --- Create and Add Price Adjustment Controls ---
     const increaseButton = document.createElement('button');
@@ -111,6 +117,10 @@ document.addEventListener('DOMContentLoaded', function() {
         copyButton.textContent = lang.copyButtonText;
         scrollToTopBtn.title = lang.scrollTopTitle;
         scrollToBottomBtn.title = lang.scrollBottomTitle;
+        // --- NEW: Update text for modal controls ---
+        modalCopyButton.textContent = lang.copyButtonText;
+        modalCommentsLabel.textContent = lang.commentsLabel;
+        modalCartComment.placeholder = lang.commentsLabel;
     }
 
     function updatePercentageDisplay() { let prefix = displayPercentage >= 0 ? '+' : ''; percentageDisplay.textContent = `${prefix}${displayPercentage.toFixed(0)}%`; }
@@ -122,6 +132,10 @@ document.addEventListener('DOMContentLoaded', function() {
     floatingCartIcon.addEventListener('click', () => cartModal.classList.remove('modal-hidden'));
     cartModalClose.addEventListener('click', () => cartModal.classList.add('modal-hidden'));
     window.addEventListener('click', (event) => { if (event.target == cartModal) cartModal.classList.add('modal-hidden'); });
+    
+    // --- NEW: Two-way sync for comment boxes ---
+    cartCommentInput.addEventListener('input', () => { modalCartComment.value = cartCommentInput.value; });
+    modalCartComment.addEventListener('input', () => { cartCommentInput.value = modalCartComment.value; });
 
 
     langArButton.addEventListener('click', () => switchLanguage('ar'));
@@ -202,7 +216,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const quantity = Number(quantityInput);
                 let basePrice; 
                 
-                // This logic now works correctly because the selector is not hidden
                 if (priceSelector.style.display !== 'none' && priceSelector.value) {
                     basePrice = parseFloat(product[priceSelector.value]); 
                 } else {
@@ -211,17 +224,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 let priceToUse;
                 if (isCustomerMode) {
-                    priceToUse = basePrice + 10; // The RED price
+                    priceToUse = basePrice + 10;
                 } else {
-                    priceToUse = basePrice * priceMultiplier; // Standard mode price
+                    priceToUse = basePrice * priceMultiplier;
                 }
                 
-                const existingItem = cart.find(item => item.productCode === product['item code']);
-                if (existingItem) {
-                    existingItem.quantity += quantity;
-                } else {
-                    cart.push({ productCode: product['item code'], quantity: quantity, pricePerUnit: priceToUse });
-                }
+                // --- MODIFICATION: Always push a new item instead of merging ---
+                cart.push({
+                    productCode: product['item code'],
+                    quantity: quantity,
+                    pricePerUnit: priceToUse
+                });
+
                 renderCart();
             } 
         }); 
@@ -283,8 +297,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const trueBasePrice = parseFloat(product[priceSelector.style.display !== 'none' && priceSelector.value ? priceSelector.value : 'retail price Q']);
 
         if (isCustomerMode) {
-            const originalPriceCa = trueBasePrice; // GREEN price
-            const newPriceCa = originalPriceCa + 10; // RED price
+            const originalPriceCa = trueBasePrice;
+            const newPriceCa = originalPriceCa + 10;
             const originalPriceEa = originalPriceCa / eaInCaNum;
             const newPriceEa = newPriceCa / eaInCaNum;
 
@@ -333,6 +347,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const isCartEmpty = cart.length === 0;
         copyButton.classList.toggle('hidden', isCartEmpty);
         floatingCartIcon.classList.toggle('hidden', isCartEmpty);
+        // --- NEW: Toggle visibility of modal button and its container ---
+        modalControlsContainer.classList.toggle('hidden', isCartEmpty);
+        modalCopyButton.classList.toggle('hidden', isCartEmpty);
     }
 
     function rebuildPriceSelectorOptions() {
@@ -369,8 +386,6 @@ document.addEventListener('DOMContentLoaded', function() {
             displayPercentage = 0; 
             updatePercentageDisplay(); 
             updateOriginalPrices();
-            
-            // --- BUG FIX --- The line that hid the selector was removed from here.
         }); 
 
         document.getElementById('cartContainer').insertBefore(priceSelector, document.getElementById('cartItems')); 
@@ -381,7 +396,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     fetch('PRICES.xlsx').then(response => { if (!response.ok) throw new Error('File not found'); return response.arrayBuffer(); }).then(data => { const workbook = XLSX.read(data, { type: 'array' }); const sheet = workbook.Sheets[workbook.SheetNames[0]]; const jsonData = XLSX.utils.sheet_to_json(sheet); loadProductsFromExcel(jsonData); }).catch(err => { console.error("Error fetching or processing Excel file:", err); alert(translations[currentLanguage].fileNotFoundAlert); fallbackFileInput.style.display = 'block'; fallbackFileInput.addEventListener('change', function(e) { const reader = new FileReader(); reader.onload = function(ev) { const workbook = XLSX.read(ev.target.result, { type: 'array' }); const sheet = workbook.Sheets[workbook.SheetNames[0]]; const jsonData = XLSX.utils.sheet_to_json(sheet); loadProductsFromExcel(jsonData); fallbackFileInput.style.display = 'none'; }; reader.readAsArrayBuffer(e.target.files[0]); }); });
     
-    copyButton.addEventListener('click', function() { 
+    // --- NEW: Refactored the copy logic into its own function ---
+    function performCartCopy() {
         let cartText = ''; 
         let cartTotalForCopy = 0;
 
@@ -397,6 +413,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const totalWithTax = cartTotalForCopy * 1.15;
         cartText += `\n${translations[currentLanguage].cartTotalText}: ${totalWithTax.toFixed(2)} SR`;
         
+        // Use the synced value from the main comment input
         const comment = cartCommentInput.value.trim(); 
         if (comment) cartText += `\n\n${translations[currentLanguage].commentsLabel}\n` + comment; 
         
@@ -407,7 +424,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedCartText}`; 
             window.open(whatsappUrl, '_blank'); 
         }).catch(err => { console.error('Failed to copy or open WhatsApp: ', err); alert(translations[currentLanguage].copyErrorAlert); }); 
-    });
+    }
+
+    // --- NEW: Both copy buttons now call the same function ---
+    copyButton.addEventListener('click', performCartCopy);
+    modalCopyButton.addEventListener('click', performCartCopy);
+
 
     filterInput.addEventListener('input', function() { const val = this.value.toLowerCase(); document.querySelectorAll('.productSquare').forEach(el => { const nameAr = el.dataset.productNameAr.toLowerCase(); const nameEn = el.dataset.productNameEn.toLowerCase(); const code = el.dataset.productCode.toLowerCase(); const isVisible = nameAr.includes(val) || nameEn.includes(val) || code.includes(val); el.style.display = isVisible ? 'block' : 'none'; }); });
 });
