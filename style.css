@@ -292,3 +292,76 @@ h1 { margin: 0; text-align: center; flex-grow: 1; }
 #modalCopyButton.hidden {
     display: none;
 }
+/* Add these styles for the new Quantity Modal */
+
+.quantity-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.6);
+    z-index: 1040;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.quantity-modal {
+    background-color: #fff;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    text-align: center;
+    width: 90%;
+    max-width: 320px;
+}
+
+.dark-mode .quantity-modal {
+    background-color: #2c2c2c;
+    color: #f1f1f1;
+}
+
+.quantity-modal h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.quantity-modal p {
+    margin-bottom: 15px;
+    font-size: 1.1em;
+    color: #666;
+}
+
+.dark-mode .quantity-modal p {
+    color: #ccc;
+}
+
+.quantity-modal input[type="number"] {
+    width: 100px;
+    padding: 10px;
+    font-size: 1.2em;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.quantity-modal .modal-actions button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    margin: 0 5px;
+}
+
+.quantity-modal .add-btn {
+    background-color: #28a745;
+    color: white;
+}
+
+.quantity-modal .cancel-btn {
+    background-color: #6c757d;
+    color: white;
+}
