@@ -375,7 +375,7 @@ h1 { margin: 0; text-align: center; flex-grow: 1; }
     align-items: center;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     border: 1px solid #dbdbdb;
-    border-radius: 6px;
+    border-radius: 3px;
 }
 
 .dark-mode .control-group {
@@ -388,7 +388,7 @@ h1 { margin: 0; text-align: center; flex-grow: 1; }
     background-color: #fff;
     color: #555; /* Icon color */
     border: none;
-    padding: 8px 12px;
+    padding: 4px 6px;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -432,8 +432,8 @@ h1 { margin: 0; text-align: center; flex-grow: 1; }
 
 /* Style for the SVG icons inside the buttons */
 .control-btn svg {
-    width: 20px;
-    height: 20px;
+    width: 15px;
+    height: 10px;
     fill: currentColor; 
 }
 
