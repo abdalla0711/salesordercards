@@ -48,11 +48,14 @@ document.addEventListener('DOMContentLoaded', function() {
     let cartTotal = 0;
     let currentLanguage = 'ar';
     let englishButtonClickCount = 0;
-    let priceMultiplier = 1.10;
+    let priceMultiplier = 1.10; // يبدأ السعر بزيادة 10%
     let displayPercentage = 10;
     let isCustomerMode = false;
+    let isDiscounting = false; // لا يزال مستخدماً في منطق الأزرار المرسل
+    let discountBaseMultiplier = 1.0; // لا يزال مستخدماً في منطق الأزرار المرسل
     let customerMarkupClicks = 0;
     let scrollClickCount = 0;
+    let manualDarkToggle = false; // للوضع الليلي اليدوي
 
     const translations = {
         en: { 
@@ -104,8 +107,23 @@ document.addEventListener('DOMContentLoaded', function() {
     function updatePercentageDisplay() { let prefix = displayPercentage >= 0 ? '+' : ''; percentageDisplay.textContent = `${prefix}${displayPercentage.toFixed(0)}%`; }
 
     // --- Event Listeners ---
+    
+    // --- NEW FUNCTION: الوضع الليلي التلقائي مع دعم الزر اليدوي ---
+    function autoNightMode() {
+        const now = new Date();
+        const hour = now.getHours();
+        const isNight = (hour >= 18 || hour < 5); // من المغرب (6 مساءً) إلى الفجر (5 صباحًا)
+
+        if (!manualDarkToggle) {
+            if (isNight) document.body.classList.add('dark-mode');
+            else document.body.classList.remove('dark-mode');
+        }
+    }
+    
+    // --- REPLACED FUNCTION: تم تعديل وظيفة زر الوضع الليلي
     darkModeToggle.addEventListener('click', () => {
         document.body.classList.toggle('dark-mode');
+        manualDarkToggle = true; // تعطيل الوضع التلقائي عند الضغط اليدوي
     });
 
     langArButton.addEventListener('click', () => switchLanguage('ar'));
@@ -135,23 +153,36 @@ document.addEventListener('DOMContentLoaded', function() {
         switchLanguage('en');
     });
 
+    // --- REPLACED FUNCTION: منطق زر الزيادة الجديد ---
     increaseButton.addEventListener('click', () => {
-        if (priceMultiplier >= 1.95) { alert(translations[currentLanguage].maxLimitAlert); return; }
-        priceMultiplier += 0.05;
-        displayPercentage += 5;
+        const baseMultiplier = isDiscounting ? discountBaseMultiplier : 1.0;
+        const newMultiplier = priceMultiplier + 0.05;
+        if (newMultiplier >= baseMultiplier * 2) {
+            alert(translations[currentLanguage].maxLimitAlert);
+            return;
+        }
+        priceMultiplier = newMultiplier;
+        displayPercentage = (priceMultiplier - 1.0) * 100;
         updatePercentageDisplay();
-        if (isCustomerMode) { customerMarkupClicks++; markupDots.textContent = '•'.repeat(customerMarkupClicks); }
         updateMultiplierPrices();
     });
-
+    
+    // --- REPLACED FUNCTION: منطق زر النقصان الجديد ---
     decreaseButton.addEventListener('click', () => {
-        if (priceMultiplier <= 0.55) { alert(translations[currentLanguage].minLimitAlert); return; }
+        if (priceMultiplier <= 0.55) {
+            alert(translations[currentLanguage].minLimitAlert);
+            return;
+        }
+        if (isCustomerMode && !isDiscounting) {
+            isDiscounting = true;
+            discountBaseMultiplier = priceMultiplier;
+        }
         customerMarkupClicks = 0;
         markupDots.textContent = '';
         priceMultiplier -= 0.05;
-        displayPercentage -= 5;
-        updateMultiplierPrices();
+        displayPercentage = (priceMultiplier - 1.0) * 100;
         updatePercentageDisplay();
+        updateMultiplierPrices();
     });
 
     scrollToTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
@@ -190,41 +221,39 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function renumberCartItems() { const items = cartItemsContainer.getElementsByClassName('cartItem'); for (let i = 0; i < items.length; i++) items[i].querySelector('.cartLineNumber').textContent = `${i + 1}. `; }
     
-    // --- DEFINITIVE FIX IS HERE ---
+    // --- REPLACED FUNCTION: الكود الجديد لعرض الأسعار مع النسبة المئوية ---
     function updateProductCardPrices(squareElement, newCaPrice, eaInCa) {
         const productCode = squareElement.dataset.productCode;
         const product = products.find(p => p['item code'] == productCode);
         if (!product) return;
 
-        // Step 1: Always get the true, unaltered base price from the selected price channel.
-        const trueBasePrice = parseFloat(product[priceSelector.style.display !== 'none' && priceSelector.value ? priceSelector.value : 'retail price Q']);
-        if (isNaN(trueBasePrice)) return;
+        const selectedChannel = priceSelector.style.display !== 'none' && priceSelector.value ? priceSelector.value : 'retail price Q';
+        const basePrice = parseFloat(product[selectedChannel]);
+        if (isNaN(basePrice)) return;
 
         const eaInCaNum = parseInt(eaInCa);
         const newEaPrice = newCaPrice / eaInCaNum;
 
-        // Step 2: The strikethrough price is ALWAYS the true base price. No other calculations.
-        const basePriceForComparison = trueBasePrice;
-        const baseEaPriceForComparison = basePriceForComparison / eaInCaNum;
-
-        // Step 3: Show the strikethrough price if the current price is different from the base price.
-        const showOriginal = Math.abs(newCaPrice - trueBasePrice) > 0.01;
-
-        const generatePriceHTML = (basePrice, currentPrice) => {
-            const currencySymbolHTML = '<span class="currency-symbol"></span>';
-            if (showOriginal) {
-                return `<span class="original-price">${basePrice.toFixed(2)}</span> <span class="new-price">${currentPrice.toFixed(2)}${currencySymbolHTML}</span>`;
-            } else {
-                return `<span class="new-price">${currentPrice.toFixed(2)}${currencySymbolHTML}</span>`;
-            }
-        };
+        const priceDiff = ((newCaPrice - basePrice) / basePrice) * 100;
+        const showPercentage = Math.abs(priceDiff) >= 0.01;
 
         const contentDiv = squareElement.querySelector('.card-content');
         const lang = translations[currentLanguage];
-        contentDiv.querySelector('p:nth-of-type(2)').innerHTML = `<span>${lang.priceCa}</span> ${generatePriceHTML(basePriceForComparison, newCaPrice)}`;
-        contentDiv.querySelector('p:nth-of-type(3)').innerHTML = `<span>${lang.priceCaTax}</span> ${generatePriceHTML(basePriceForComparison * 1.15, newCaPrice * 1.15)}`;
-        contentDiv.querySelector('p:nth-of-type(4)').innerHTML = `<span>${lang.priceBund}</span> ${generatePriceHTML(baseEaPriceForComparison, newEaPrice)}`;
-        contentDiv.querySelector('p:nth-of-type(5)').innerHTML = `<span>${lang.priceBundTax}</span> ${generatePriceHTML(baseEaPriceForComparison * 1.15, newEaPrice * 1.15)}`;
+
+        const formatWithPercentage = (price, diffPercent) => {
+            let color = '';
+            if (diffPercent > 0.01) color = 'green'; // The price increased, so it's "good" for the seller
+            else if (diffPercent < -0.01) color = 'red'; // The price decreased
+
+            // The currency symbol is now part of the new-price span in CSS, so no need to add it here
+            const percentSpan = showPercentage ? ` <span style="color:${color}; font-weight:bold;">(${diffPercent > 0 ? '+' : ''}${diffPercent.toFixed(0)}%)</span>` : '';
+            return `<span class="new-price">${price.toFixed(2)}<span class="currency-symbol"></span></span>${percentSpan}`;
+        };
+
+        contentDiv.querySelector('p:nth-of-type(2)').innerHTML = `<span>${lang.priceCa}</span> ${formatWithPercentage(newCaPrice, priceDiff)}`;
+        contentDiv.querySelector('p:nth-of-type(3)').innerHTML = `<span>${lang.priceCaTax}</span> ${formatWithPercentage(newCaPrice * 1.15, priceDiff)}`;
+        contentDiv.querySelector('p:nth-of-type(4)').innerHTML = `<span>${lang.priceBund}</span> ${formatWithPercentage(newEaPrice, priceDiff)}`;
+        contentDiv.querySelector('p:nth-of-type(5)').innerHTML = `<span>${lang.priceBundTax}</span> ${formatWithPercentage(newEaPrice * 1.15, priceDiff)}`;
     }
 
     function updateOriginalPrices() { const selectedCategory = priceSelector.value; if (!selectedCategory) return; document.querySelectorAll('.productSquare').forEach(square => { const productCode = square.dataset.productCode; const product = products.find(p => p['item code'] == productCode); if (product) { const basePrice = parseFloat(product[selectedCategory]); if (!isNaN(basePrice)) { const newPrice = basePrice * priceMultiplier; updateProductCardPrices(square, newPrice, product['ea in ca']); } } }); }
@@ -256,19 +285,21 @@ document.addEventListener('DOMContentLoaded', function() {
         }); 
         if (priceSelector.querySelector('[value="retail price Q"]')) priceSelector.value = 'retail price Q'; 
         
-        priceSelector.addEventListener('change', () => { 
-            customerMarkupClicks = 0; 
-            markupDots.textContent = ''; 
+        // --- REPLACED FUNCTION: الكود الجديد لحدث تغيير قناة السعر ---
+        priceSelector.addEventListener('change', () => {
+            isDiscounting = false;
+            customerMarkupClicks = 0;
+            markupDots.textContent = '';
             priceMultiplier = 1.10;
             displayPercentage = 10;
-            updatePercentageDisplay(); 
+            updatePercentageDisplay();
             updateOriginalPrices();
-            
+
             if (isCustomerMode) {
                 priceSelector.style.display = 'none';
                 scrollClickCount = 0;
             }
-        }); 
+        });
 
         document.getElementById('cartContainer').insertBefore(priceSelector, document.getElementById('cartItems')); 
         switchLanguage(currentLanguage); 
@@ -279,5 +310,9 @@ document.addEventListener('DOMContentLoaded', function() {
     fetch('PRICES.xlsx').then(response => { if (!response.ok) throw new Error('File not found'); return response.arrayBuffer(); }).then(data => { const workbook = XLSX.read(data, { type: 'array' }); const sheet = workbook.Sheets[workbook.SheetNames[0]]; const jsonData = XLSX.utils.sheet_to_json(sheet); loadProductsFromExcel(jsonData); }).catch(err => { console.error("Error fetching or processing Excel file:", err); const fallbackFileInput = document.createElement('input'); fallbackFileInput.type = 'file'; fallbackFileInput.style.display = 'block'; document.body.prepend(fallbackFileInput); alert(translations[currentLanguage].fileNotFoundAlert); fallbackFileInput.addEventListener('change', function(e) { const reader = new FileReader(); reader.onload = function(ev) { const workbook = XLSX.read(ev.target.result, { type: 'array' }); const sheet = workbook.Sheets[workbook.SheetNames[0]]; const jsonData = XLSX.utils.sheet_to_json(sheet); loadProductsFromExcel(jsonData); fallbackFileInput.style.display = 'none'; }; reader.readAsArrayBuffer(e.target.files[0]); }); });
     copyButton.addEventListener('click', function() { let cartText = ''; document.querySelectorAll('.cartItem').forEach(item => { const tempItem = item.cloneNode(true); tempItem.querySelector('.delete-btn').remove(); cartText += tempItem.innerText.replace(/\s+/g, ' ').trim() + '\n'; }); cartText += '\n' + document.getElementById('cartTotal').textContent; const comment = cartCommentInput.value.trim(); if (comment) cartText += `\n\n${translations[currentLanguage].commentsLabel}\n` + comment; navigator.clipboard.writeText(cartText).then(() => { alert(translations[currentLanguage].copySuccessAlert); const phoneNumber = "966550245871"; const encodedCartText = encodeURIComponent(cartText); const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedCartText}`; window.open(whatsappUrl, '_blank'); }).catch(err => { console.error('Failed to copy or open WhatsApp: ', err); alert(translations[currentLanguage].copyErrorAlert); }); });
     filterInput.addEventListener('input', function() { const val = this.value.toLowerCase(); document.querySelectorAll('.productSquare').forEach(el => { const nameAr = el.dataset.productNameAr.toLowerCase(); const nameEn = el.dataset.productNameEn.toLowerCase(); const code = el.dataset.productCode.toLowerCase(); const isVisible = nameAr.includes(val) || nameEn.includes(val) || code.includes(val); el.style.display = isVisible ? 'block' : 'none'; }); });
+
+    // --- NEW: استدعاء الوضع الليلي عند التحميل وكل ساعة ---
+    autoNightMode();
+    setInterval(autoNightMode, 60 * 60 * 1000);
 });
 // --- SCRIPT END ---
