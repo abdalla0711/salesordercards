@@ -119,8 +119,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 isCustomerMode = true;
                 updateUIText();
                 priceSelector.style.display = 'block';
-                increaseButton.disabled = false;
-                decreaseButton.disabled = false;
+                // --- MODIFICATION: Deactivate +/- buttons in Sales Rep mode ---
+                increaseButton.disabled = true;
+                decreaseButton.disabled = true;
                 isDiscounting = false;
                 customerMarkupClicks = 0;
                 markupDots.textContent = '';
@@ -180,38 +181,101 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateCartLanguage() { document.querySelectorAll('.cartItem').forEach(cartItem => { const productCode = cartItem.dataset.productCode; const product = products.find(p => p['item code'] == productCode); if (product) cartItem.querySelector('.itemName').textContent = getItemName(product); }); }
     function updateMultiplierPrices() { document.querySelectorAll('.productSquare').forEach(square => { const productCode = square.dataset.productCode; const product = products.find(p => p['item code'] == productCode); if (product) { let basePrice; if (priceSelector.style.display !== 'none' && priceSelector.value) { basePrice = parseFloat(product[priceSelector.value]); } else { basePrice = parseFloat(product['retail price Q']); } if (!isNaN(basePrice)) { const newPrice = basePrice * priceMultiplier; updateProductCardPrices(square, newPrice, product['ea in ca']); } } }); }
     
+    // --- MODIFICATION: Updated createProductSquare to use correct price in cart for Sales Rep mode ---
     function createProductSquare(product) { 
-        const square = document.createElement('div'); square.className = 'productSquare'; square.dataset.productCode = product['item code']; square.dataset.productNameAr = product['item name'] || ''; square.dataset.productNameEn = product['en_item_name'] || ''; const image = document.createElement('img'); image.src = product['image_ulr'] || 'https://via.placeholder.com/300x200.png?text=No+Image'; square.appendChild(image); const contentDiv = document.createElement('div'); contentDiv.className = 'card-content'; square.appendChild(contentDiv); const name = document.createElement('p'); name.textContent = getItemName(product); contentDiv.appendChild(name); for (let i = 0; i < 4; i++) contentDiv.appendChild(document.createElement('p')); const basePrice = parseFloat(product['retail price Q']); const initialPrice = basePrice * priceMultiplier; updateProductCardPrices(square, initialPrice, product['ea in ca']); square.addEventListener('click', function() { const quantity = prompt(translations[currentLanguage].quantityPrompt); if (quantity && !isNaN(quantity) && quantity > 0) { let basePrice; if (priceSelector.style.display !== 'none' && priceSelector.value) basePrice = parseFloat(product[priceSelector.value]); else basePrice = parseFloat(product['retail price Q']); const priceToUse = basePrice * priceMultiplier; const itemTotal = priceToUse * quantity; const cartItem = document.createElement('div'); cartItem.className = 'cartItem'; cartItem.dataset.productCode = product['item code']; cartItem.dataset.itemTotal = itemTotal; cartItem.innerHTML = `<span class="cartLineNumber"></span><span>${product['item code']} | </span><span>${quantity}Ca | </span><span>${priceToUse.toFixed(2)}</span><span class="currency-symbol"></span><span> | </span><span class="itemName">${getItemName(product)}</span><button class="delete-btn">X</button>`; cartItemsContainer.appendChild(cartItem); cartItem.querySelector('.delete-btn').addEventListener('click', function() { cartTotal -= parseFloat(cartItem.dataset.itemTotal); cartItem.remove(); updateCartTotal(); renumberCartItems(); }); cartTotal += itemTotal; updateCartTotal(); renumberCartItems(); } }); return square; 
+        const square = document.createElement('div'); square.className = 'productSquare'; square.dataset.productCode = product['item code']; square.dataset.productNameAr = product['item name'] || ''; square.dataset.productNameEn = product['en_item_name'] || ''; const image = document.createElement('img'); image.src = product['image_ulr'] || 'https://via.placeholder.com/300x200.png?text=No+Image'; square.appendChild(image); const contentDiv = document.createElement('div'); contentDiv.className = 'card-content'; square.appendChild(contentDiv); const name = document.createElement('p'); name.textContent = getItemName(product); contentDiv.appendChild(name); for (let i = 0; i < 4; i++) contentDiv.appendChild(document.createElement('p')); const basePrice = parseFloat(product['retail price Q']); const initialPrice = basePrice * priceMultiplier; updateProductCardPrices(square, initialPrice, product['ea in ca']); 
+        square.addEventListener('click', function() { 
+            const quantity = prompt(translations[currentLanguage].quantityPrompt); 
+            if (quantity && !isNaN(quantity) && quantity > 0) { 
+                let basePrice; 
+                if (priceSelector.style.display !== 'none' && priceSelector.value) basePrice = parseFloat(product[priceSelector.value]); 
+                else basePrice = parseFloat(product['retail price Q']); 
+                
+                let priceToUse;
+                if (isCustomerMode) {
+                    priceToUse = basePrice + 10; // Sales Rep mode uses original + 10
+                } else {
+                    priceToUse = basePrice * priceMultiplier; // Normal mode uses multiplier
+                }
+
+                const itemTotal = priceToUse * quantity; 
+                const cartItem = document.createElement('div'); 
+                cartItem.className = 'cartItem'; cartItem.dataset.productCode = product['item code']; cartItem.dataset.itemTotal = itemTotal; 
+                cartItem.innerHTML = `<span class="cartLineNumber"></span><span>${product['item code']} | </span><span>${quantity}Ca | </span><span>${priceToUse.toFixed(2)}</span><span class="currency-symbol"></span><span> | </span><span class="itemName">${getItemName(product)}</span><button class="delete-btn">X</button>`; 
+                cartItemsContainer.appendChild(cartItem); 
+                cartItem.querySelector('.delete-btn').addEventListener('click', function() { cartTotal -= parseFloat(cartItem.dataset.itemTotal); cartItem.remove(); updateCartTotal(); renumberCartItems(); }); 
+                cartTotal += itemTotal; 
+                updateCartTotal(); 
+                renumberCartItems(); 
+            } 
+        }); 
+        return square; 
     }
 
     function renumberCartItems() { const items = cartItemsContainer.getElementsByClassName('cartItem'); for (let i = 0; i < items.length; i++) items[i].querySelector('.cartLineNumber').textContent = `${i + 1}. `; }
     
-    function updateProductCardPrices(squareElement, newCaPrice, eaInCa) { 
-        const productCode = squareElement.dataset.productCode; 
-        const product = products.find(p => p['item code'] == productCode); if (!product) return; 
-        const trueBasePrice = parseFloat(product[priceSelector.style.display !== 'none' && priceSelector.value ? priceSelector.value : 'retail price Q']); 
-        const eaInCaNum = parseInt(eaInCa); const newEaPrice = newCaPrice / eaInCaNum; 
-        let basePriceForComparison; let showOriginal = false; 
-        if (isCustomerMode && isDiscounting) { basePriceForComparison = trueBasePrice * discountBaseMultiplier; showOriginal = true; } 
-        else if (!isCustomerMode && displayPercentage !== 0) { basePriceForComparison = trueBasePrice * 1.10; showOriginal = true; } 
-        const baseEaPriceForComparison = basePriceForComparison / eaInCaNum; 
-        
-        const generatePriceHTML = (basePrice, currentPrice) => {
-            const currencySymbolHTML = '<span class="currency-symbol"></span>';
-            if (showOriginal) {
-                return `<span class="original-price">${basePrice.toFixed(2)}</span> <span class="new-price">${currentPrice.toFixed(2)}${currencySymbolHTML}</span>`;
-            } else {
-                return `<span class="new-price">${currentPrice.toFixed(2)}${currencySymbolHTML}</span>`;
-            }
-        };
+    // --- MODIFICATION: Overhauled updateProductCardPrices for Sales Rep mode display logic ---
+    function updateProductCardPrices(squareElement, passedPrice, eaInCa) {
+        const productCode = squareElement.dataset.productCode;
+        const product = products.find(p => p['item code'] == productCode);
+        if (!product) return;
 
-        const contentDiv = squareElement.querySelector('.card-content'); 
-        const lang = translations[currentLanguage]; 
-        contentDiv.querySelector('p:nth-of-type(2)').innerHTML = `<span>${lang.priceCa}</span> ${generatePriceHTML(basePriceForComparison, newCaPrice)}`; 
-        contentDiv.querySelector('p:nth-of-type(3)').innerHTML = `<span>${lang.priceCaTax}</span> ${generatePriceHTML(basePriceForComparison * 1.15, newCaPrice * 1.15)}`; 
-        contentDiv.querySelector('p:nth-of-type(4)').innerHTML = `<span>${lang.priceBund}</span> ${generatePriceHTML(baseEaPriceForComparison, newEaPrice)}`; 
-        contentDiv.querySelector('p:nth-of-type(5)').innerHTML = `<span>${lang.priceBundTax}</span> ${generatePriceHTML(baseEaPriceForComparison * 1.15, newEaPrice * 1.15)}`; 
+        const contentDiv = squareElement.querySelector('.card-content');
+        const lang = translations[currentLanguage];
+        const eaInCaNum = parseInt(eaInCa);
+        const currencySymbolHTML = '<span class="currency-symbol"></span>';
+
+        const trueBasePrice = parseFloat(product[priceSelector.style.display !== 'none' && priceSelector.value ? priceSelector.value : 'retail price Q']);
+
+        if (isCustomerMode) {
+            // --- Sales Rep Mode Logic: Green original price, Red new price (original + 10) ---
+            const originalPriceCa = trueBasePrice;
+            const newPriceCa = originalPriceCa + 10;
+
+            const originalPriceEa = originalPriceCa / eaInCaNum;
+            const newPriceEa = newPriceCa / eaInCaNum;
+
+            const generateSalesRepHTML = (original, newPrice) => {
+                return `<span class="original-price" style="color: green; text-decoration: none;">${original.toFixed(2)}</span> <span class="new-price" style="color: red;">${newPrice.toFixed(2)}${currencySymbolHTML}</span>`;
+            };
+
+            contentDiv.querySelector('p:nth-of-type(2)').innerHTML = `<span>${lang.priceCa}</span> ${generateSalesRepHTML(originalPriceCa, newPriceCa)}`;
+            contentDiv.querySelector('p:nth-of-type(3)').innerHTML = `<span>${lang.priceCaTax}</span> ${generateSalesRepHTML(originalPriceCa * 1.15, newPriceCa * 1.15)}`;
+            contentDiv.querySelector('p:nth-of-type(4)').innerHTML = `<span>${lang.priceBund}</span> ${generateSalesRepHTML(originalPriceEa, newPriceEa)}`;
+            contentDiv.querySelector('p:nth-of-type(5)').innerHTML = `<span>${lang.priceBundTax}</span> ${generateSalesRepHTML(originalPriceEa * 1.15, newPriceEa * 1.15)}`;
+
+        } else {
+            // --- Original Mode Logic ---
+            const newCaPrice = passedPrice;
+            const newEaPrice = newCaPrice / eaInCaNum;
+            let basePriceForComparison;
+            let showOriginal = false;
+
+            if (isDiscounting) {
+                basePriceForComparison = trueBasePrice * discountBaseMultiplier;
+                showOriginal = true;
+            } else if (displayPercentage !== 0) {
+                basePriceForComparison = trueBasePrice * 1.10;
+                showOriginal = true;
+            }
+
+            const baseEaPriceForComparison = basePriceForComparison / eaInCaNum;
+
+            const generatePriceHTML = (basePrice, currentPrice) => {
+                if (showOriginal) {
+                    return `<span class="original-price">${basePrice.toFixed(2)}</span> <span class="new-price">${currentPrice.toFixed(2)}${currencySymbolHTML}</span>`;
+                } else {
+                    return `<span class="new-price">${currentPrice.toFixed(2)}${currencySymbolHTML}</span>`;
+                }
+            };
+
+            contentDiv.querySelector('p:nth-of-type(2)').innerHTML = `<span>${lang.priceCa}</span> ${generatePriceHTML(basePriceForComparison, newCaPrice)}`;
+            contentDiv.querySelector('p:nth-of-type(3)').innerHTML = `<span>${lang.priceCaTax}</span> ${generatePriceHTML(basePriceForComparison * 1.15, newCaPrice * 1.15)}`;
+            contentDiv.querySelector('p:nth-of-type(4)').innerHTML = `<span>${lang.priceBund}</span> ${generatePriceHTML(baseEaPriceForComparison, newEaPrice)}`;
+            contentDiv.querySelector('p:nth-of-type(5)').innerHTML = `<span>${lang.priceBundTax}</span> ${generatePriceHTML(baseEaPriceForComparison * 1.15, newEaPrice * 1.15)}`;
+        }
     }
+
 
     function updateOriginalPrices() { const selectedCategory = priceSelector.value; if (!selectedCategory) return; document.querySelectorAll('.productSquare').forEach(square => { const productCode = square.dataset.productCode; const product = products.find(p => p['item code'] == productCode); if (product) { const basePrice = parseFloat(product[selectedCategory]); if (!isNaN(basePrice)) { const newPrice = basePrice * priceMultiplier; updateProductCardPrices(square, newPrice, product['ea in ca']); } } }); }
     function updateCartTotal() { const cartTotalElement = document.getElementById('cartTotal'); const cartTotalWithTax = cartTotal * 1.15; cartTotalElement.textContent = `${translations[currentLanguage].cartTotalText}: ${cartTotalWithTax.toFixed(2)}`; copyButton.classList.toggle('hidden', cartTotal <= 0); }
@@ -276,7 +340,7 @@ let manualDarkToggle = false;
 function autoNightMode() {
     const now = new Date();
     const hour = now.getHours();
-    const isNight = (hour >= 18 || hour < 5); // من المغرب (6 مساءً) إلى الفجر (5 صباحًا)
+    const isNight = (hour >= 19 || hour < 6); // من المغرب (7 مساءً) إلى الفجر (6 صباحًا)
 
     if (!manualDarkToggle) {
         if (isNight) document.body.classList.add('dark-mode');
