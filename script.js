@@ -36,26 +36,24 @@ document.addEventListener('DOMContentLoaded', function() {
     const modalCommentsLabel = document.getElementById('modalCommentsLabel');
 
 
-    // --- MODIFIED: Create and Add Price & Zoom Adjustment Controls with new styling ---
+    // --- Create and Add Price & Zoom Adjustment Controls ---
     
-    // Create containers for button groups
     const zoomControls = document.createElement('div');
     zoomControls.className = 'control-group';
     const priceControls = document.createElement('div');
     priceControls.className = 'control-group';
 
-    // Create Zoom Buttons with SVG Icons
+    // --- MODIFIED: Using new, sleeker SVG icons ---
     const zoomInButton = document.createElement('button');
     zoomInButton.className = 'control-btn';
     zoomInButton.id = 'zoomIn';
-    zoomInButton.innerHTML = '<svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zM10 9h-1V8h1v-1h1v1h1v1h-1v1h-1z"/></svg>';
+    zoomInButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M11 6a1 1 0 0 1 1 1v3h3a1 1 0 1 1 0 2h-3v3a1 1 0 1 1-2 0v-3H7a1 1 0 1 1 0-2h3V7a1 1 0 0 1 1-1z M10 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm0 2a6 6 0 1 0 0 12 6 6 0 0 0 0-12zm9.707 16.293-3.182-3.182A8.969 8.969 0 0 1 10 19a9 9 0 1 1 9-9 8.969 8.969 0 0 1-1.889 5.525l3.182 3.182a1 1 0 1 1-1.414 1.414z"></path></svg>';
     
     const zoomOutButton = document.createElement('button');
     zoomOutButton.className = 'control-btn';
     zoomOutButton.id = 'zoomOut';
-    zoomOutButton.innerHTML = '<svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zM7 9h5v1H7z"/></svg>';
+    zoomOutButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M7 11h6a1 1 0 1 1 0 2H7a1 1 0 1 1 0-2zm3-9a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm0 2a6 6 0 1 0 0 12 6 6 0 0 0 0-12zm9.707 16.293-3.182-3.182A8.969 8.969 0 0 1 10 19a9 9 0 1 1 9-9 8.969 8.969 0 0 1-1.889 5.525l3.182 3.182a1 1 0 1 1-1.414 1.414z"></path></svg>';
     
-    // Create Price Buttons
     const increaseButton = document.createElement('button');
     increaseButton.className = 'control-btn';
     increaseButton.textContent = '+';
@@ -68,8 +66,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const percentageDisplay = document.createElement('span');
     percentageDisplay.id = 'percentageDisplay';
-    percentageDisplay.style.padding = '0 10px'; // Give percentage display some space
-
+    percentageDisplay.style.padding = '0 10px';
+    percentageDisplay.style.backgroundColor = '#fff';
+    percentageDisplay.style.color = '#333';
+    
     // Add buttons to their respective groups
     zoomControls.appendChild(zoomOutButton);
     zoomControls.appendChild(zoomInButton);
@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function() {
             incorrectPasswordAlert: "Incorrect password.", maxLimitAlert: "Max limit reached.", minLimitAlert: "Min limit reached.", 
             quantityPrompt: "Enter quantity:", cartTotalText: "Total with tax", 
             copyButtonText: "Copy & Open WhatsApp", copySuccessAlert: "Cart copied.", 
-            copyErrorAlert: "Copy error.", fileNotFoundAlert: "Price file not found.", commentsLabel: "SalesMan name/City name/Shop name:", 
+            copyErrorAlert: "Copy error.", fileNotFoundAlert: "Price file not found.", commentsLabel: "Enter the name of the company representative or the city name and the customer name:", 
             scrollTopTitle: "Scroll to Top", scrollBottomTitle: "Scroll to Bottom",
             quantityModalTitle: "Select Quantity", addToCartBtn: "Add to Cart", cancelBtn: "Cancel",
             priceCategories: {
@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', function() {
             incorrectPasswordAlert: "كلمة مرور غير صحيحة.", maxLimitAlert: "تم الوصول للحد الأعلى.", minLimitAlert: "تم الوصول للحد الأدنى.", 
             quantityPrompt: "أدخل الكمية:", cartTotalText: "الإجمالي مع الضريبة", 
             copyButtonText: "نسخ الطلب وفتح واتساب", copySuccessAlert: "تم نسخ السلة.", 
-            copyErrorAlert: "حدث خطأ.", fileNotFoundAlert: "ملف الأسعار غير موجود.", commentsLabel: "اسم المندوب/اسم المدينة /اسم المحل:", 
+            copyErrorAlert: "حدث خطأ.", fileNotFoundAlert: "ملف الأسعار غير موجود.", commentsLabel: "ادخل اسم مندوب الشركة او اسم المدينة واسم العميل:", 
             scrollTopTitle: "الانتقال للأعلى", scrollBottomTitle: "الانتقال للأسفل",
             quantityModalTitle: "اختر الكمية", addToCartBtn: "إضافة للسلة", cancelBtn: "إلغاء",
               priceCategories: {
@@ -153,7 +153,19 @@ document.addEventListener('DOMContentLoaded', function() {
         modalCartComment.placeholder = lang.commentsLabel;
     }
 
-    function updatePercentageDisplay() { let prefix = displayPercentage >= 0 ? '+' : ''; percentageDisplay.textContent = `${prefix}${displayPercentage.toFixed(0)}%`; }
+    function updatePercentageDisplay() { 
+        let prefix = displayPercentage >= 0 ? '+' : ''; 
+        percentageDisplay.textContent = `${prefix}${displayPercentage.toFixed(0)}%`; 
+        
+        // Handle dark mode for percentage display
+        if (document.body.classList.contains('dark-mode')) {
+            percentageDisplay.style.backgroundColor = '#363636';
+            percentageDisplay.style.color = '#e0e0e0';
+        } else {
+            percentageDisplay.style.backgroundColor = '#fff';
+            percentageDisplay.style.color = '#333';
+        }
+    }
 
     // --- Event Listeners ---
     floatingCartIcon.addEventListener('click', () => cartModal.classList.remove('modal-hidden'));
@@ -316,7 +328,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function createProductSquare(product) { 
-        const square = document.createElement('div'); square.className = 'productSquare'; square.dataset.productCode = product['item code']; square.dataset.productNameAr = product['item name'] || ''; square.dataset.productNameEn = product['en_item_name'] || ''; const image = document.createElement('img'); image.src = product['image_ulr'] || 'https://via.placeholder.com/300x200.png?text=No+Image'; square.appendChild(image); const contentDiv = document.createElement('div'); contentDiv.className = 'card-content'; square.appendChild(contentDiv); const name = document.createElement('p'); name.textContent = getItemName(product); contentDiv.appendChild(name); for (let i = 0; i < 4; i++) contentDiv.appendChild(document.createElement('p')); const basePrice = getCurrentBasePrice(product); const initialPrice = basePrice * priceMultiplier; updateProductCardPrices(square, initialPrice, product['ea in ca']); 
+        const square = document.createElement('div'); square.className = 'productSquare'; square.dataset.productCode = product['item code']; square.dataset.productNameAr = product['item name'] || ''; square.dataset.productNameEn = product['en_item_name'] || ''; const image = document.createElement('img'); image.src = product['image_ulr'] || 'https://via.placeholder.com/300x200.png?text=No+Image'; square.appendChild(image); const contentDiv = document.createElement('div'); contentDiv.className = 'card-content'; square.appendChild(contentDiv); const name = document.createElement('p'); name.textContent = getItemName(product); for (let i = 0; i < 4; i++) contentDiv.appendChild(document.createElement('p')); const basePrice = getCurrentBasePrice(product); const initialPrice = basePrice * priceMultiplier; updateProductCardPrices(square, initialPrice, product['ea in ca']); 
         
         square.addEventListener('click', () => {
             showQuantityModal(product);
@@ -531,6 +543,9 @@ document.addEventListener('DOMContentLoaded', () => {
     darkModeToggle.addEventListener('click', () => {
         manualDarkToggle = true;
         document.body.classList.toggle('dark-mode');
+        // Manually update percentage display colors after toggling
+        document.getElementById('percentageDisplay').style.backgroundColor = document.body.classList.contains('dark-mode') ? '#363636' : '#fff';
+        document.getElementById('percentageDisplay').style.color = document.body.classList.contains('dark-mode') ? '#e0e0e0' : '#333';
     });
 });
-// --- SCRIPT END ---
+// --- SCRIPT END ---```
