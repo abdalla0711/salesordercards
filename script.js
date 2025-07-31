@@ -36,7 +36,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const modalCommentsLabel = document.getElementById('modalCommentsLabel');
 
 
-    // --- Create and Add Price Adjustment Controls ---
+    // --- Create and Add Price & Zoom Adjustment Controls ---
+    const zoomInButton = document.createElement('button');
+    zoomInButton.textContent = '🔍+';
+    zoomInButton.id = 'zoomIn';
+    const zoomOutButton = document.createElement('button');
+    zoomOutButton.textContent = '🔍-';
+    zoomOutButton.id = 'zoomOut';
+
     const increaseButton = document.createElement('button');
     increaseButton.textContent = '+';
     increaseButton.id = 'increasePrice';
@@ -52,6 +59,10 @@ document.addEventListener('DOMContentLoaded', function() {
     markupDots.style.fontSize = '1.2rem';
     markupDots.style.verticalAlign = 'middle';
     markupDots.style.fontWeight = 'normal';
+    
+    // Add new zoom buttons to the container first
+    controlsContainer.appendChild(zoomOutButton);
+    controlsContainer.appendChild(zoomInButton);
     
     controlsContainer.appendChild(decreaseButton);
     controlsContainer.appendChild(percentageDisplay);
@@ -70,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let discountBaseMultiplier = 1.0;
     let customerMarkupClicks = 0;
     let scrollClickCount = 0;
-    let currentZoom = 1.0; // NEW: State for page zoom
+    let currentZoom = 1.0;
 
     const translations = {
         en: { 
@@ -78,13 +89,14 @@ document.addEventListener('DOMContentLoaded', function() {
             filterPlaceholder: "Register an item by clicking on it...", 
             priceCa: "Ca", priceCaTax: "Ca+tax", priceBund: "Bund", priceBundTax: "Bund+Tax", 
             increaseTitle: "Increase prices by 5%", decreaseTitle: "Decrease prices by 5%",
-            zoomInTitle: "Zoom In", zoomOutTitle: "Zoom Out", // NEW: Translations for zoom
+            zoomInTitle: "Zoom In", zoomOutTitle: "Zoom Out", 
             unlockPasswordPrompt: "Please enter the password:", unlockedAlert: "Sales Rep mode activated!", 
             incorrectPasswordAlert: "Incorrect password.", maxLimitAlert: "Max limit reached.", minLimitAlert: "Min limit reached.", 
             quantityPrompt: "Enter quantity:", cartTotalText: "Total with tax", 
             copyButtonText: "Copy & Open WhatsApp", copySuccessAlert: "Cart copied.", 
             copyErrorAlert: "Copy error.", fileNotFoundAlert: "Price file not found.", commentsLabel: "SalesMan name/City name/Shop name:", 
             scrollTopTitle: "Scroll to Top", scrollBottomTitle: "Scroll to Bottom",
+            quantityModalTitle: "Select Quantity", addToCartBtn: "Add to Cart", cancelBtn: "Cancel",
             priceCategories: {
                 "retail price Q": "Retail Price", "wholesale price": "Wholesale Price", "supermarket price": "Supermarket Price","hypermarket price":
                     "Hypermarket Price", "other price 1": "Price 1", "other price 2": "Price 2", "other price 3": "Price 3"
@@ -95,13 +107,14 @@ document.addEventListener('DOMContentLoaded', function() {
             filterPlaceholder: "يمكنك تسجيل الصنف بالضغط عليه...", 
             priceCa: "الكرتون", priceCaTax: "كرتون+ضريبة", priceBund: "الشد", priceBundTax: "شد+ضريبة", 
             increaseTitle: "زيادة الأسعار ٥٪", decreaseTitle: "تخفيض الأسعار ٥٪", 
-            zoomInTitle: "تكبير", zoomOutTitle: "تصغير", // NEW: Translations for zoom
+            zoomInTitle: "تكبير", zoomOutTitle: "تصغير",
             unlockPasswordPrompt: "الرجاء إدخال كلمة المرور:", unlockedAlert: "تم تفعيل وضع المندوب!", 
             incorrectPasswordAlert: "كلمة مرور غير صحيحة.", maxLimitAlert: "تم الوصول للحد الأعلى.", minLimitAlert: "تم الوصول للحد الأدنى.", 
             quantityPrompt: "أدخل الكمية:", cartTotalText: "الإجمالي مع الضريبة", 
             copyButtonText: "نسخ الطلب وفتح واتساب", copySuccessAlert: "تم نسخ السلة.", 
             copyErrorAlert: "حدث خطأ.", fileNotFoundAlert: "ملف الأسعار غير موجود.", commentsLabel: "اسم المندوب/اسم المدينة /اسم المحل:", 
             scrollTopTitle: "الانتقال للأعلى", scrollBottomTitle: "الانتقال للأسفل",
+            quantityModalTitle: "اختر الكمية", addToCartBtn: "إضافة للسلة", cancelBtn: "إلغاء",
               priceCategories: {
                 "retail price Q": "سعر التجزئة القريات", "retail price": "سعر التجزئة", "discountshops price": "سعر التخفيضات",
                 "wholesale price": "سعر الجملة", "discountshops price Q": "سعر تخفيضات القريات ", "wholesale price Q": "سعر جملة القريات", "contract 5% price": "سعر العقود5%ـ"
@@ -115,14 +128,11 @@ document.addEventListener('DOMContentLoaded', function() {
         subtitle.textContent = isCustomerMode ? lang.salesRepSubtitle : '';
         filterInput.placeholder = lang.filterPlaceholder;
         
-        // --- MODIFIED: Set button titles based on current mode (price vs zoom) ---
-        if (isCustomerMode) {
-            increaseButton.title = lang.zoomInTitle;
-            decreaseButton.title = lang.zoomOutTitle;
-        } else {
-            increaseButton.title = lang.increaseTitle;
-            decreaseButton.title = lang.decreaseTitle;
-        }
+        // Always set titles for all buttons
+        increaseButton.title = lang.increaseTitle;
+        decreaseButton.title = lang.decreaseTitle;
+        zoomInButton.title = lang.zoomInTitle;
+        zoomOutButton.title = lang.zoomOutTitle;
 
         copyButton.textContent = lang.copyButtonText;
         scrollToTopBtn.title = lang.scrollTopTitle;
@@ -153,13 +163,13 @@ document.addEventListener('DOMContentLoaded', function() {
             if (password === "20202030") {
                 isCustomerMode = true;
                 
-                // --- MODIFIED: Enable buttons and hide irrelevant displays for Sales Rep mode ---
-                increaseButton.disabled = false; 
-                decreaseButton.disabled = false;
+                // Disable price buttons, hide irrelevant displays
+                increaseButton.disabled = true; 
+                decreaseButton.disabled = true;
                 percentageDisplay.style.display = 'none';
                 markupDots.style.display = 'none';
 
-                updateUIText(); // Update titles to show "Zoom In/Out"
+                updateUIText();
                 priceSelector.style.display = 'block';
                 isDiscounting = false;
                 priceMultiplier = 1.0;
@@ -175,44 +185,38 @@ document.addEventListener('DOMContentLoaded', function() {
         switchLanguage('en');
     });
 
-    // --- MODIFIED: Button now handles both zooming and price changes ---
-    increaseButton.addEventListener('click', () => {
-        if (isCustomerMode) {
-            // Zoom In logic
-            currentZoom = Math.min(2.0, currentZoom + 0.1); // Max zoom 200%
-            document.body.style.zoom = currentZoom;
-        } else {
-            // Price increase logic (original functionality)
-            const baseMultiplier = isDiscounting ? discountBaseMultiplier : 1.0;
-            const newMultiplier = priceMultiplier + 0.05;
-            if (newMultiplier >= baseMultiplier * 2) { alert(translations[currentLanguage].maxLimitAlert); return; }
-            priceMultiplier = newMultiplier;
-            displayPercentage += 5; 
-            updatePercentageDisplay();
-            updateMultiplierPrices();
-        }
+    // --- MODIFIED: Dedicated Zoom and Price buttons ---
+    zoomInButton.addEventListener('click', () => {
+        currentZoom = Math.min(2.0, currentZoom + 0.1); // Max zoom 200%
+        document.body.style.zoom = currentZoom;
     });
 
-    // --- MODIFIED: Button now handles both zooming and price changes ---
+    zoomOutButton.addEventListener('click', () => {
+        currentZoom = Math.max(0.5, currentZoom - 0.1); // Min zoom 50%
+        document.body.style.zoom = currentZoom;
+    });
+
+    increaseButton.addEventListener('click', () => {
+        const baseMultiplier = isDiscounting ? discountBaseMultiplier : 1.0;
+        const newMultiplier = priceMultiplier + 0.05;
+        if (newMultiplier >= baseMultiplier * 2) { alert(translations[currentLanguage].maxLimitAlert); return; }
+        priceMultiplier = newMultiplier;
+        displayPercentage += 5; 
+        updatePercentageDisplay();
+        updateMultiplierPrices();
+    });
+
     decreaseButton.addEventListener('click', () => {
-        if (isCustomerMode) {
-            // Zoom Out logic
-            currentZoom = Math.max(0.5, currentZoom - 0.1); // Min zoom 50%
-            document.body.style.zoom = currentZoom;
-        } else {
-            // Price decrease logic (original functionality)
-            if (priceMultiplier <= 0.55) { alert(translations[currentLanguage].minLimitAlert); return; }
-            priceMultiplier -= 0.05; 
-            displayPercentage -= 5; 
-            updateMultiplierPrices(); 
-            updatePercentageDisplay();
-        }
+        if (priceMultiplier <= 0.55) { alert(translations[currentLanguage].minLimitAlert); return; }
+        priceMultiplier -= 0.05; 
+        displayPercentage -= 5; 
+        updateMultiplierPrices(); 
+        updatePercentageDisplay();
     });
 
     scrollToTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
     scrollToBottomBtn.addEventListener('click', () => {
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-        // This existing logic now correctly shows the hidden price selector
         if (isCustomerMode && priceSelector.style.display === 'none') {
             scrollClickCount++;
             if (scrollClickCount >= 5) {
@@ -244,30 +248,78 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateProductLanguage() { document.querySelectorAll('.productSquare').forEach(square => { const productCode = square.dataset.productCode; const product = products.find(p => p['item code'] == productCode); if (product) square.querySelector('.card-content p:first-of-type').textContent = getItemName(product); }); filterInput.dispatchEvent(new Event('input')); }
     function updateMultiplierPrices() { document.querySelectorAll('.productSquare').forEach(square => { const productCode = square.dataset.productCode; const product = products.find(p => p['item code'] == productCode); if (product) { const basePrice = getCurrentBasePrice(product); if (!isNaN(basePrice)) { const newPrice = basePrice * priceMultiplier; updateProductCardPrices(square, newPrice, product['ea in ca']); } } }); }
     
+    // --- NEW: Function to add item to cart (replaces logic inside click) ---
+    function addItemToCart(product, quantity) {
+        const basePrice = getCurrentBasePrice(product);
+        let priceToUse;
+
+        if (isCustomerMode) {
+            priceToUse = basePrice;
+        } else {
+            priceToUse = basePrice * priceMultiplier;
+        }
+        
+        cart.push({
+            productCode: product['item code'],
+            quantity: quantity,
+            pricePerUnit: priceToUse
+        });
+
+        renderCart();
+    }
+    
+    // --- NEW: Function to show custom quantity modal ---
+    function showQuantityModal(product) {
+        // Create backdrop
+        const backdrop = document.createElement('div');
+        backdrop.className = 'quantity-modal-backdrop';
+
+        // Create modal
+        const modal = document.createElement('div');
+        modal.className = 'quantity-modal';
+        
+        const lang = translations[currentLanguage];
+        modal.innerHTML = `
+            <h3>${lang.quantityModalTitle}</h3>
+            <p>${getItemName(product)}</p>
+            <input type="number" id="quantityInput" value="1" min="1" step="1" autofocus>
+            <div class="modal-actions">
+                <button class="add-btn">${lang.addToCartBtn}</button>
+                <button class="cancel-btn">${lang.cancelBtn}</button>
+            </div>
+        `;
+        
+        backdrop.appendChild(modal);
+        document.body.appendChild(backdrop);
+
+        const quantityInput = backdrop.querySelector('#quantityInput');
+        const addBtn = backdrop.querySelector('.add-btn');
+        const cancelBtn = backdrop.querySelector('.cancel-btn');
+
+        const closeModal = () => document.body.removeChild(backdrop);
+
+        addBtn.addEventListener('click', () => {
+            const quantity = parseInt(quantityInput.value, 10);
+            if (quantity > 0) {
+                addItemToCart(product, quantity);
+            }
+            closeModal();
+        });
+        
+        cancelBtn.addEventListener('click', closeModal);
+        backdrop.addEventListener('click', (e) => {
+            if (e.target === backdrop) {
+                closeModal();
+            }
+        });
+    }
+
     function createProductSquare(product) { 
         const square = document.createElement('div'); square.className = 'productSquare'; square.dataset.productCode = product['item code']; square.dataset.productNameAr = product['item name'] || ''; square.dataset.productNameEn = product['en_item_name'] || ''; const image = document.createElement('img'); image.src = product['image_ulr'] || 'https://via.placeholder.com/300x200.png?text=No+Image'; square.appendChild(image); const contentDiv = document.createElement('div'); contentDiv.className = 'card-content'; square.appendChild(contentDiv); const name = document.createElement('p'); name.textContent = getItemName(product); contentDiv.appendChild(name); for (let i = 0; i < 4; i++) contentDiv.appendChild(document.createElement('p')); const basePrice = getCurrentBasePrice(product); const initialPrice = basePrice * priceMultiplier; updateProductCardPrices(square, initialPrice, product['ea in ca']); 
         
-        square.addEventListener('click', function() { 
-            const quantityInput = prompt(translations[currentLanguage].quantityPrompt); 
-            if (quantityInput && !isNaN(quantityInput) && Number(quantityInput) > 0) {
-                const quantity = Number(quantityInput);
-                const basePrice = getCurrentBasePrice(product);
-                
-                let priceToUse;
-                if (isCustomerMode) {
-                    priceToUse = basePrice;
-                } else {
-                    priceToUse = basePrice * priceMultiplier;
-                }
-                
-                cart.push({
-                    productCode: product['item code'],
-                    quantity: quantity,
-                    pricePerUnit: priceToUse
-                });
-
-                renderCart();
-            } 
+        // --- MODIFIED: Click now opens the custom modal instead of a prompt ---
+        square.addEventListener('click', () => {
+            showQuantityModal(product);
         }); 
         return square; 
     }
@@ -407,7 +459,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }); 
         if (priceSelector.querySelector('[value="retail price Q"]')) priceSelector.value = 'retail price Q'; 
         
-        // --- MODIFIED: Added logic to hide the selector after change in Sales Rep mode ---
         priceSelector.addEventListener('change', () => { 
             isDiscounting = false; 
             customerMarkupClicks = 0; 
@@ -417,9 +468,10 @@ document.addEventListener('DOMContentLoaded', function() {
             updatePercentageDisplay(); 
             updateOriginalPrices();
             
+            // --- MODIFIED: This now hides the selector after a change in Sales Rep mode ---
             if (isCustomerMode) {
                 priceSelector.style.display = 'none';
-                scrollClickCount = 0; // Reset counter after hiding
+                scrollClickCount = 0; 
             }
         }); 
 
