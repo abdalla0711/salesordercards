@@ -55,15 +55,21 @@
 
     <div id="floatingCartIcon" class="hidden">🛒</div>
 
-<!-- Cart Modal Window (starts hidden) -->
+<!-- Replace the existing #cartModal div with this one -->
 <div id="cartModal" class="modal-hidden">
     <div class="modal-content">
         <span id="cartModalClose">×</span>
         <h2>Shopping Cart</h2>
         <div id="modalCartItemsContainer">
-            <!-- Cart items will be dynamically inserted here by JavaScript -->
+            <!-- Cart items will be dynamically inserted here -->
         </div>
         <div id="modalCartTotal"></div>
+        <!-- Add a container for modal controls -->
+        <div id="modalControlsContainer">
+            <label id="modalCommentsLabel" for="modalCartComment"></label>
+            <textarea id="modalCartComment" placeholder="Comments..."></textarea>
+            <button id="modalCopyButton" class="hidden"></button>
+        </div>
     </div>
 </div>
     <!-- Your script file at the very end -->
