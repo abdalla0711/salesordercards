@@ -1,7 +1,7 @@
 // --- SCRIPT START ---
 
 // Greet the user on script load
-alert("Welcome to the Eagle Store portal!");
+//alert("Welcome to the Eagle Store portal!");
 
 document.addEventListener('DOMContentLoaded', function() {
     document.body.style.visibility = 'visible';
@@ -91,7 +91,6 @@ document.addEventListener('DOMContentLoaded', function() {
     let discountBaseMultiplier = 1.0;
     let scrollClickCount = 0;
     let currentZoom = 1.0;
-    let manualDarkToggle = false; // Consolidated dark mode flag
 
     const translations = {
         en: { 
@@ -519,29 +518,44 @@ document.addEventListener('DOMContentLoaded', function() {
     modalCopyButton.addEventListener('click', performCartCopy);
 
     filterInput.addEventListener('input', function() { const val = this.value.toLowerCase(); document.querySelectorAll('.productSquare').forEach(el => { const nameAr = el.dataset.productNameAr.toLowerCase(); const nameEn = el.dataset.productNameEn.toLowerCase(); const code = el.dataset.productCode.toLowerCase(); const isVisible = nameAr.includes(val) || nameEn.includes(val) || code.includes(val); el.style.display = isVisible ? 'block' : 'none'; }); });
-
-    // --- BUG FIX: All logic is now inside a single DOMContentLoaded listener ---
-
-    // --- Auto Night Mode ---
-    function autoNightMode() {
-        if (manualDarkToggle) return;
-        const hour = new Date().getHours();
-        const isNight = (hour >= 18 || hour < 5);
-        document.body.classList.toggle('dark-mode', isNight);
-        updatePercentageDisplay(); // Update colors after auto-toggle
-    }
     
+    fetch('PRICES.xlsx').then(response => { if (!response.ok) throw new Error('File not found'); return response.arrayBuffer(); }).then(data => { const workbook = XLSX.read(data, { type: 'array' }); const sheet = workbook.Sheets[workbook.SheetNames[0]]; const jsonData = XLSX.utils.sheet_to_json(sheet); loadProductsFromExcel(jsonData); }).catch(err => { console.error("Error fetching or processing Excel file:", err); const fallbackFileInput = document.getElementById('fallbackFileInput'); if(fallbackFileInput) { fallbackFileInput.style.display = 'block'; fallbackFileInput.addEventListener('change', function(e) { const reader = new FileReader(); reader.onload = function(ev) { const workbook = XLSX.read(ev.target.result, { type: 'array' }); const sheet = workbook.Sheets[workbook.SheetNames[0]]; const jsonData = XLSX.utils.sheet_to_json(sheet); loadProductsFromExcel(jsonData); fallbackFileInput.style.display = 'none'; }; reader.readAsArrayBuffer(e.target.files[0]); }); } alert(translations[currentLanguage].fileNotFoundAlert); });
+
+});
+
+
+// --- Auto Night Mode (Reverted to separate listener structure for compatibility) ---
+let manualDarkToggle = false;
+
+function autoNightMode() {
+    if (manualDarkToggle) return;
+    const hour = new Date().getHours();
+    const isNight = (hour >= 18 || hour < 5);
+    document.body.classList.toggle('dark-mode', isNight);
+    // Also update percentage display colors
+    const percentageDisplay = document.getElementById('percentageDisplay');
+    if (percentageDisplay) {
+        percentageDisplay.style.backgroundColor = document.body.classList.contains('dark-mode') ? '#363636' : '#fff';
+        percentageDisplay.style.color = document.body.classList.contains('dark-mode') ? '#e0e0e0' : '#333';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
     autoNightMode();
     setInterval(autoNightMode, 60 * 60 * 1000);
 
-    darkModeToggle.addEventListener('click', () => {
-        manualDarkToggle = true;
-        document.body.classList.toggle('dark-mode');
-        updatePercentageDisplay(); // Update colors after manual toggle
-    });
-
-    // --- Initial setup calls ---
-    fetch('PRICES.xlsx').then(response => { if (!response.ok) throw new Error('File not found'); return response.arrayBuffer(); }).then(data => { const workbook = XLSX.read(data, { type: 'array' }); const sheet = workbook.Sheets[workbook.SheetNames[0]]; const jsonData = XLSX.utils.sheet_to_json(sheet); loadProductsFromExcel(jsonData); }).catch(err => { console.error("Error fetching or processing Excel file:", err); const fallbackFileInput = document.getElementById('fallbackFileInput'); if(fallbackFileInput) { fallbackFileInput.style.display = 'block'; fallbackFileInput.addEventListener('change', function(e) { const reader = new FileReader(); reader.onload = function(ev) { const workbook = XLSX.read(ev.target.result, { type: 'array' }); const sheet = workbook.Sheets[workbook.SheetNames[0]]; const jsonData = XLSX.utils.sheet_to_json(sheet); loadProductsFromExcel(jsonData); fallbackFileInput.style.display = 'none'; }; reader.readAsArrayBuffer(e.target.files[0]); }); } alert(translations[currentLanguage].fileNotFoundAlert); });
-
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    if(darkModeToggle) {
+        darkModeToggle.addEventListener('click', () => {
+            manualDarkToggle = true;
+            document.body.classList.toggle('dark-mode');
+            // Manually update percentage display colors after toggling
+            const percentageDisplay = document.getElementById('percentageDisplay');
+            if (percentageDisplay) {
+                percentageDisplay.style.backgroundColor = document.body.classList.contains('dark-mode') ? '#363636' : '#fff';
+                percentageDisplay.style.color = document.body.classList.contains('dark-mode') ? '#e0e0e0' : '#333';
+            }
+        });
+    }
 });
 // --- SCRIPT END ---
