@@ -30,7 +30,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const cartModalClose = document.getElementById('cartModalClose');
     const modalCartItemsContainer = document.getElementById('modalCartItemsContainer');
     const modalCartTotal = document.getElementById('modalCartTotal');
-    // --- NEW: Selectors for new modal controls ---
     const modalControlsContainer = document.getElementById('modalControlsContainer');
     const modalCartComment = document.getElementById('modalCartComment');
     const modalCopyButton = document.getElementById('modalCopyButton');
@@ -117,7 +116,6 @@ document.addEventListener('DOMContentLoaded', function() {
         copyButton.textContent = lang.copyButtonText;
         scrollToTopBtn.title = lang.scrollTopTitle;
         scrollToBottomBtn.title = lang.scrollBottomTitle;
-        // --- NEW: Update text for modal controls ---
         modalCopyButton.textContent = lang.copyButtonText;
         modalCommentsLabel.textContent = lang.commentsLabel;
         modalCartComment.placeholder = lang.commentsLabel;
@@ -126,14 +124,14 @@ document.addEventListener('DOMContentLoaded', function() {
     function updatePercentageDisplay() { let prefix = displayPercentage >= 0 ? '+' : ''; percentageDisplay.textContent = `${prefix}${displayPercentage.toFixed(0)}%`; }
 
     // --- Event Listeners ---
-    darkModeToggle.addEventListener('click', () => { document.body.classList.toggle('dark-mode'); });
+    // Note: Dark mode listener is moved to the bottom to consolidate all its logic
 
     // --- Floating Cart Listeners ---
     floatingCartIcon.addEventListener('click', () => cartModal.classList.remove('modal-hidden'));
     cartModalClose.addEventListener('click', () => cartModal.classList.add('modal-hidden'));
     window.addEventListener('click', (event) => { if (event.target == cartModal) cartModal.classList.add('modal-hidden'); });
     
-    // --- NEW: Two-way sync for comment boxes ---
+    // Two-way sync for comment boxes
     cartCommentInput.addEventListener('input', () => { modalCartComment.value = cartCommentInput.value; });
     modalCartComment.addEventListener('input', () => { cartCommentInput.value = modalCartComment.value; });
 
@@ -203,24 +201,26 @@ document.addEventListener('DOMContentLoaded', function() {
         rebuildPriceSelectorOptions();
     }
     
+    // --- BUG FIX: Central function to get the correct base price ---
+    function getCurrentBasePrice(product) {
+        const selectedCategory = priceSelector.value || 'retail price Q';
+        return parseFloat(product[selectedCategory]);
+    }
+
     function getItemName(product) { if (currentLanguage === 'en' && product['en_item_name']) return product['en_item_name']; return product['item name']; }
     function updateProductLanguage() { document.querySelectorAll('.productSquare').forEach(square => { const productCode = square.dataset.productCode; const product = products.find(p => p['item code'] == productCode); if (product) square.querySelector('.card-content p:first-of-type').textContent = getItemName(product); }); filterInput.dispatchEvent(new Event('input')); }
-    function updateMultiplierPrices() { document.querySelectorAll('.productSquare').forEach(square => { const productCode = square.dataset.productCode; const product = products.find(p => p['item code'] == productCode); if (product) { let basePrice; if (priceSelector.style.display !== 'none' && priceSelector.value) { basePrice = parseFloat(product[priceSelector.value]); } else { basePrice = parseFloat(product['retail price Q']); } if (!isNaN(basePrice)) { const newPrice = basePrice * priceMultiplier; updateProductCardPrices(square, newPrice, product['ea in ca']); } } }); }
+    function updateMultiplierPrices() { document.querySelectorAll('.productSquare').forEach(square => { const productCode = square.dataset.productCode; const product = products.find(p => p['item code'] == productCode); if (product) { const basePrice = getCurrentBasePrice(product); if (!isNaN(basePrice)) { const newPrice = basePrice * priceMultiplier; updateProductCardPrices(square, newPrice, product['ea in ca']); } } }); }
     
     function createProductSquare(product) { 
-        const square = document.createElement('div'); square.className = 'productSquare'; square.dataset.productCode = product['item code']; square.dataset.productNameAr = product['item name'] || ''; square.dataset.productNameEn = product['en_item_name'] || ''; const image = document.createElement('img'); image.src = product['image_ulr'] || 'https://via.placeholder.com/300x200.png?text=No+Image'; square.appendChild(image); const contentDiv = document.createElement('div'); contentDiv.className = 'card-content'; square.appendChild(contentDiv); const name = document.createElement('p'); name.textContent = getItemName(product); contentDiv.appendChild(name); for (let i = 0; i < 4; i++) contentDiv.appendChild(document.createElement('p')); const basePrice = parseFloat(product['retail price Q']); const initialPrice = basePrice * priceMultiplier; updateProductCardPrices(square, initialPrice, product['ea in ca']); 
+        const square = document.createElement('div'); square.className = 'productSquare'; square.dataset.productCode = product['item code']; square.dataset.productNameAr = product['item name'] || ''; square.dataset.productNameEn = product['en_item_name'] || ''; const image = document.createElement('img'); image.src = product['image_ulr'] || 'https://via.placeholder.com/300x200.png?text=No+Image'; square.appendChild(image); const contentDiv = document.createElement('div'); contentDiv.className = 'card-content'; square.appendChild(contentDiv); const name = document.createElement('p'); name.textContent = getItemName(product); contentDiv.appendChild(name); for (let i = 0; i < 4; i++) contentDiv.appendChild(document.createElement('p')); const basePrice = getCurrentBasePrice(product); const initialPrice = basePrice * priceMultiplier; updateProductCardPrices(square, initialPrice, product['ea in ca']); 
         
         square.addEventListener('click', function() { 
             const quantityInput = prompt(translations[currentLanguage].quantityPrompt); 
             if (quantityInput && !isNaN(quantityInput) && Number(quantityInput) > 0) {
                 const quantity = Number(quantityInput);
-                let basePrice; 
                 
-                if (priceSelector.style.display !== 'none' && priceSelector.value) {
-                    basePrice = parseFloat(product[priceSelector.value]); 
-                } else {
-                    basePrice = parseFloat(product['retail price Q']); 
-                }
+                // --- BUG FIX: Use the central function to guarantee correct price source ---
+                const basePrice = getCurrentBasePrice(product);
                 
                 let priceToUse;
                 if (isCustomerMode) {
@@ -229,7 +229,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     priceToUse = basePrice * priceMultiplier;
                 }
                 
-                // --- MODIFICATION: Always push a new item instead of merging ---
                 cart.push({
                     productCode: product['item code'],
                     quantity: quantity,
@@ -294,7 +293,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const lang = translations[currentLanguage]; 
         const eaInCaNum = parseInt(eaInCa);
         const currencySymbolHTML = '<span class="currency-symbol"></span>';
-        const trueBasePrice = parseFloat(product[priceSelector.style.display !== 'none' && priceSelector.value ? priceSelector.value : 'retail price Q']);
+        
+        // --- BUG FIX: Use the central function here as well for consistency ---
+        const trueBasePrice = getCurrentBasePrice(product);
 
         if (isCustomerMode) {
             const originalPriceCa = trueBasePrice;
@@ -334,7 +335,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function updateOriginalPrices() { const selectedCategory = priceSelector.value; if (!selectedCategory) return; document.querySelectorAll('.productSquare').forEach(square => { const productCode = square.dataset.productCode; const product = products.find(p => p['item code'] == productCode); if (product) { const basePrice = parseFloat(product[selectedCategory]); if (!isNaN(basePrice)) { const newPrice = basePrice * priceMultiplier; updateProductCardPrices(square, newPrice, product['ea in ca']); } } }); }
+    function updateOriginalPrices() { document.querySelectorAll('.productSquare').forEach(square => { const productCode = square.dataset.productCode; const product = products.find(p => p['item code'] == productCode); if (product) { const basePrice = getCurrentBasePrice(product); if (!isNaN(basePrice)) { const newPrice = basePrice * priceMultiplier; updateProductCardPrices(square, newPrice, product['ea in ca']); } } }); }
     
     function updateCartTotal(currentTotal) { 
         const cartTotalElement = document.getElementById('cartTotal'); 
@@ -347,7 +348,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const isCartEmpty = cart.length === 0;
         copyButton.classList.toggle('hidden', isCartEmpty);
         floatingCartIcon.classList.toggle('hidden', isCartEmpty);
-        // --- NEW: Toggle visibility of modal button and its container ---
         modalControlsContainer.classList.toggle('hidden', isCartEmpty);
         modalCopyButton.classList.toggle('hidden', isCartEmpty);
     }
@@ -396,7 +396,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     fetch('PRICES.xlsx').then(response => { if (!response.ok) throw new Error('File not found'); return response.arrayBuffer(); }).then(data => { const workbook = XLSX.read(data, { type: 'array' }); const sheet = workbook.Sheets[workbook.SheetNames[0]]; const jsonData = XLSX.utils.sheet_to_json(sheet); loadProductsFromExcel(jsonData); }).catch(err => { console.error("Error fetching or processing Excel file:", err); alert(translations[currentLanguage].fileNotFoundAlert); fallbackFileInput.style.display = 'block'; fallbackFileInput.addEventListener('change', function(e) { const reader = new FileReader(); reader.onload = function(ev) { const workbook = XLSX.read(ev.target.result, { type: 'array' }); const sheet = workbook.Sheets[workbook.SheetNames[0]]; const jsonData = XLSX.utils.sheet_to_json(sheet); loadProductsFromExcel(jsonData); fallbackFileInput.style.display = 'none'; }; reader.readAsArrayBuffer(e.target.files[0]); }); });
     
-    // --- NEW: Refactored the copy logic into its own function ---
     function performCartCopy() {
         let cartText = ''; 
         let cartTotalForCopy = 0;
@@ -413,7 +412,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const totalWithTax = cartTotalForCopy * 1.15;
         cartText += `\n${translations[currentLanguage].cartTotalText}: ${totalWithTax.toFixed(2)} SR`;
         
-        // Use the synced value from the main comment input
         const comment = cartCommentInput.value.trim(); 
         if (comment) cartText += `\n\n${translations[currentLanguage].commentsLabel}\n` + comment; 
         
@@ -426,7 +424,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }).catch(err => { console.error('Failed to copy or open WhatsApp: ', err); alert(translations[currentLanguage].copyErrorAlert); }); 
     }
 
-    // --- NEW: Both copy buttons now call the same function ---
     copyButton.addEventListener('click', performCartCopy);
     modalCopyButton.addEventListener('click', performCartCopy);
 
@@ -435,23 +432,32 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
-// --- Auto Night Mode ---
+// --- Auto Night Mode (Consolidated and Fixed) ---
 let manualDarkToggle = false;
 
 function autoNightMode() {
+    // If user has clicked the button, stop the automatic changes.
     if (manualDarkToggle) return;
+    
     const hour = new Date().getHours();
-    const isNight = (hour >= 18 || hour < 5);
+    const isNight = (hour >= 18 || hour < 5); // Night is 6 PM to 5 AM
+    
+    // Set or remove the class based on the 'isNight' boolean.
     document.body.classList.toggle('dark-mode', isNight);
 }
 
+// All event listeners that modify the DOM should be inside DOMContentLoaded.
 document.addEventListener('DOMContentLoaded', () => {
-    const darkModeToggle = document.getElementById('darkModeToggle');
+    // Run auto-mode once on page load.
     autoNightMode();
+    // Then check again every hour.
     setInterval(autoNightMode, 60 * 60 * 1000);
 
+    // --- BUG FIX: This is now the ONLY listener for the dark mode button ---
     darkModeToggle.addEventListener('click', () => {
+        // First, set the flag so autoNightMode stops running.
         manualDarkToggle = true;
+        // Then, toggle the class. This now works correctly.
         document.body.classList.toggle('dark-mode');
     });
 });
