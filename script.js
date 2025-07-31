@@ -1,7 +1,7 @@
 // --- SCRIPT START ---
 
 // Greet the user on script load
-alert("Welcome to the Eagle Store portal!");
+//alert("Welcome to the Eagle Store portal!");
 
 document.addEventListener('DOMContentLoaded', function() {
     document.body.style.visibility = 'visible';
@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
     priceSelector.id = 'priceSelector';
     priceSelector.style.display = 'none';
 
-    // --- NEW: Floating Cart Selectors ---
+    // --- Floating Cart Selectors ---
     const floatingCartIcon = document.getElementById('floatingCartIcon');
     const cartModal = document.getElementById('cartModal');
     const cartModalClose = document.getElementById('cartModalClose');
@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- Global State ---
     const products = [];
-    let cart = []; // REFACTORED: Central array for cart items
+    let cart = []; 
     let currentLanguage = 'ar';
     let englishButtonClickCount = 0;
     let priceMultiplier = 1.10;
@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- Event Listeners ---
     darkModeToggle.addEventListener('click', () => { document.body.classList.toggle('dark-mode'); });
 
-    // --- NEW: Floating Cart Listeners ---
+    // --- Floating Cart Listeners ---
     floatingCartIcon.addEventListener('click', () => cartModal.classList.remove('modal-hidden'));
     cartModalClose.addEventListener('click', () => cartModal.classList.add('modal-hidden'));
     window.addEventListener('click', (event) => { if (event.target == cartModal) cartModal.classList.add('modal-hidden'); });
@@ -133,8 +133,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 isCustomerMode = true;
                 updateUIText();
                 priceSelector.style.display = 'block';
-                increaseButton.disabled = true; // Deactivate in sales rep mode
-                decreaseButton.disabled = true; // Deactivate in sales rep mode
+                increaseButton.disabled = true;
+                decreaseButton.disabled = true;
                 isDiscounting = false;
                 customerMarkupClicks = 0;
                 markupDots.textContent = '';
@@ -184,7 +184,7 @@ document.addEventListener('DOMContentLoaded', function() {
         else { langEnButton.classList.add('active'); langArButton.classList.remove('active'); }
         updateUIText();
         updateProductLanguage();
-        renderCart(); // UPDATED: Render cart to update language
+        renderCart(); 
         updateMultiplierPrices();
         rebuildPriceSelectorOptions();
     }
@@ -201,17 +201,21 @@ document.addEventListener('DOMContentLoaded', function() {
             if (quantityInput && !isNaN(quantityInput) && Number(quantityInput) > 0) {
                 const quantity = Number(quantityInput);
                 let basePrice; 
-                if (priceSelector.style.display !== 'none' && priceSelector.value) basePrice = parseFloat(product[priceSelector.value]); 
-                else basePrice = parseFloat(product['retail price Q']); 
+                
+                // This logic now works correctly because the selector is not hidden
+                if (priceSelector.style.display !== 'none' && priceSelector.value) {
+                    basePrice = parseFloat(product[priceSelector.value]); 
+                } else {
+                    basePrice = parseFloat(product['retail price Q']); 
+                }
                 
                 let priceToUse;
                 if (isCustomerMode) {
-                    priceToUse = basePrice + 10;
+                    priceToUse = basePrice + 10; // The RED price
                 } else {
-                    priceToUse = basePrice * priceMultiplier;
+                    priceToUse = basePrice * priceMultiplier; // Standard mode price
                 }
                 
-                // REFACTORED: Add item to cart array and re-render
                 const existingItem = cart.find(item => item.productCode === product['item code']);
                 if (existingItem) {
                     existingItem.quantity += quantity;
@@ -224,7 +228,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return square; 
     }
     
-    // --- NEW: Central function to render the cart in both main view and modal view ---
     function renderCart() {
         cartItemsContainer.innerHTML = '';
         modalCartItemsContainer.innerHTML = '';
@@ -262,14 +265,13 @@ document.addEventListener('DOMContentLoaded', function() {
             button.addEventListener('click', function() {
                 const indexToDelete = parseInt(this.dataset.cartIndex);
                 cart.splice(indexToDelete, 1);
-                renderCart(); // Re-render after deletion
+                renderCart();
             });
         });
 
         updateCartTotal(currentCartTotal);
     }
 
-    // --- MODIFIED: Major overhaul for Sales Rep price styling ---
     function updateProductCardPrices(squareElement, passedPrice, eaInCa) { 
         const productCode = squareElement.dataset.productCode; 
         const product = products.find(p => p['item code'] == productCode); if (!product) return; 
@@ -281,8 +283,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const trueBasePrice = parseFloat(product[priceSelector.style.display !== 'none' && priceSelector.value ? priceSelector.value : 'retail price Q']);
 
         if (isCustomerMode) {
-            const originalPriceCa = trueBasePrice;
-            const newPriceCa = originalPriceCa + 10;
+            const originalPriceCa = trueBasePrice; // GREEN price
+            const newPriceCa = originalPriceCa + 10; // RED price
             const originalPriceEa = originalPriceCa / eaInCaNum;
             const newPriceEa = newPriceCa / eaInCaNum;
 
@@ -320,14 +322,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateOriginalPrices() { const selectedCategory = priceSelector.value; if (!selectedCategory) return; document.querySelectorAll('.productSquare').forEach(square => { const productCode = square.dataset.productCode; const product = products.find(p => p['item code'] == productCode); if (product) { const basePrice = parseFloat(product[selectedCategory]); if (!isNaN(basePrice)) { const newPrice = basePrice * priceMultiplier; updateProductCardPrices(square, newPrice, product['ea in ca']); } } }); }
     
-    // --- MODIFIED: updates both totals and floating icon visibility ---
     function updateCartTotal(currentTotal) { 
         const cartTotalElement = document.getElementById('cartTotal'); 
         const cartTotalWithTax = currentTotal * 1.15;
         const totalText = `${translations[currentLanguage].cartTotalText}: ${cartTotalWithTax.toFixed(2)}`;
         
         cartTotalElement.textContent = totalText;
-        modalCartTotal.textContent = totalText; // Also update modal total
+        modalCartTotal.textContent = totalText;
 
         const isCartEmpty = cart.length === 0;
         copyButton.classList.toggle('hidden', isCartEmpty);
@@ -369,10 +370,7 @@ document.addEventListener('DOMContentLoaded', function() {
             updatePercentageDisplay(); 
             updateOriginalPrices();
             
-            if (isCustomerMode) {
-                priceSelector.style.display = 'none';
-                scrollClickCount = 0;
-            }
+            // --- BUG FIX --- The line that hid the selector was removed from here.
         }); 
 
         document.getElementById('cartContainer').insertBefore(priceSelector, document.getElementById('cartItems')); 
@@ -383,7 +381,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     fetch('PRICES.xlsx').then(response => { if (!response.ok) throw new Error('File not found'); return response.arrayBuffer(); }).then(data => { const workbook = XLSX.read(data, { type: 'array' }); const sheet = workbook.Sheets[workbook.SheetNames[0]]; const jsonData = XLSX.utils.sheet_to_json(sheet); loadProductsFromExcel(jsonData); }).catch(err => { console.error("Error fetching or processing Excel file:", err); alert(translations[currentLanguage].fileNotFoundAlert); fallbackFileInput.style.display = 'block'; fallbackFileInput.addEventListener('change', function(e) { const reader = new FileReader(); reader.onload = function(ev) { const workbook = XLSX.read(ev.target.result, { type: 'array' }); const sheet = workbook.Sheets[workbook.SheetNames[0]]; const jsonData = XLSX.utils.sheet_to_json(sheet); loadProductsFromExcel(jsonData); fallbackFileInput.style.display = 'none'; }; reader.readAsArrayBuffer(e.target.files[0]); }); });
     
-    // --- MODIFIED: Copy button builds text from cart array and adds "SR" ---
     copyButton.addEventListener('click', function() { 
         let cartText = ''; 
         let cartTotalForCopy = 0;
@@ -432,7 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(autoNightMode, 60 * 60 * 1000);
 
     darkModeToggle.addEventListener('click', () => {
-        manualDarkToggle = true; // User has taken manual control
+        manualDarkToggle = true;
         document.body.classList.toggle('dark-mode');
     });
 });
