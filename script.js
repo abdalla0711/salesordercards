@@ -36,38 +36,51 @@ document.addEventListener('DOMContentLoaded', function() {
     const modalCommentsLabel = document.getElementById('modalCommentsLabel');
 
 
-    // --- Create and Add Price & Zoom Adjustment Controls ---
-    const zoomInButton = document.createElement('button');
-    zoomInButton.textContent = '🔍+';
-    zoomInButton.id = 'zoomIn';
-    const zoomOutButton = document.createElement('button');
-    zoomOutButton.textContent = '🔍-';
-    zoomOutButton.id = 'zoomOut';
+    // --- MODIFIED: Create and Add Price & Zoom Adjustment Controls with new styling ---
+    
+    // Create containers for button groups
+    const zoomControls = document.createElement('div');
+    zoomControls.className = 'control-group';
+    const priceControls = document.createElement('div');
+    priceControls.className = 'control-group';
 
+    // Create Zoom Buttons with SVG Icons
+    const zoomInButton = document.createElement('button');
+    zoomInButton.className = 'control-btn';
+    zoomInButton.id = 'zoomIn';
+    zoomInButton.innerHTML = '<svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zM10 9h-1V8h1v-1h1v1h1v1h-1v1h-1z"/></svg>';
+    
+    const zoomOutButton = document.createElement('button');
+    zoomOutButton.className = 'control-btn';
+    zoomOutButton.id = 'zoomOut';
+    zoomOutButton.innerHTML = '<svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zM7 9h5v1H7z"/></svg>';
+    
+    // Create Price Buttons
     const increaseButton = document.createElement('button');
+    increaseButton.className = 'control-btn';
     increaseButton.textContent = '+';
     increaseButton.id = 'increasePrice';
+    
     const decreaseButton = document.createElement('button');
+    decreaseButton.className = 'control-btn';
     decreaseButton.textContent = '-';
     decreaseButton.id = 'decreasePrice';
+    
     const percentageDisplay = document.createElement('span');
     percentageDisplay.id = 'percentageDisplay';
-    const markupDots = document.createElement('span');
-    markupDots.id = 'markupDots';
-    markupDots.style.marginLeft = '4px';
-    markupDots.style.color = '#cccccc';
-    markupDots.style.fontSize = '1.2rem';
-    markupDots.style.verticalAlign = 'middle';
-    markupDots.style.fontWeight = 'normal';
+    percentageDisplay.style.padding = '0 10px'; // Give percentage display some space
+
+    // Add buttons to their respective groups
+    zoomControls.appendChild(zoomOutButton);
+    zoomControls.appendChild(zoomInButton);
     
-    // Add new zoom buttons to the container first
-    controlsContainer.appendChild(zoomOutButton);
-    controlsContainer.appendChild(zoomInButton);
-    
-    controlsContainer.appendChild(decreaseButton);
-    controlsContainer.appendChild(percentageDisplay);
-    controlsContainer.appendChild(increaseButton);
-    controlsContainer.appendChild(markupDots);
+    priceControls.appendChild(decreaseButton);
+    priceControls.appendChild(percentageDisplay);
+    priceControls.appendChild(increaseButton);
+
+    // Add groups to the main container
+    controlsContainer.appendChild(zoomControls);
+    controlsContainer.appendChild(priceControls);
 
     // --- Global State ---
     const products = [];
@@ -79,7 +92,6 @@ document.addEventListener('DOMContentLoaded', function() {
     let isCustomerMode = false;
     let isDiscounting = false;
     let discountBaseMultiplier = 1.0;
-    let customerMarkupClicks = 0;
     let scrollClickCount = 0;
     let currentZoom = 1.0;
 
@@ -128,7 +140,6 @@ document.addEventListener('DOMContentLoaded', function() {
         subtitle.textContent = isCustomerMode ? lang.salesRepSubtitle : '';
         filterInput.placeholder = lang.filterPlaceholder;
         
-        // Always set titles for all buttons
         increaseButton.title = lang.increaseTitle;
         decreaseButton.title = lang.decreaseTitle;
         zoomInButton.title = lang.zoomInTitle;
@@ -145,15 +156,12 @@ document.addEventListener('DOMContentLoaded', function() {
     function updatePercentageDisplay() { let prefix = displayPercentage >= 0 ? '+' : ''; percentageDisplay.textContent = `${prefix}${displayPercentage.toFixed(0)}%`; }
 
     // --- Event Listeners ---
-    // Floating Cart Listeners
     floatingCartIcon.addEventListener('click', () => cartModal.classList.remove('modal-hidden'));
     cartModalClose.addEventListener('click', () => cartModal.classList.add('modal-hidden'));
     window.addEventListener('click', (event) => { if (event.target == cartModal) cartModal.classList.add('modal-hidden'); });
     
-    // Two-way sync for comment boxes
     cartCommentInput.addEventListener('input', () => { modalCartComment.value = cartCommentInput.value; });
     modalCartComment.addEventListener('input', () => { cartCommentInput.value = modalCartComment.value; });
-
 
     langArButton.addEventListener('click', () => switchLanguage('ar'));
     langEnButton.addEventListener('click', () => {
@@ -163,11 +171,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (password === "20202030") {
                 isCustomerMode = true;
                 
-                // Disable price buttons, hide irrelevant displays
                 increaseButton.disabled = true; 
                 decreaseButton.disabled = true;
                 percentageDisplay.style.display = 'none';
-                markupDots.style.display = 'none';
 
                 updateUIText();
                 priceSelector.style.display = 'block';
@@ -185,14 +191,13 @@ document.addEventListener('DOMContentLoaded', function() {
         switchLanguage('en');
     });
 
-    // --- MODIFIED: Dedicated Zoom and Price buttons ---
     zoomInButton.addEventListener('click', () => {
-        currentZoom = Math.min(2.0, currentZoom + 0.1); // Max zoom 200%
+        currentZoom = Math.min(2.0, currentZoom + 0.1);
         document.body.style.zoom = currentZoom;
     });
 
     zoomOutButton.addEventListener('click', () => {
-        currentZoom = Math.max(0.5, currentZoom - 0.1); // Min zoom 50%
+        currentZoom = Math.max(0.5, currentZoom - 0.1);
         document.body.style.zoom = currentZoom;
     });
 
@@ -248,7 +253,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateProductLanguage() { document.querySelectorAll('.productSquare').forEach(square => { const productCode = square.dataset.productCode; const product = products.find(p => p['item code'] == productCode); if (product) square.querySelector('.card-content p:first-of-type').textContent = getItemName(product); }); filterInput.dispatchEvent(new Event('input')); }
     function updateMultiplierPrices() { document.querySelectorAll('.productSquare').forEach(square => { const productCode = square.dataset.productCode; const product = products.find(p => p['item code'] == productCode); if (product) { const basePrice = getCurrentBasePrice(product); if (!isNaN(basePrice)) { const newPrice = basePrice * priceMultiplier; updateProductCardPrices(square, newPrice, product['ea in ca']); } } }); }
     
-    // --- NEW: Function to add item to cart (replaces logic inside click) ---
     function addItemToCart(product, quantity) {
         const basePrice = getCurrentBasePrice(product);
         let priceToUse;
@@ -268,13 +272,10 @@ document.addEventListener('DOMContentLoaded', function() {
         renderCart();
     }
     
-    // --- NEW: Function to show custom quantity modal ---
     function showQuantityModal(product) {
-        // Create backdrop
         const backdrop = document.createElement('div');
         backdrop.className = 'quantity-modal-backdrop';
 
-        // Create modal
         const modal = document.createElement('div');
         modal.className = 'quantity-modal';
         
@@ -317,7 +318,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function createProductSquare(product) { 
         const square = document.createElement('div'); square.className = 'productSquare'; square.dataset.productCode = product['item code']; square.dataset.productNameAr = product['item name'] || ''; square.dataset.productNameEn = product['en_item_name'] || ''; const image = document.createElement('img'); image.src = product['image_ulr'] || 'https://via.placeholder.com/300x200.png?text=No+Image'; square.appendChild(image); const contentDiv = document.createElement('div'); contentDiv.className = 'card-content'; square.appendChild(contentDiv); const name = document.createElement('p'); name.textContent = getItemName(product); contentDiv.appendChild(name); for (let i = 0; i < 4; i++) contentDiv.appendChild(document.createElement('p')); const basePrice = getCurrentBasePrice(product); const initialPrice = basePrice * priceMultiplier; updateProductCardPrices(square, initialPrice, product['ea in ca']); 
         
-        // --- MODIFIED: Click now opens the custom modal instead of a prompt ---
         square.addEventListener('click', () => {
             showQuantityModal(product);
         }); 
@@ -461,14 +461,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         priceSelector.addEventListener('change', () => { 
             isDiscounting = false; 
-            customerMarkupClicks = 0; 
-            markupDots.textContent = ''; 
             priceMultiplier = 1.0; 
             displayPercentage = 0; 
             updatePercentageDisplay(); 
             updateOriginalPrices();
             
-            // --- MODIFIED: This now hides the selector after a change in Sales Rep mode ---
             if (isCustomerMode) {
                 priceSelector.style.display = 'none';
                 scrollClickCount = 0; 
@@ -514,10 +511,8 @@ document.addEventListener('DOMContentLoaded', function() {
     copyButton.addEventListener('click', performCartCopy);
     modalCopyButton.addEventListener('click', performCartCopy);
 
-
     filterInput.addEventListener('input', function() { const val = this.value.toLowerCase(); document.querySelectorAll('.productSquare').forEach(el => { const nameAr = el.dataset.productNameAr.toLowerCase(); const nameEn = el.dataset.productNameEn.toLowerCase(); const code = el.dataset.productCode.toLowerCase(); const isVisible = nameAr.includes(val) || nameEn.includes(val) || code.includes(val); el.style.display = isVisible ? 'block' : 'none'; }); });
 });
-
 
 // --- Auto Night Mode (Consolidated and Fixed) ---
 let manualDarkToggle = false;
