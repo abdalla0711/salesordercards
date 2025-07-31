@@ -48,8 +48,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let cartTotal = 0;
     let currentLanguage = 'ar';
     let englishButtonClickCount = 0;
-    let priceMultiplier = 1.10;
-    let displayPercentage = 0;
+    let priceMultiplier = 1.10; // MODIFIED: Start with a 10% increase by default
+    let displayPercentage = 10;   // MODIFIED: Reflect the initial 10% increase
     let isCustomerMode = false;
     let isDiscounting = false;
     let discountBaseMultiplier = 1.0;
@@ -124,8 +124,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 isDiscounting = false;
                 customerMarkupClicks = 0;
                 markupDots.textContent = '';
-                priceMultiplier = 1.0;
-                displayPercentage = 0;
+                priceMultiplier = 1.10; // MODIFIED: Reset to default 10% on mode activation
+                displayPercentage = 10;   // MODIFIED: Reset display to 10%
                 updatePercentageDisplay();
                 updateOriginalPrices();
                 scrollClickCount = 0;
@@ -143,13 +143,26 @@ document.addEventListener('DOMContentLoaded', function() {
         const newMultiplier = priceMultiplier + 0.05;
         if (newMultiplier >= baseMultiplier * 2) { alert(translations[currentLanguage].maxLimitAlert); return; }
         priceMultiplier = newMultiplier;
-        if (isDiscounting) { displayPercentage += 5; updatePercentageDisplay(); } 
-        else if (isCustomerMode) { customerMarkupClicks++; markupDots.textContent = '•'.repeat(customerMarkupClicks); } 
-        else { displayPercentage += 5; updatePercentageDisplay(); }
+        displayPercentage += 5; 
+        updatePercentageDisplay();
+        if (isCustomerMode && !isDiscounting) { customerMarkupClicks++; markupDots.textContent = '•'.repeat(customerMarkupClicks); }
         updateMultiplierPrices();
     });
 
-    decreaseButton.addEventListener('click', () => { if (priceMultiplier <= 0.55) { alert(translations[currentLanguage].minLimitAlert); return; } if (isCustomerMode && !isDiscounting) { isDiscounting = true; discountBaseMultiplier = priceMultiplier; } customerMarkupClicks = 0; markupDots.textContent = ''; priceMultiplier -= 0.05; displayPercentage -= 5; updateMultiplierPrices(); updatePercentageDisplay(); });
+    decreaseButton.addEventListener('click', () => { 
+        if (priceMultiplier <= 0.55) { alert(translations[currentLanguage].minLimitAlert); return; } 
+        if (isCustomerMode && !isDiscounting) { 
+            isDiscounting = true; 
+            discountBaseMultiplier = priceMultiplier; 
+        } 
+        customerMarkupClicks = 0; 
+        markupDots.textContent = ''; 
+        priceMultiplier -= 0.05; 
+        displayPercentage -= 5; 
+        updateMultiplierPrices(); 
+        updatePercentageDisplay(); 
+    });
+
     scrollToTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
     scrollToBottomBtn.addEventListener('click', () => {
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
@@ -193,12 +206,16 @@ document.addEventListener('DOMContentLoaded', function() {
         const eaInCaNum = parseInt(eaInCa); const newEaPrice = newCaPrice / eaInCaNum; 
         let basePriceForComparison; let showOriginal = false; 
         if (isCustomerMode && isDiscounting) { basePriceForComparison = trueBasePrice * discountBaseMultiplier; showOriginal = true; } 
-        else if (!isCustomerMode && displayPercentage !== 0) { basePriceForComparison = trueBasePrice * 1.10; showOriginal = true; } 
+        else if (displayPercentage !== 0) { // MODIFIED: Simplified condition
+            basePriceForComparison = trueBasePrice;
+            showOriginal = true;
+        } 
         const baseEaPriceForComparison = basePriceForComparison / eaInCaNum; 
         
         const generatePriceHTML = (basePrice, currentPrice) => {
             const currencySymbolHTML = '<span class="currency-symbol"></span>';
-            if (showOriginal) {
+            // Always show the new price, only show original if it's different
+            if (showOriginal && Math.abs(basePrice - currentPrice) > 0.01) {
                 return `<span class="original-price">${basePrice.toFixed(2)}</span> <span class="new-price">${currentPrice.toFixed(2)}${currencySymbolHTML}</span>`;
             } else {
                 return `<span class="new-price">${currentPrice.toFixed(2)}${currencySymbolHTML}</span>`;
@@ -246,8 +263,8 @@ document.addEventListener('DOMContentLoaded', function() {
             isDiscounting = false; 
             customerMarkupClicks = 0; 
             markupDots.textContent = ''; 
-            priceMultiplier = 1.0; 
-            displayPercentage = 0; 
+            priceMultiplier = 1.10; // MODIFIED: Reset to default 10% on channel change
+            displayPercentage = 10;   // MODIFIED: Reset display to 10%
             updatePercentageDisplay(); 
             updateOriginalPrices();
             
