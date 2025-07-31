@@ -53,6 +53,19 @@
         <button id="copyButton" class="hidden"></button>
     </div>
 
+    <div id="floatingCartIcon" class="hidden">🛒</div>
+
+<!-- Cart Modal Window (starts hidden) -->
+<div id="cartModal" class="modal-hidden">
+    <div class="modal-content">
+        <span id="cartModalClose">×</span>
+        <h2>Shopping Cart</h2>
+        <div id="modalCartItemsContainer">
+            <!-- Cart items will be dynamically inserted here by JavaScript -->
+        </div>
+        <div id="modalCartTotal"></div>
+    </div>
+</div>
     <!-- Your script file at the very end -->
     <script src="script.js"></script>
 
