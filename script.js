@@ -1,7 +1,7 @@
 // --- SCRIPT START ---
 
 // Greet the user on script load
-alert("Welcome to the Eagle Store portal!");
+//alert("Welcome to the Eagle Store portal!");
 
 document.addEventListener('DOMContentLoaded', function() {
     document.body.style.visibility = 'visible';
@@ -124,9 +124,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function updatePercentageDisplay() { let prefix = displayPercentage >= 0 ? '+' : ''; percentageDisplay.textContent = `${prefix}${displayPercentage.toFixed(0)}%`; }
 
     // --- Event Listeners ---
-    // Note: Dark mode listener is moved to the bottom to consolidate all its logic
-
-    // --- Floating Cart Listeners ---
+    // Floating Cart Listeners
     floatingCartIcon.addEventListener('click', () => cartModal.classList.remove('modal-hidden'));
     cartModalClose.addEventListener('click', () => cartModal.classList.add('modal-hidden'));
     window.addEventListener('click', (event) => { if (event.target == cartModal) cartModal.classList.add('modal-hidden'); });
@@ -201,7 +199,6 @@ document.addEventListener('DOMContentLoaded', function() {
         rebuildPriceSelectorOptions();
     }
     
-    // --- BUG FIX: Central function to get the correct base price ---
     function getCurrentBasePrice(product) {
         const selectedCategory = priceSelector.value || 'retail price Q';
         return parseFloat(product[selectedCategory]);
@@ -218,13 +215,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const quantityInput = prompt(translations[currentLanguage].quantityPrompt); 
             if (quantityInput && !isNaN(quantityInput) && Number(quantityInput) > 0) {
                 const quantity = Number(quantityInput);
-                
-                // --- BUG FIX: Use the central function to guarantee correct price source ---
                 const basePrice = getCurrentBasePrice(product);
                 
                 let priceToUse;
                 if (isCustomerMode) {
-                    priceToUse = basePrice + 10;
+                    // --- THE FIX IS HERE ---
+                    // The price added to the cart is the base (green) price itself.
+                    priceToUse = basePrice;
                 } else {
                     priceToUse = basePrice * priceMultiplier;
                 }
@@ -293,13 +290,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const lang = translations[currentLanguage]; 
         const eaInCaNum = parseInt(eaInCa);
         const currencySymbolHTML = '<span class="currency-symbol"></span>';
-        
-        // --- BUG FIX: Use the central function here as well for consistency ---
         const trueBasePrice = getCurrentBasePrice(product);
 
         if (isCustomerMode) {
-            const originalPriceCa = trueBasePrice;
-            const newPriceCa = originalPriceCa + 10;
+            const originalPriceCa = trueBasePrice; // Green price
+            const newPriceCa = originalPriceCa + 10; // Red price (for display only)
             const originalPriceEa = originalPriceCa / eaInCaNum;
             const newPriceEa = newPriceCa / eaInCaNum;
 
@@ -436,28 +431,18 @@ document.addEventListener('DOMContentLoaded', function() {
 let manualDarkToggle = false;
 
 function autoNightMode() {
-    // If user has clicked the button, stop the automatic changes.
     if (manualDarkToggle) return;
-    
     const hour = new Date().getHours();
-    const isNight = (hour >= 18 || hour < 5); // Night is 6 PM to 5 AM
-    
-    // Set or remove the class based on the 'isNight' boolean.
+    const isNight = (hour >= 18 || hour < 5);
     document.body.classList.toggle('dark-mode', isNight);
 }
 
-// All event listeners that modify the DOM should be inside DOMContentLoaded.
 document.addEventListener('DOMContentLoaded', () => {
-    // Run auto-mode once on page load.
     autoNightMode();
-    // Then check again every hour.
     setInterval(autoNightMode, 60 * 60 * 1000);
 
-    // --- BUG FIX: This is now the ONLY listener for the dark mode button ---
     darkModeToggle.addEventListener('click', () => {
-        // First, set the flag so autoNightMode stops running.
         manualDarkToggle = true;
-        // Then, toggle the class. This now works correctly.
         document.body.classList.toggle('dark-mode');
     });
 });
