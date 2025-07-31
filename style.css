@@ -367,58 +367,78 @@ h1 { margin: 0; text-align: center; flex-grow: 1; }
 }
 /* Add these new styles for the control buttons */
 
-/* A container to group related controls (e.g., zoom, price) */
+/* ==> REPLACE the old control button styles with this entire block <== */
+
+/* A container to group related controls */
 .control-group {
     display: flex;
     align-items: center;
-    margin-right: 15px; /* Creates space between groups */
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    overflow: hidden; /* Keeps button edges sharp within the group */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border: 1px solid #dbdbdb;
+    border-radius: 6px;
 }
 
 .dark-mode .control-group {
-    border-color: #555;
+    border-color: #4a4a4a;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
 }
-
 
 /* A common style for all buttons in the top control bar */
 .control-btn {
-    background-color: #f0f0f0;
+    background-color: #fff;
+    color: #555; /* Icon color */
     border: none;
     padding: 8px 12px;
     cursor: pointer;
-    transition: background-color 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: background-color 0.15s ease-in-out, transform 0.1s ease-in-out;
 }
 
 /* Add a separator line between buttons inside a group */
 .control-btn:not(:last-child) {
-    border-right: 1px solid #ccc;
+    border-right: 1px solid #dbdbdb;
 }
 
 .dark-mode .control-btn {
-    background-color: #3a3a3a;
-    color: #f1f1f1;
+    background-color: #363636;
+    color: #e0e0e0;
 }
 
 .dark-mode .control-btn:not(:last-child) {
-    border-right-color: #555;
+    border-right-color: #4a4a4a;
 }
 
+/* Hover effect */
 .control-btn:hover {
-    background-color: #e0e0e0;
+    background-color: #f5f5f5;
 }
 
 .dark-mode .control-btn:hover {
     background-color: #4a4a4a;
 }
 
+/* Clicked/"Active" effect */
+.control-btn:active {
+    background-color: #e0e0e0;
+    transform: scale(0.92);
+}
+
+.dark-mode .control-btn:active {
+    background-color: #555;
+}
+
+
 /* Style for the SVG icons inside the buttons */
 .control-btn svg {
-    width: 18px;
-    height: 18px;
-    fill: currentColor; /* The icon color will match the button's text color */
+    width: 20px;
+    height: 20px;
+    fill: currentColor; 
+}
+
+/* Specific styling for text-based buttons (+/-) */
+#increasePrice, #decreasePrice {
+    font-size: 1.2em;
+    font-weight: 600;
 }
