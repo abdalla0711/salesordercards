@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function() {
             incorrectPasswordAlert: "Incorrect password.", maxLimitAlert: "Max limit reached.", minLimitAlert: "Min limit reached.", 
             quantityPrompt: "Enter quantity:", cartTotalText: "Total with tax", 
             copyButtonText: "Copy & Open WhatsApp", copySuccessAlert: "Cart copied.", 
-            copyErrorAlert: "Copy error.", fileNotFoundAlert: "Price file not found.", commentsLabel: "Enter the name of the company representative or the city name and the customer name:", 
+            copyErrorAlert: "Copy error.", fileNotFoundAlert: "Price file not found.", commentsLabel: "SalesMan name/City name/Shop name:", 
             scrollTopTitle: "Scroll to Top", scrollBottomTitle: "Scroll to Bottom",
             quantityModalTitle: "Select Quantity", addToCartBtn: "Add to Cart", cancelBtn: "Cancel",
             priceCategories: {
@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', function() {
             incorrectPasswordAlert: "كلمة مرور غير صحيحة.", maxLimitAlert: "تم الوصول للحد الأعلى.", minLimitAlert: "تم الوصول للحد الأدنى.", 
             quantityPrompt: "أدخل الكمية:", cartTotalText: "الإجمالي مع الضريبة", 
             copyButtonText: "نسخ الطلب وفتح واتساب", copySuccessAlert: "تم نسخ السلة.", 
-            copyErrorAlert: "حدث خطأ.", fileNotFoundAlert: "ملف الأسعار غير موجود.", commentsLabel: "ادخل اسم مندوب الشركة او اسم المدينة واسم العميل:", 
+            copyErrorAlert: "حدث خطأ.", fileNotFoundAlert: "ملف الأسعار غير موجود.", commentsLabel: "اسم المندوب/اسم المدينة /اسم المحل", 
             scrollTopTitle: "الانتقال للأعلى", scrollBottomTitle: "الانتقال للأسفل",
             quantityModalTitle: "اختر الكمية", addToCartBtn: "إضافة للسلة", cancelBtn: "إلغاء",
               priceCategories: {
