@@ -129,11 +129,11 @@ h1 { margin: 0; text-align: center; flex-grow: 1; }
     margin: 0 3px;
     flex-shrink: 0;
     /* Black symbol for light mode */
-    background-image: url("https://ibn-thani.com/wp-content/uploads/2025/02/Photoroom_20250220_183836.png");
+    background-image: url("https://ar.wikipedia.org/wiki/%D9%85%D9%84%D9%81:Saudi_Riyal_Symbol.svg");
 }
 .dark-mode .currency-symbol {
     /* White symbol for dark mode */
-    background-image: url("https://ibn-thani.com/wp-content/uploads/2025/02/Photoroom_20250220_183836.png");
+    background-image: url("https://ar.wikipedia.org/wiki/%D9%85%D9%84%D9%81:Saudi_Riyal_Symbol.svg");
 }
 
 
