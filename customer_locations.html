@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>بيانات العملاء</title>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
-<!-- مكتبة XLSX -->
-<script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
+<!-- استخدام رابط مباشر وموثوق للمكتبة -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
 <style>
     :root {
         --primary-color: #2c3e50;
@@ -20,216 +21,38 @@
     }
 
     * { box-sizing: border-box; }
+    body { font-family: 'Tajawal', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 14px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 18px; background: var(--primary-color); color: var(--white); padding: 16px 14px; border-radius: 10px; }
+    header h1 { margin: 0; font-size: clamp(18px, 4vw, 24px); }
+    
+    .upload-section { background: var(--white); padding: 18px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 16px; text-align: center; }
+    .drop-zone { border: 2.5px dashed #c7d3cf; border-radius: 10px; padding: 28px 14px; cursor: pointer; }
+    .auto-load-status { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 20px; }
+    
+    .spinner { width: 30px; height: 30px; border: 3px solid #e0e6e5; border-top-color: var(--accent-color); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-    body {
-        font-family: 'Tajawal', sans-serif;
-        background-color: var(--bg-color);
-        color: var(--text-color);
-        margin: 0;
-        padding: 14px;
-    }
-
-    .container {
-        max-width: 1200px;
-        margin: 0 auto;
-    }
-
-    header {
-        text-align: center;
-        margin-bottom: 18px;
-        background: var(--primary-color);
-        color: var(--white);
-        padding: 16px 14px;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-
-    header h1 {
-        margin: 0;
-        font-size: clamp(18px, 4vw, 24px);
-    }
-
-    header .sub {
-        margin-top: 4px;
-        font-size: 13px;
-        opacity: .8;
-    }
-
-    .upload-section {
-        background: var(--white);
-        padding: 18px;
-        border-radius: 10px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        margin-bottom: 16px;
-        text-align: center;
-    }
-
-    .upload-section.has-data {
-        padding: 12px 18px;
-    }
-
-    .drop-zone {
-        border: 2.5px dashed #c7d3cf;
-        border-radius: 10px;
-        padding: 28px 14px;
-        cursor: pointer;
-        transition: border-color .2s, background-color .2s;
-    }
-
-    .drop-zone.dragover {
-        border-color: var(--accent-color);
-        background-color: #eafaf1;
-    }
-
-    .drop-zone-icon {
-        font-size: 38px;
-        margin-bottom: 8px;
-        line-height: 1;
-    }
-
-    .drop-zone-text {
-        font-weight: 700;
-        color: var(--primary-color);
-        font-size: 16px;
-    }
-
-    .drop-zone-sub {
-        color: #888;
-        font-size: 13px;
-        margin-top: 4px;
-    }
-
-    #fileInput { display: none; }
-
-    .auto-load-status {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
-        padding: 30px 14px;
-    }
-
-    .auto-load-status.hidden { display: none; }
-
-    .spinner {
-        width: 30px;
-        height: 30px;
-        border: 3px solid #e0e6e5;
-        border-top-color: var(--accent-color);
-        border-radius: 50%;
-        animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-
-    .auto-load-text {
-        color: var(--primary-color);
-        font-weight: 500;
-        font-size: 14px;
-    }
-
-    .btn-refresh {
-        background: #eafaf1;
-        color: var(--accent-dark);
-    }
-
-    .file-bar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-        flex-wrap: wrap;
-    }
-
-    .file-bar-info {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 14px;
-        color: var(--primary-color);
-        font-weight: 500;
-        overflow: hidden;
-    }
-
-    .btn {
-        border: none;
-        border-radius: 6px;
-        padding: 9px 16px;
-        font-family: inherit;
-        font-size: 13px;
-        font-weight: 700;
-        cursor: pointer;
-        transition: background-color .2s;
-        white-space: nowrap;
-    }
-
-    .btn-secondary { background: #ecf0f1; color: var(--primary-color); }
-    .btn-danger { background: #fdecea; color: var(--danger); }
-
-    .search-section {
-        background: var(--white);
-        padding: 16px;
-        border-radius: 10px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        margin-bottom: 16px;
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-    }
-
-    input[type="text"] {
-        flex: 1;
-        min-width: 220px;
-        padding: 12px;
-        border: 2px solid #ddd;
-        border-radius: 6px;
-        font-size: 16px;
-        font-family: inherit;
-        outline: none;
-        width: 100%;
-    }
-
-    .results-info { margin-bottom: 10px; font-weight: bold; color: var(--primary-color); font-size: 14px; }
-
-    #suggestions {
-        display: none;
-        background: white;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        margin-top: -6px;
-        margin-bottom: 16px;
-        max-height: 260px;
-        overflow-y: auto;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.12);
-        position: relative;
-        z-index: 5;
-    }
-
-    .suggestion-item { padding: 11px 14px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 14px; }
-    .suggestion-item:hover { background-color: #f0f0f0; }
-
+    .search-section { background: var(--white); padding: 16px; border-radius: 10px; margin-bottom: 16px; display: flex; gap: 10px; }
+    input[type="text"] { flex: 1; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px; outline: none; width: 100%; }
+    
     .table-container { overflow-x: auto; background: var(--white); border-radius: 10px; display: none; }
-    table { width: 100%; border-collapse: collapse; min-width: 1100px; }
-    th { background-color: var(--primary-color); color: var(--white); padding: 13px 12px; text-align: right; font-size: 13px; position: sticky; top: 0; }
-    td { padding: 11px 12px; border-bottom: 1px solid #eee; font-size: 13px; }
+    table { width: 100%; border-collapse: collapse; min-width: 1000px; }
+    th { background-color: var(--primary-color); color: var(--white); padding: 12px; text-align: right; }
+    td { padding: 10px; border-bottom: 1px solid #eee; font-size: 13px; }
 
-    .customer-card { background: var(--white); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); margin-bottom: 12px; overflow: hidden; }
-    .card-head { background: var(--primary-light); color: var(--white); padding: 12px 14px; display: flex; justify-content: space-between; }
-    .card-body { padding: 10px 14px; }
-    .card-row { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid #f1f1f1; font-size: 13.5px; }
-    .map-link { display: inline-block; background-color: var(--accent-color); color: white; padding: 9px 14px; border-radius: 6px; text-decoration: none; text-align: center; width: 100%; font-weight: bold; }
-    .map-link.unavailable { background-color: #ccc; color: #777; pointer-events: none; }
-
-    .badge-city { background: #e1f5fe; color: #0288d1; padding: 2px 8px; border-radius: 10px; font-size: 12px; }
-    .status-msg { margin-top: 10px; font-size: 13px; border-radius: 6px; padding: 8px 12px; display: none; }
-    .status-msg.error { display: block; background: #fdecea; color: var(--danger); }
+    .customer-card { background: var(--white); border-radius: 12px; margin-bottom: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+    .card-head { background: var(--primary-light); color: var(--white); padding: 12px; display: flex; justify-content: space-between; }
+    .card-body { padding: 12px; }
+    .card-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #f9f9f9; }
+    
+    .map-link { display: block; background: var(--accent-color); color: white; padding: 10px; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px; }
+    .status-msg { margin-top: 10px; padding: 10px; border-radius: 6px; display: none; font-size: 14px; }
+    .error { display: block; background: #fdecea; color: #c0392b; border: 1px solid #f9d7d3; }
     .hidden { display: none !important; }
-
-    @media (min-width: 760px) { .table-container.has-data { display: block; } }
-    @media (max-width: 759px) { .cards-container.has-data { display: block; } }
+    
+    @media (min-width: 761px) { .table-container.has-data { display: block; } .cards-container { display: none; } }
+    @media (max-width: 760px) { .cards-container.has-data { display: block; } .table-container { display: none !important; } }
 </style>
 </head>
 <body>
@@ -237,248 +60,193 @@
 <div class="container">
     <header>
         <h1>بيانات العملاء</h1>
-        <div class="sub">تحديث تلقائي للموقع من ملف إكسل</div>
+        <div id="fileDate" style="font-size: 12px; opacity: 0.8;"></div>
     </header>
 
-    <div class="upload-section" id="uploadSection">
-        <div class="auto-load-status" id="autoLoadStatus">
+    <div class="upload-section" id="uploadArea">
+        <div id="autoLoadStatus" class="auto-load-status">
             <div class="spinner"></div>
-            <div class="auto-load-text">جاري تحميل ملف البيانات تلقائياً...</div>
+            <div id="loaderText">جاري جلب الملف من السيرفر...</div>
         </div>
-        <div class="drop-zone hidden" id="dropZone">
-            <div class="drop-zone-icon">📂</div>
-            <div class="drop-zone-text">اسحب ملف الإكسل هنا أو اضغط للرفع اليدوي</div>
+        <div id="dropZone" class="drop-zone hidden">
+            <div style="font-size:30px">📂</div>
+            <b>فشل التحميل التلقائي</b><br>
+            <span>اسحب الملف هنا أو اضغط للرفع اليدوي</span>
         </div>
-        <input type="file" id="fileInput" accept=".xlsx,.xls">
-        <div class="status-msg" id="statusMsg"></div>
+        <input type="file" id="fileInput" class="hidden" accept=".xlsx,.xls">
+        <div id="statusMsg" class="status-msg"></div>
     </div>
 
-    <div class="search-section hidden" id="searchSection">
-        <input type="text" id="searchInput" placeholder="ابحث باسم العميل، الكود، أو المدينة..." oninput="handleSearch()">
+    <div id="searchArea" class="search-section hidden">
+        <input type="text" id="searchInput" placeholder="ابحث باسم العميل أو الكود..." oninput="doSearch()">
     </div>
 
-    <div id="suggestions"></div>
-    <div id="resultsSummary" class="results-info"></div>
+    <div id="resultsCount" style="margin-bottom:10px; font-weight:bold;"></div>
 
     <div class="table-container" id="tableContainer">
         <table>
-            <thead><tr id="tableHeadRow"></tr></thead>
-            <tbody id="tableBody"></tbody>
+            <thead><tr id="thRow"></tr></thead>
+            <tbody id="tbBody"></tbody>
         </table>
     </div>
 
     <div class="cards-container" id="cardsContainer"></div>
-    <div id="noDataMessage" style="text-align:center; color:#888; padding:20px;">يرجى انتظار تحميل البيانات...</div>
 </div>
 
 <script>
-const HEADER_ROW = 4;
-const DATA_START_ROW = 5;
-const GPS_COLUMN_INDEX = 22; 
-const EXCLUDED_COLUMNS = [3, 5, 7, 8, 9, 10, 12, 13, 15, 17, 18, 19, 20, 23, 24, 25, 26, 27, 30, 32, 34, 35, 39];
-const TARGET_FILENAME = 'Report_InventoryCustomerListing.xlsx';
-
-let customers = [];
-let visibleColumns = [];
-let displayOrder = [];
-let gpsColAbsoluteIndex = -1;
-
-const autoLoadStatus = document.getElementById('autoLoadStatus');
-const dropZone = document.getElementById('dropZone');
-const uploadSection = document.getElementById('uploadSection');
-const searchSection = document.getElementById('searchSection');
-const searchInput = document.getElementById('searchInput');
-const suggestionsDiv = document.getElementById('suggestions');
-const resultsSummary = document.getElementById('resultsSummary');
-const tableBody = document.getElementById('tableBody');
-const tableHeadRow = document.getElementById('tableHeadRow');
-const cardsContainer = document.getElementById('cardsContainer');
-const noDataMessage = document.getElementById('noDataMessage');
-
-// 1. التحميل التلقائي فور فتح الصفحة
-async function tryAutoLoad() {
-    try {
-        const response = await fetch(TARGET_FILENAME, { cache: 'no-store' });
-        if (!response.ok) throw new Error('File not found');
-
-        const buffer = await response.arrayBuffer();
-        const data = new Uint8Array(buffer);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '', raw: false });
-        
-        processRows(rows, TARGET_FILENAME, true);
-    } catch (err) {
-        console.error("Auto-load failed:", err);
-        autoLoadStatus.classList.add('hidden');
-        dropZone.classList.remove('hidden');
-        noDataMessage.innerText = "فشل التحميل التلقائي. يرجى رفع الملف يدوياً.";
-    }
-}
-
-// 2. معالجة البيانات
-function processRows(rows, fileName, isAuto) {
-    if (rows.length < HEADER_ROW) return;
-
-    const headerRow = rows[HEADER_ROW - 1];
-    const excludedSet = new Set(EXCLUDED_COLUMNS.map(n => n - 1));
-    visibleColumns = [];
-    gpsColAbsoluteIndex = -1;
-
-    for (let c = 0; c < headerRow.length; c++) {
-        if (!excludedSet.has(c)) {
-            visibleColumns.push({ sourceIndex: c, header: (headerRow[c] || '').toString().trim() });
-            if (c === GPS_COLUMN_INDEX - 1) gpsColAbsoluteIndex = visibleColumns.length - 1;
-        }
-    }
-
-    computeDisplayOrder();
-
-    customers = [];
-    for (let r = DATA_START_ROW - 1; r < rows.length; r++) {
-        if (!rows[r] || rows[r].length === 0) continue;
-        const vals = visibleColumns.map(col => (rows[r][col.sourceIndex] || '').toString().trim());
-        if (vals.some(v => v !== '')) customers.push(vals);
-    }
-
-    buildTableHead();
-    showUI(fileName, isAuto);
-    displayResults(customers);
-}
-
-function computeDisplayOrder() {
-    const find = (keys) => visibleColumns.findIndex(c => keys.some(k => c.header.includes(k)));
-    const codeIdx = find(['رمز', 'كود']);
-    const nameIdx = find(['اسم العميل']);
-    const phoneIdx = find(['تليفون', 'هاتف']);
-    const areaIdx = find(['الحي']);
-
-    const pinned = new Set([codeIdx, nameIdx, phoneIdx, areaIdx].filter(i => i >= 0));
-    displayOrder = [];
-    if (codeIdx >= 0) displayOrder.push({ type: 'col', colIndex: codeIdx });
-    if (nameIdx >= 0) displayOrder.push({ type: 'col', colIndex: nameIdx });
-    displayOrder.push({ type: 'map' });
-    if (phoneIdx >= 0) displayOrder.push({ type: 'col', colIndex: phoneIdx });
-    if (areaIdx >= 0) displayOrder.push({ type: 'col', colIndex: areaIdx });
-
-    visibleColumns.forEach((_, i) => {
-        if (i !== gpsColAbsoluteIndex && !pinned.has(i)) displayOrder.push({ type: 'col', colIndex: i });
-    });
-}
-
-function buildTableHead() {
-    tableHeadRow.innerHTML = '';
-    displayOrder.forEach(e => {
-        const th = document.createElement('th');
-        th.textContent = e.type === 'map' ? 'الموقع' : visibleColumns[e.colIndex].header;
-        tableHeadRow.appendChild(th);
-    });
-}
-
-function showUI(name, isAuto) {
-    uploadSection.classList.add('has-data');
-    uploadSection.innerHTML = `
-        <div class="file-bar">
-            <div class="file-bar-info">
-                <span>${isAuto ? '🔄' : '✅'}</span>
-                <span>${name} (${customers.length} سجل)</span>
-            </div>
-            <button class="btn btn-secondary" onclick="location.reload()">تحديث/رفع جديد</button>
-        </div>
-    `;
-    searchSection.classList.remove('hidden');
-    document.getElementById('tableContainer').classList.add('has-data');
-    cardsContainer.classList.add('has-data');
-    noDataMessage.style.display = 'none';
-}
-
-function handleSearch() {
-    const q = searchInput.value.trim().toLowerCase();
-    if (q === "") { displayResults(customers); return; }
-
-    const codeIdx = visibleColumns.findIndex(c => c.header.includes('كود') || c.header.includes('رمز'));
-    const nameIdx = visibleColumns.findIndex(c => c.header.includes('اسم العميل'));
-
-    const filtered = customers.filter(row => 
-        (row[codeIdx] && row[codeIdx].toLowerCase().includes(q)) || 
-        (row[nameIdx] && row[nameIdx].toLowerCase().includes(q))
-    );
-    
-    displayResults(filtered);
-}
-
-function displayResults(data) {
-    resultsSummary.innerText = `عدد النتائج: ${data.length}`;
-    renderTable(data);
-    renderCards(data);
-}
-
-function renderTable(data) {
-    tableBody.innerHTML = '';
-    data.forEach(row => {
-        const tr = document.createElement('tr');
-        displayOrder.forEach(e => {
-            const td = document.createElement('td');
-            if (e.type === 'map') {
-                td.innerHTML = getMapLink(row[gpsColAbsoluteIndex]);
-            } else {
-                td.textContent = row[e.colIndex] || '-';
-            }
-            tr.appendChild(td);
-        });
-        tableBody.appendChild(tr);
-    });
-}
-
-function renderCards(data) {
-    cardsContainer.innerHTML = '';
-    data.forEach(row => {
-        const nameIdx = visibleColumns.findIndex(c => c.header.includes('اسم العميل'));
-        const codeIdx = visibleColumns.findIndex(c => c.header.includes('كود') || c.header.includes('رمز'));
-        
-        const card = document.createElement('div');
-        card.className = 'customer-card';
-        let rowsHtml = '';
-        displayOrder.forEach(e => {
-            if (e.type !== 'map' && e.colIndex !== nameIdx && e.colIndex !== codeIdx) {
-                rowsHtml += `<div class="card-row"><span class="label">${visibleColumns[e.colIndex].header}</span><span class="value">${row[e.colIndex] || '-'}</span></div>`;
-            }
-        });
-
-        card.innerHTML = `
-            <div class="card-head">
-                <div class="name">${row[nameIdx]}</div>
-                <div class="code">${row[codeIdx]}</div>
-            </div>
-            <div class="card-body">${rowsHtml}</div>
-            <div class="card-foot">${getMapLink(row[gpsColAbsoluteIndex])}</div>
-        `;
-        cardsContainer.appendChild(card);
-    });
-}
-
-function getMapLink(coords) {
-    if (coords && coords.includes(',')) {
-        return `<a href="https://www.google.com/maps/search/?api=1&query=${coords}" target="_blank" class="map-link">📍 فتح الخريطة</a>`;
-    }
-    return `<span class="map-link unavailable">غير متوفر</span>`;
-}
-
-// الرفع اليدوي كخيار بديل
-dropZone.onclick = () => document.getElementById('fileInput').click();
-document.getElementById('fileInput').onchange = (e) => {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-    reader.onload = (evt) => {
-        const data = new Uint8Array(evt.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-        processRows(XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1, defval: '', raw: false }), file.name, false);
-    };
-    reader.readAsArrayBuffer(file);
+const CONFIG = {
+    fileName: 'Report_InventoryCustomerListing.xlsx', // تأكد أن الاسم يطابق المرفوع تماماً
+    headerRow: 4,
+    dataStartRow: 5,
+    gpsColIdx: 21, // عمود V (0-based هو 21)
+    excludedCols: [2, 4, 6, 7, 8, 9, 11, 12, 14, 16, 17, 18, 19, 22, 23, 24, 25, 26, 29, 31, 33, 34, 38] 
 };
 
-// تشغيل التحميل التلقائي
-tryAutoLoad();
+let rawData = [];
+let columns = [];
+
+// 1. وظيفة التحميل التلقائي
+async function autoLoad() {
+    const statusText = document.getElementById('loaderText');
+    try {
+        // محاولة جلب الملف
+        const response = await fetch(CONFIG.fileName, { cache: 'no-store' });
+        
+        if (!response.ok) {
+            throw new Error(`لم يتم العثور على الملف (خطأ ${response.status}). تأكد من رفع الملف بنفس الاسم تماماً.`);
+        }
+
+        const arrayBuffer = await response.arrayBuffer();
+        parseExcel(arrayBuffer, CONFIG.fileName);
+        
+    } catch (err) {
+        console.error(err);
+        statusText.innerText = err.message;
+        document.getElementById('autoLoadStatus').classList.add('hidden');
+        document.getElementById('dropZone').classList.remove('hidden');
+        showError(err.message);
+    }
+}
+
+// 2. معالجة ملف الإكسل
+function parseExcel(data, name) {
+    const workbook = XLSX.read(data, { type: 'array' });
+    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+    const json = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: "" });
+
+    if (json.length < CONFIG.headerRow) {
+        showError("الملف المرفوع لا يحتوي على بيانات كافية.");
+        return;
+    }
+
+    // تحديد الأعمدة
+    const headerRow = json[CONFIG.headerRow - 1];
+    columns = [];
+    headerRow.forEach((h, idx) => {
+        if (!CONFIG.excludedCols.includes(idx)) {
+            columns.push({ index: idx, name: h || `عمود ${idx+1}` });
+        }
+    });
+
+    // تجهيز البيانات
+    rawData = [];
+    for (let i = CONFIG.dataStartRow - 1; i < json.length; i++) {
+        if (json[i].length === 0 || !json[i][0]) continue;
+        rawData.push(json[i]);
+    }
+
+    initUI(name);
+    display(rawData);
+}
+
+// 3. تحديث الواجهة
+function initUI(name) {
+    document.getElementById('uploadArea').innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px;">
+            <div style="text-align:right">
+                <b style="color:var(--accent-dark)">✅ تم تحميل البيانات بنجاح</b><br>
+                <small>${name} - ${rawData.length} عميل</small>
+            </div>
+            <button onclick="location.reload()" style="padding:8px; cursor:pointer; border-radius:5px; border:1px solid #ccc;">تحديث 🔄</button>
+        </div>
+    `;
+    document.getElementById('searchArea').classList.remove('hidden');
+    document.getElementById('tableContainer').classList.add('has-data');
+    document.getElementById('cardsContainer').classList.add('has-data');
+    
+    // بناء رأس الجدول
+    const thr = document.getElementById('thRow');
+    thr.innerHTML = columns.map(c => `<th>${c.name}</th>`).join('') + `<th>الموقع</th>`;
+}
+
+// 4. البحث والعرض
+function doSearch() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const filtered = rawData.filter(row => {
+        return row.some(cell => String(cell).toLowerCase().includes(q));
+    });
+    display(filtered);
+}
+
+function display(data) {
+    const tbody = document.getElementById('tbBody');
+    const cContainer = document.getElementById('cardsContainer');
+    document.getElementById('resultsCount').innerText = `عدد النتائج: ${data.length}`;
+
+    // عرض الجدول
+    tbody.innerHTML = data.map(row => {
+        let cells = columns.map(col => `<td>${row[col.index] || "-"}</td>`).join('');
+        cells += `<td>${getMapLink(row[CONFIG.gpsColIdx])}</td>`;
+        return `<tr>${cells}</tr>`;
+    }).join('');
+
+    // عرض البطاقات (للموبايل)
+    cContainer.innerHTML = data.map(row => `
+        <div class="customer-card">
+            <div class="card-head">
+                <b>${row[1] || 'بدون اسم'}</b>
+                <small>${row[0] || ''}</small>
+            </div>
+            <div class="card-body">
+                ${columns.slice(2, 6).map(col => `
+                    <div class="card-row">
+                        <span>${col.name}:</span>
+                        <span>${row[col.index] || '-'}</span>
+                    </div>
+                `).join('')}
+                ${getMapLink(row[CONFIG.gpsColIdx], true)}
+            </div>
+        </div>
+    `).join('');
+}
+
+function getMapLink(coords, isCard = false) {
+    if (coords && String(coords).includes(',')) {
+        return `<a href="https://www.google.com/maps/search/?api=1&query=${coords}" target="_blank" class="map-link">📍 فتح الخريطة</a>`;
+    }
+    return `<span style="color:#ccc; display:block; text-align:center; padding:10px;">📍 الموقع غير متوفر</span>`;
+}
+
+function showError(msg) {
+    const el = document.getElementById('statusMsg');
+    el.innerText = msg;
+    el.className = 'status-msg error';
+}
+
+// تشغيل عند التحميل
+window.onload = autoLoad;
+
+// دعم الرفع اليدوي في حال فشل التلقائي
+const dz = document.getElementById('dropZone');
+const fi = document.getElementById('fileInput');
+dz.onclick = () => fi.click();
+fi.onchange = (e) => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = (evt) => parseExcel(evt.target.result, file.name);
+    reader.readAsArrayBuffer(file);
+};
 </script>
+
 </body>
 </html>
